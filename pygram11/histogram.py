@@ -8,7 +8,7 @@ def uniform1d(x, bins=10, range=None, weights=None):
 
     Parameters
     ----------
-    x : array_like
+    x: array_like
         data to histogram
     bins: int or str, optional
         number of bins or str
@@ -47,11 +47,11 @@ def nonuniform1d(x, bins, weights=None):
 
     Parameters
     ----------
-    x : array_like
+    x: array_like
         data to histogram
-    bins : array_like
+    bins: array_like
         bin edges
-    weights : array_like, optional
+    weights: array_like, optional
         weight for each element of ``x``
 
     """
