@@ -1,0 +1,1 @@
+.. mdinclude:: purpose.md

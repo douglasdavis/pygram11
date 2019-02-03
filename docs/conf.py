@@ -22,8 +22,8 @@ import pygram11.version
 # -- Project information -----------------------------------------------------
 
 project = "pygram11"
-copyright = "2019, Douglas Davis"
-author = "Douglas Davis"
+copyright = "2019, Doug Davis"
+author = "Doug Davis"
 
 # The short X.Y version
 version = pygram11.version.version
