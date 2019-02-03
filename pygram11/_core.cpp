@@ -3,6 +3,7 @@
 #include <pybind11/numpy.h>
 #include <vector>
 #include <algorithm>
+#include <omp.h>
 
 namespace py = pybind11;
 
@@ -20,26 +21,38 @@ typename FItr::difference_type nonuniform_bin_find(FItr first, FItr last, const 
 
 std::pair<std::vector<double>, std::vector<double>>
 build_uniform1d(const std::vector<double>& input,
-                     const std::vector<double>& weights,
-                     int nbins, double xmin, double xmax) {
+                const std::vector<double>& weights,
+                int nbins, double xmin, double xmax) {
   std::vector<double> count(nbins, 0.0);
   std::vector<double> sumw2(nbins, 0.0);
   size_t bin_id;
+  size_t i;
+  static size_t N = input.size();
   double current_val;
-  double norm = 1.0 / (xmax - xmin);
-  for (size_t i = 0; i < input.size(); ++i) {
-    current_val = input[i];
-    if ( current_val >= xmin && current_val < xmax ) {
-      bin_id = (current_val - xmin) * norm * nbins;
-      count[bin_id] += weights[i];
-      sumw2[bin_id] += weights[i] * weights[i];
+  double current_w;
+  static double xmi = xmin;
+  static double xma = xmax;
+  static double norm = 1.0 / (xmax - xmin);
+
+#pragma omp parallel shared(count, sumw2) private(i, bin_id, current_val, current_w)
+  {
+#pragma omp for
+    for (i = 0; i < N; ++i) {
+      current_val = input[i];
+      current_w = weights[i];
+      if ( current_val >= xmi && current_val < xma ) {
+        bin_id = (current_val - xmi) * norm * nbins;
+        count[bin_id] += current_w;
+        sumw2[bin_id] += current_w * current_w;
+      }
     }
   }
+
   return std::make_pair(std::move(count), std::move(sumw2));
 }
 
 std::vector<int> build_uniform1d(const std::vector<double>& input,
-                                      int nbins, double xmin, double xmax) {
+                                 int nbins, double xmin, double xmax) {
   std::vector<int> output(nbins, 0);
   size_t bin_id;
   double current_val;
@@ -51,11 +64,11 @@ std::vector<int> build_uniform1d(const std::vector<double>& input,
       output[bin_id]++;
     }
   }
-  return output;
+  return std::move(output);
 }
 
-py::array_t<double> uniform1d(py::array_t<double, py::array::c_style | py::array::forcecast> x,
-                                        int nbins, double xmin, double xmax) {
+py::array uniform1d(py::array_t<double, py::array::c_style | py::array::forcecast> x,
+                    int nbins, double xmin, double xmax) {
   std::vector<double> x_vec(x.size());
   std::memcpy(x_vec.data(), x.data(), x.size()*sizeof(double));
 
@@ -69,8 +82,8 @@ py::array_t<double> uniform1d(py::array_t<double, py::array::c_style | py::array
 }
 
 py::tuple uniform1d_weighted(py::array_t<double, py::array::c_style | py::array::forcecast> x,
-                                       py::array_t<double, py::array::c_style | py::array::forcecast> w,
-                                       int nbins, double xmin, double xmax) {
+                             py::array_t<double, py::array::c_style | py::array::forcecast> w,
+                             int nbins, double xmin, double xmax) {
   std::vector<double> x_vec(x.size());
   std::vector<double> w_vec(w.size());
   std::memcpy(x_vec.data(), x.data(), x.size()*sizeof(double));

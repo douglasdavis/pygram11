@@ -1,0 +1,59 @@
+#!/usr/bin/env ipython
+
+"""
+Script to run a rough benchmark, requires running via ipython
+"""
+
+from pygram11 import uniform1d
+from fast_histogram import histogram1d
+import numpy as np
+from IPython import get_ipython
+
+ipython = get_ipython()
+
+x = np.random.randn(5000000)
+w = np.random.uniform(0.8, 1.2, len(x))
+nbins = 200
+xmin = -3
+xmax = 3
+npbins = np.linspace(xmin, xmax, nbins + 1)
+
+
+def run_numpy():
+    return np.histogram(x, bins=npbins, weights=w)
+
+
+def run_fast_histogram():
+    return histogram1d(x, bins=nbins, range=(xmin, xmax), weights=w, sumw2=True)
+
+
+def run_pygram11():
+    return uniform1d(x, bins=nbins, range=(xmin, xmax), weights=w)
+
+
+print("numpy histogram:")
+ipython.magic("timeit run_numpy()")
+
+print("")
+
+print("fast_histogram:")
+ipython.magic("timeit run_fast_histogram()")
+
+print("")
+
+print("pygram11:")
+ipython.magic("timeit run_pygram11()")
+
+
+print("numpy histogram:")
+ipython.magic("timeit np.histogram(x, bins=npbins)")
+
+print("")
+
+print("fast_histogram:")
+ipython.magic("timeit histogram1d(x, bins=nbins, range=(xmin, xmax))")
+
+print("")
+
+print("pygram11:")
+ipython.magic("timeit uniform1d(x, bins=nbins, range=(xmin, xmax))")
