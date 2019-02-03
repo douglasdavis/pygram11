@@ -102,6 +102,8 @@ setup(
     ext_modules=ext_modules,
     install_requires=["numpy>=1.12", "pybind11>=2.2"],
     cmdclass={"build_ext": BuildExt},
+    test_suite="tests",
+    tests_require=["pytest>=3.0"],
     zip_safe=False,
     classifiers=[
         "Programming Language :: Python :: 2.7",

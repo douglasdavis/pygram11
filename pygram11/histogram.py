@@ -32,6 +32,7 @@ def uniform1d(x, bins=10, range=None, weights=None):
     if range is None:
         range = (x.min(), x.max())
     if weights is not None:
+        weights = np.asarray(weights)
         assert weights.shape == x.shape, "weights must be the same shape as the data"
         count, sumw2 = _uniform1d_weighted(x, weights, bins, range[0], range[1])
         return count, np.sqrt(sumw2)
