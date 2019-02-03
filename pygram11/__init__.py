@@ -1,3 +1,4 @@
-from .histogram import histogram
+from .histogram import uniform1d, nonuniform1d
 
-__all__ = ["histogram"]
+
+__all__ = ["uniform1d", "nonuniform1d"]

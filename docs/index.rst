@@ -9,6 +9,7 @@
    :maxdepth: 1
    :caption: Contents:
 
+   why.rst
    api_reference.rst
 
 

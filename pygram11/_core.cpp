@@ -19,7 +19,7 @@ typename FItr::difference_type nonuniform_bin_find(FItr first, FItr last, const 
 
 
 std::pair<std::vector<double>, std::vector<double>>
-build_uniform_hist1d(const std::vector<double>& input,
+build_uniform1d(const std::vector<double>& input,
                      const std::vector<double>& weights,
                      int nbins, double xmin, double xmax) {
   std::vector<double> count(nbins, 0.0);
@@ -38,7 +38,7 @@ build_uniform_hist1d(const std::vector<double>& input,
   return std::make_pair(std::move(count), std::move(sumw2));
 }
 
-std::vector<int> build_uniform_hist1d(const std::vector<double>& input,
+std::vector<int> build_uniform1d(const std::vector<double>& input,
                                       int nbins, double xmin, double xmax) {
   std::vector<int> output(nbins, 0);
   size_t bin_id;
@@ -54,12 +54,12 @@ std::vector<int> build_uniform_hist1d(const std::vector<double>& input,
   return output;
 }
 
-py::array_t<double> histogram1d_uniform(py::array_t<double, py::array::c_style | py::array::forcecast> x,
+py::array_t<double> uniform1d(py::array_t<double, py::array::c_style | py::array::forcecast> x,
                                         int nbins, double xmin, double xmax) {
   std::vector<double> x_vec(x.size());
   std::memcpy(x_vec.data(), x.data(), x.size()*sizeof(double));
 
-  auto res_vec = build_uniform_hist1d(x_vec, nbins, xmin, xmax);
+  auto res_vec = build_uniform1d(x_vec, nbins, xmin, xmax);
   auto result = py::array_t<int>(nbins);
   auto result_buffer = result.request();
   auto result_ptr = static_cast<int *>(result_buffer.ptr);
@@ -68,7 +68,7 @@ py::array_t<double> histogram1d_uniform(py::array_t<double, py::array::c_style |
   return result;
 }
 
-py::tuple histogram1d_uniform_weighted(py::array_t<double, py::array::c_style | py::array::forcecast> x,
+py::tuple uniform1d_weighted(py::array_t<double, py::array::c_style | py::array::forcecast> x,
                                        py::array_t<double, py::array::c_style | py::array::forcecast> w,
                                        int nbins, double xmin, double xmax) {
   std::vector<double> x_vec(x.size());
@@ -76,7 +76,7 @@ py::tuple histogram1d_uniform_weighted(py::array_t<double, py::array::c_style | 
   std::memcpy(x_vec.data(), x.data(), x.size()*sizeof(double));
   std::memcpy(w_vec.data(), w.data(), w.size()*sizeof(double));
 
-  auto res = build_uniform_hist1d(x_vec, w_vec, nbins, xmin, xmax);
+  auto res = build_uniform1d(x_vec, w_vec, nbins, xmin, xmax);
   auto result_count = py::array_t<double>(nbins);
   auto result_sumw2 = py::array_t<double>(nbins);
   auto result_count_buffer = result_count.request();
@@ -91,6 +91,6 @@ py::tuple histogram1d_uniform_weighted(py::array_t<double, py::array::c_style | 
 
 PYBIND11_MODULE(_core, m) {
   m.doc() = "Core pygram11 histogramming code";
-  m.def("_histogram1d_uniform", &histogram1d_uniform, "unweighted 1D histogram with uniform bins");
-  m.def("_histogram1d_uniform_weighted", &histogram1d_uniform_weighted, "weighted 1D histogram with uniform bins");
+  m.def("_uniform1d", &uniform1d, "unweighted 1D histogram with uniform bins");
+  m.def("_uniform1d_weighted", &uniform1d_weighted, "weighted 1D histogram with uniform bins");
 }

@@ -1,6 +1,8 @@
 API Reference
 =============
 
-.. currentmodule:: pygram11.histogram
+.. currentmodule:: pygram11
 
-.. autofunction:: histogram
+.. autofunction:: uniform1d
+
+.. autofunction:: nonuniform1d
