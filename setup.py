@@ -57,7 +57,7 @@ def has_omp(compiler):
         f.write("int main() (int argc, char **argv) { return 0; }")
         try:
             compiler.compile([f.name], extra_preargs=xpa, extra_postargs=["-lomp"])
-        except setuptools.distutils.errors.CompilerError:
+        except setuptools.distutils.errors.CompileError:
             return false
     return True
 

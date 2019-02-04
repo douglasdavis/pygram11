@@ -10,9 +10,15 @@ Simple and fast histogramming in python via
 [OpenMP](https://www.openmp.org/)
 
 Very much pre-alpha. Is pip-installable from PyPI (as a source
-distribution)... but good luck
+distribution)... but good luck.
 
-## Installing
+### Installing
 
 pygram11 requires only NumPy and pybind11. The `setup.py` script tests
 to see of OpenMP is available during installation.
+
+
+## Alternatives
+
+- NumPy's [numpy.histogram](https://docs.scipy.org/doc/numpy/reference/generated/numpy.histogram.html)
+- [fast-histogram](https://github.com/astrofrog/fast-histogram)
