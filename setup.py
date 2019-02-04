@@ -49,14 +49,16 @@ def has_flag(compiler, flagname):
 def has_omp(compiler):
     """Check if omp available"""
     if sys.platform == "darwin":
-        xpa = ["-Xpreprocessor", "-fopenmp"]
+        xprea = ["-Xpreprocessor", "-fopenmp"]
+        xposta = ["-lomp"]
     else:
-        xpa = ["-fopenmp"]
+        xprea = ["-fopenmp"]
+        xposta = None
     with tempfile.NamedTemporaryFile("w", suffix=".cpp") as f:
         f.write("#include <omp.h>")
         f.write("int main() (int argc, char **argv) { return 0; }")
         try:
-            compiler.compile([f.name], extra_preargs=xpa, extra_postargs=["-lomp"])
+            compiler.compile([f.name], extra_preargs=xprea, extra_postargs=xposta)
         except setuptools.distutils.errors.CompileError:
             return false
     return True
@@ -105,9 +107,8 @@ class BuildExt(build_ext):
         for ext in self.extensions:
             ext.extra_compile_args = opts
             if use_omp:
-                ext.extra_link_args = ["-lomp"]
                 if sys.platform == "darwin":
-                    ext.extra_link_args.append("-mmacosx-version-min=10.10")
+                    ext.extra_link_args = ["-mmacosx-version-min=10.10", "-lomp"]
         build_ext.build_extensions(self)
 
 
