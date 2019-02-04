@@ -9,4 +9,10 @@ Simple and fast histogramming in python via
 [pybind11](https://github.com/pybind/pybind11) and
 [OpenMP](https://www.openmp.org/)
 
-Very much pre-alpha. Is pip-installable from PyPI... but good luck
+Very much pre-alpha. Is pip-installable from PyPI (as a source
+distribution)... but good luck
+
+## Installing
+
+pygram11 requires only NumPy and pybind11. The `setup.py` script tests
+to see of OpenMP is available during installation.
