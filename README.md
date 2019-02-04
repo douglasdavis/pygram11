@@ -5,6 +5,8 @@
 ![](https://img.shields.io/pypi/pyversions/pygram11.svg?colorB=blue&style=flat)
 
 
-Simple and fast histogramming in python via [pybind11](https://github.com/pybind/pybind11).
+Simple and fast histogramming in python via
+[pybind11](https://github.com/pybind/pybind11) and
+[OpenMP](https://www.openmp.org/)
 
 Very much pre-alpha. Is pip-installable from PyPI... but good luck

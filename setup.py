@@ -46,6 +46,22 @@ def has_flag(compiler, flagname):
     return True
 
 
+def has_omp(compiler):
+    """Check if omp available"""
+    if sys.platform == "darwin":
+        xpa = ["-Xpreprocessor", "-fopenmp"]
+    else:
+        xpa = ["-fopenmp"]
+    with tempfile.NamedTemporaryFile("w", suffix=".cpp") as f:
+        f.write("#include <omp.h>")
+        f.write("int main() (int argc, char **argv) { return 0; }")
+        try:
+            compiler.compile([f.name], extra_preargs=xpa, extra_postargs=["-lomp"])
+        except setuptools.distutils.errors.CompilerError:
+            return false
+    return True
+
+
 def cpp_flag(compiler):
     """Return the -std=c++[11/14] compiler flag.
 
@@ -67,14 +83,17 @@ class BuildExt(build_ext):
     c_opts = {"msvc": ["/EHsc"], "unix": []}
 
     if sys.platform == "darwin":
-        c_opts["unix"] += [
-            "-stdlib=libc++",
-            "-mmacosx-version-min=10.10",
-            "-Xpreprocessor",
-        ]
-    c_opts["unix"].append("-fopenmp")
+        c_opts["unix"] += ["-stdlib=libc++", "-mmacosx-version-min=10.10"]
 
     def build_extensions(self):
+        use_omp = has_omp(self.compiler)
+
+        if use_omp:
+            if sys.platform == "darwin":
+                self.c_opts["unix"].append("-Xpreprocessor")
+            self.c_opts["unix"].append("-fopenmp")
+            self.c_opts["unix"].append("-DPYGRAMUSEOMP")
+
         ct = self.compiler.compiler_type
         opts = self.c_opts.get(ct, [])
         if ct == "unix":
@@ -85,7 +104,8 @@ class BuildExt(build_ext):
             opts.append('/DVERSION_INFO=\\"%s\\"' % self.distribution.get_version())
         for ext in self.extensions:
             ext.extra_compile_args = opts
-            ext.extra_link_args = ["-lomp"]
+            if use_omp:
+                ext.extra_link_args = ["-lomp", "-mmacosx-version-min=10.10"]
         build_ext.build_extensions(self)
 
 

@@ -3,13 +3,36 @@
 #include <pybind11/numpy.h>
 #include <vector>
 #include <algorithm>
-#include <omp.h>
 
-#pragma omp declare reduction(vec_double_plus : std::vector<double> :   \
-                              std::transform(omp_out.begin(), omp_out.end(), omp_in.begin(), omp_out.begin(), std::plus<double>())) \
-  initializer(omp_priv = omp_orig)
+#ifdef PYGRAMUSEOMP
+#include <omp.h>
+#endif
 
 namespace py = pybind11;
+
+void C_uniform1d_weighted_omp(const double* data, const double* weights, double *count, double* sumw2,
+                              const int n, const int nbins, const double xmin, const double xmax);
+void C_uniform1d_weighted(const double *data, const double* weights, double *count, double *sumw2,
+                          const int n, const int nbins, const double xmin, const double xmax);
+void C_uniform1d(const double* data, int* count,
+                 const int n, const int nbins, const double xmin, const double xmax);
+void C_uniform1d_omp(const double *data, int* count,
+                     const int n, const int nbins, const double xmin, const double xmax);
+
+py::array_t<int> py_uniform1d(py::array_t<double, py::array::c_style | py::array::forcecast> x,
+                              int nbins, double xmin, double xmax);
+
+py::tuple py_uniform1d_weighted(py::array_t<double, py::array::c_style | py::array::forcecast> x,
+                                py::array_t<double, py::array::c_style | py::array::forcecast> w,
+                                int nbins, double xmin, double xmax);
+
+PYBIND11_MODULE(_core, m) {
+  m.doc() = "Core pygram11 histogramming code";
+  m.def("_uniform1d", &py_uniform1d, "unweighted 1D histogram with uniform bins");
+  m.def("_uniform1d_weighted", &py_uniform1d_weighted, "weighted 1D histogram with uniform bins");
+}
+
+///////////////////////////////////////////////////////////
 
 template <class FItr, class T>
 typename FItr::difference_type nonuniform_bin_find(FItr first, FItr last, const T& v) {
@@ -22,83 +45,114 @@ typename FItr::difference_type nonuniform_bin_find(FItr first, FItr last, const 
   }
 }
 
+#ifdef PYGRAMUSEOMP
+void C_uniform1d_weighted_omp(const double* data, const double* weights, double *count, double* sumw2,
+                              const int n, const int nbins, const double xmin, const double xmax) {
+  const double norm = 1.0 / (xmax - xmin);
+  memset(count, 0, sizeof(double)*nbins);
+  memset(sumw2, 0, sizeof(double)*nbins);
 
-std::pair<std::vector<double>, std::vector<double>>
-build_uniform1d(const std::vector<double>& input,
-                const std::vector<double>& weights,
-                int nbins, double xmin, double xmax) {
-  std::vector<double> count(nbins, 0.0);
-  std::vector<double> sumw2(nbins, 0.0);
-  size_t bin_id;
-  size_t i;
-  static size_t N = input.size();
-  static double norm = 1.0 / (xmax - xmin);
+#pragma omp parallel
+  {
+    double* count_priv = new double[nbins];
+    double* sumw2_priv = new double[nbins];
+    memset(count_priv, 0, sizeof(double)*nbins);
+    memset(sumw2_priv, 0, sizeof(double)*nbins);
 
-#pragma omp parallel for private(bin_id) reduction(vec_double_plus:count) reduction(vec_double_plus:sumw2)
-  for (i = 0; i < N; ++i) {
-    if ( input[i] >= xmin && input[i] < xmax ) {
-      bin_id = (input[i] - xmin) * norm * nbins;
-      count[bin_id] += weights[i];
-      sumw2[bin_id] += weights[i] * weights[i];
+#pragma omp for nowait
+    for (int i = 0; i < n; i++) {
+      if (!(data[i] >= xmin && data[i] < xmax)) continue;
+      size_t bin_id = (data[i] - xmin) * norm * nbins;
+      count_priv[bin_id] += weights[i];
+      sumw2_priv[bin_id] += weights[i] * weights[i];
     }
-  }
 
-  return std::make_pair(std::move(count), std::move(sumw2));
-}
-
-std::vector<int> build_uniform1d(const std::vector<double>& input,
-                                 int nbins, double xmin, double xmax) {
-  std::vector<int> output(nbins, 0);
-  size_t bin_id;
-  double current_val;
-  double norm = 1.0 / (xmax - xmin);
-  for (size_t i = 0; i < input.size(); ++i ) {
-    current_val = input[i];
-    if (current_val >= xmin && current_val < xmax ) {
-      bin_id = (current_val - xmin) * norm * nbins;
-      output[bin_id]++;
+#pragma omp critical
+    for (int i = 0; i < nbins; i++) {
+      count[i] += count_priv[i];
+      sumw2[i] += sumw2_priv[i];
     }
+    delete[] count_priv;
+    delete[] sumw2_priv;
   }
-  return std::move(output);
+}
+#endif
+
+void C_uniform1d_weighted(const double *data, const double* weights, double *count, double *sumw2,
+                          const int n, const int nbins, const double xmin, const double xmax) {
+  const double norm = 1.0/(xmax-xmin);
+  memset(count, 0, sizeof(double)*nbins);
+  memset(sumw2, 0, sizeof(double)*nbins);
+  size_t bin_id;
+  for (int i = 0; i < n; i++) {
+    if (!(data[i] >= xmin && data[i] < xmax)) continue;
+    bin_id = (data[i] - xmin) * norm * nbins;
+    count[bin_id] += weights[i];
+    sumw2[bin_id] += weights[i] * weights[i];
+  }
 }
 
-py::array uniform1d(py::array_t<double, py::array::c_style | py::array::forcecast> x,
-                    int nbins, double xmin, double xmax) {
-  std::vector<double> x_vec(x.size());
-  std::memcpy(x_vec.data(), x.data(), x.size()*sizeof(double));
-
-  auto res_vec = build_uniform1d(x_vec, nbins, xmin, xmax);
-  auto result = py::array_t<int>(nbins);
-  auto result_buffer = result.request();
-  auto result_ptr = static_cast<int *>(result_buffer.ptr);
-
-  std::memcpy(result_ptr, res_vec.data(), res_vec.size() * sizeof(int));
-  return result;
+void C_uniform1d(const double* data, int* count,
+                 const int n, const int nbins, const double xmin, const double xmax) {
+  const double norm = 1.0 / (xmax - xmin);
+  memset(count, 0, sizeof(int) * nbins);
+  size_t bin_id;
+  for (int i = 0; i < n; i++) {
+    if (!(data[i] >= xmin && data[i] < xmax)) continue;
+    bin_id = (data[i] - xmin) * norm * nbins;
+    count[bin_id]++;
+  }
 }
 
-py::tuple uniform1d_weighted(py::array_t<double, py::array::c_style | py::array::forcecast> x,
-                             py::array_t<double, py::array::c_style | py::array::forcecast> w,
-                             int nbins, double xmin, double xmax) {
-  std::vector<double> x_vec(x.size());
-  std::vector<double> w_vec(w.size());
-  std::memcpy(x_vec.data(), x.data(), x.size()*sizeof(double));
-  std::memcpy(w_vec.data(), w.data(), w.size()*sizeof(double));
+#ifdef PYGRAMUSEOMP
+void C_uniform1d_omp(const double* data, int* count,
+                     const int n, const int nbins, const double xmin, const double xmax) {
+  const double norm = 1.0 / (xmax - xmin);
+  memset(count, 0, sizeof(int) * nbins);
+#pragma omp parallel for
+  for (int i = 0; i < nbins; i++) {
+    if (!(data[i] >= xmin && data[i] < xmax)) continue;
+    size_t bin_id = (data[i] - xmin) * norm * nbins;
+#pragma omp atomic update
+    count[bin_id]++;
+  }
+}
+#endif
 
-  auto res = build_uniform1d(x_vec, w_vec, nbins, xmin, xmax);
+/// openmp for nonweighted not implemented yet
+py::array_t<int> py_uniform1d(py::array_t<double, py::array::c_style | py::array::forcecast> x,
+                       int nbins, double xmin, double xmax) {
+  auto result_count = py::array_t<int>(nbins);
+  auto result_count_ptr = static_cast<int*>(result_count.request().ptr);
+  int ndata = x.request().size;
+#ifdef PYGRAMUSEOMP
+  C_uniform1d_omp(static_cast<const double*>(x.request().ptr),
+                  result_count_ptr, ndata, nbins, xmin, xmax);
+#else
+  C_uniform1d(static_cast<const double*>(x.request().ptr),
+              result_count_ptr, ndata, nbins, xmin, xmax);
+#endif
+  return result_count;
+}
+
+py::tuple py_uniform1d_weighted(py::array_t<double, py::array::c_style | py::array::forcecast> x,
+                                py::array_t<double, py::array::c_style | py::array::forcecast> w,
+                                int nbins, double xmin, double xmax) {
   auto result_count = py::array_t<double>(nbins);
   auto result_sumw2 = py::array_t<double>(nbins);
-  auto result_count_buffer = result_count.request();
-  auto result_sumw2_buffer = result_sumw2.request();
-  auto result_count_ptr = static_cast<double *>(result_count_buffer.ptr);
-  auto result_sumw2_ptr = static_cast<double *>(result_sumw2_buffer.ptr);
-  std::memcpy(result_count_ptr, std::get<0>(res).data(), std::get<0>(res).size() * sizeof(double));
-  std::memcpy(result_sumw2_ptr, std::get<1>(res).data(), std::get<1>(res).size() * sizeof(double));
+  auto result_count_ptr = static_cast<double*>(result_count.request().ptr);
+  auto result_sumw2_ptr = static_cast<double*>(result_sumw2.request().ptr);
+  int ndata = x.request().size;
+
+#ifdef PYGRAMUSEOMP
+  C_uniform1d_weighted(static_cast<const double*>(x.request().ptr),
+                       static_cast<const double*>(w.request().ptr),
+                       result_count_ptr, result_sumw2_ptr, ndata, nbins, xmin, xmax);
+#else
+  C_uniform1d_weighted(static_cast<const double*>(x.request().ptr),
+                       static_cast<const double*>(w.request().ptr),
+                       result_count_ptr, result_sumw2_ptr, ndata, nbins, xmin, xmax);
+#endif
+
   return py::make_tuple(result_count, result_sumw2);
-}
-
-
-PYBIND11_MODULE(_core, m) {
-  m.doc() = "Core pygram11 histogramming code";
-  m.def("_uniform1d", &uniform1d, "unweighted 1D histogram with uniform bins");
-  m.def("_uniform1d_weighted", &uniform1d_weighted, "weighted 1D histogram with uniform bins");
 }

@@ -13,7 +13,7 @@ ipython = get_ipython()
 
 x = np.random.randn(5000000)
 w = np.random.uniform(0.8, 1.2, len(x))
-nbins = 200
+nbins = 20
 xmin = -3
 xmax = 3
 npbins = np.linspace(xmin, xmax, nbins + 1)
@@ -33,27 +33,30 @@ def run_pygram11():
 
 print("numpy histogram:")
 ipython.magic("timeit run_numpy()")
-
+print(run_numpy())
 print("")
 
 print("fast_histogram:")
 ipython.magic("timeit run_fast_histogram()")
-
+print(run_fast_histogram())
 print("")
 
 print("pygram11:")
 ipython.magic("timeit run_pygram11()")
+print(run_pygram11())
+print("")
 
 
 print("numpy histogram:")
 ipython.magic("timeit np.histogram(x, bins=npbins)")
-
+print(np.histogram(x, bins=npbins))
 print("")
 
 print("fast_histogram:")
 ipython.magic("timeit histogram1d(x, bins=nbins, range=(xmin, xmax))")
-
+print(histogram1d(x, bins=nbins, range=(xmin, xmax)))
 print("")
 
 print("pygram11:")
 ipython.magic("timeit uniform1d(x, bins=nbins, range=(xmin, xmax))")
+print(uniform1d(x, bins=nbins, range=(xmin, xmax)))
