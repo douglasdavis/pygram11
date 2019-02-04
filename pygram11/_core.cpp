@@ -125,8 +125,10 @@ py::array_t<int> py_uniform1d(py::array_t<double, py::array::c_style | py::array
   auto result_count = py::array_t<int>(nbins);
   auto result_count_ptr = static_cast<int*>(result_count.request().ptr);
   int ndata = x.request().size;
+
+  // C_uniformed1d_omp not ready yet
 #ifdef PYGRAMUSEOMP
-  C_uniform1d_omp(static_cast<const double*>(x.request().ptr),
+  C_uniform1d(static_cast<const double*>(x.request().ptr),
                   result_count_ptr, ndata, nbins, xmin, xmax);
 #else
   C_uniform1d(static_cast<const double*>(x.request().ptr),
@@ -145,9 +147,9 @@ py::tuple py_uniform1d_weighted(py::array_t<double, py::array::c_style | py::arr
   int ndata = x.request().size;
 
 #ifdef PYGRAMUSEOMP
-  C_uniform1d_weighted(static_cast<const double*>(x.request().ptr),
-                       static_cast<const double*>(w.request().ptr),
-                       result_count_ptr, result_sumw2_ptr, ndata, nbins, xmin, xmax);
+  C_uniform1d_weighted_omp(static_cast<const double*>(x.request().ptr),
+                           static_cast<const double*>(w.request().ptr),
+                           result_count_ptr, result_sumw2_ptr, ndata, nbins, xmin, xmax);
 #else
   C_uniform1d_weighted(static_cast<const double*>(x.request().ptr),
                        static_cast<const double*>(w.request().ptr),
