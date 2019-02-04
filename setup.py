@@ -105,7 +105,9 @@ class BuildExt(build_ext):
         for ext in self.extensions:
             ext.extra_compile_args = opts
             if use_omp:
-                ext.extra_link_args = ["-lomp", "-mmacosx-version-min=10.10"]
+                ext.extra_link_args = ["-lomp"]
+                if sys.platform == "darwin":
+                    ext.extra_link_args.append("-mmacosx-version-min=10.10")
         build_ext.build_extensions(self)
 
 
