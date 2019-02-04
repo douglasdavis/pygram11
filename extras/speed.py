@@ -5,9 +5,12 @@ Script to run a rough benchmark, requires running via ipython
 """
 
 from pygram11 import uniform1d
+import pygram11
 from fast_histogram import histogram1d
 import numpy as np
 from IPython import get_ipython
+
+print("OpenMP available: {}".format(pygram11.OPENMP))
 
 ipython = get_ipython()
 

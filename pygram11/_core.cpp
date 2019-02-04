@@ -10,6 +10,14 @@
 
 namespace py = pybind11;
 
+bool has_openMP() {
+#ifdef PYGRAMUSEOMP
+  return true;
+#else
+  return false;
+#endif
+}
+
 void C_uniform1d_weighted_omp(const double* data, const double* weights, double *count, double* sumw2,
                               const int n, const int nbins, const double xmin, const double xmax);
 void C_uniform1d_weighted(const double *data, const double* weights, double *count, double *sumw2,
@@ -28,6 +36,7 @@ py::tuple py_uniform1d_weighted(py::array_t<double, py::array::c_style | py::arr
 
 PYBIND11_MODULE(_core, m) {
   m.doc() = "Core pygram11 histogramming code";
+  m.def("_OPENMP", &has_openMP);
   m.def("_uniform1d", &py_uniform1d, "unweighted 1D histogram with uniform bins");
   m.def("_uniform1d_weighted", &py_uniform1d_weighted, "weighted 1D histogram with uniform bins");
 }

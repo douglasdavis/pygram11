@@ -15,7 +15,8 @@ distribution)... but good luck.
 ### Installing
 
 pygram11 requires only NumPy and pybind11. The `setup.py` script tests
-to see of OpenMP is available during installation.
+to see of OpenMP is available during installation. From the python
+side, `pygram11.OPENMP` will tell you if OpenMP was detected.
 
 
 ## Alternatives
