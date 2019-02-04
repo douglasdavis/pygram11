@@ -5,6 +5,10 @@
 #include <algorithm>
 #include <omp.h>
 
+#pragma omp declare reduction(vec_double_plus : std::vector<double> :   \
+                              std::transform(omp_out.begin(), omp_out.end(), omp_in.begin(), omp_out.begin(), std::plus<double>())) \
+  initializer(omp_priv = omp_orig)
+
 namespace py = pybind11;
 
 template <class FItr, class T>
@@ -28,23 +32,14 @@ build_uniform1d(const std::vector<double>& input,
   size_t bin_id;
   size_t i;
   static size_t N = input.size();
-  double current_val;
-  double current_w;
-  static double xmi = xmin;
-  static double xma = xmax;
   static double norm = 1.0 / (xmax - xmin);
 
-#pragma omp parallel shared(count, sumw2) private(i, bin_id, current_val, current_w)
-  {
-#pragma omp for
-    for (i = 0; i < N; ++i) {
-      current_val = input[i];
-      current_w = weights[i];
-      if ( current_val >= xmi && current_val < xma ) {
-        bin_id = (current_val - xmi) * norm * nbins;
-        count[bin_id] += current_w;
-        sumw2[bin_id] += current_w * current_w;
-      }
+#pragma omp parallel for private(bin_id) reduction(vec_double_plus:count) reduction(vec_double_plus:sumw2)
+  for (i = 0; i < N; ++i) {
+    if ( input[i] >= xmin && input[i] < xmax ) {
+      bin_id = (input[i] - xmin) * norm * nbins;
+      count[bin_id] += weights[i];
+      sumw2[bin_id] += weights[i] * weights[i];
     }
   }
 
