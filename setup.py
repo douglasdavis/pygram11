@@ -113,7 +113,7 @@ def has_omp():
 
         haveit = True
 
-    except (CompilerError, LinkError):
+    except (CompileError, LinkError):
         haveit = False
 
     finally:
