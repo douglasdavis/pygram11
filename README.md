@@ -56,7 +56,9 @@ True
 
 - NumPy's
   [numpy.histogram](https://docs.scipy.org/doc/numpy/reference/generated/numpy.histogram.html):
-  the classic. Slow and doesn't handle statistical uncertainty.
+  the classic. Versatile but slow, and doesn't handle statistical
+  uncertainty.
 - [fast-histogram](https://github.com/astrofrog/fast-histogram):
-  leverages NumPy's C API. Very fast (fixed bin only)
-  histogramming. No OpenMP support or statistical uncertainty.
+  leverages NumPy's C API. Very fast (fixed bin only) histogramming
+  and asy to install, but no OpenMP support or statistical
+  uncertainty.
