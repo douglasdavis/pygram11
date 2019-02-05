@@ -6,20 +6,57 @@
 
 
 Simple and fast histogramming in python via
-[pybind11](https://github.com/pybind/pybind11) and
+[pybind11](https://github.com/pybind/pybind11) and (optionally)
 [OpenMP](https://www.openmp.org/)
 
-Very much pre-alpha. Is pip-installable from PyPI (as a source
-distribution)... but good luck.
+Very much pre-alpha -- use with caution.
 
-### Installing
+## Installing
 
-pygram11 requires only NumPy and pybind11. The `setup.py` script tests
-to see of OpenMP is available during installation. From the python
-side, `pygram11.OPENMP` will tell you if OpenMP was detected.
+pygram11 requires only NumPy and pybind11.
 
+### From PyPI
+
+```none
+$ pip install pygram11
+```
+
+### From Source
+
+```none
+$ git clone https://github.com/drdavis/pygram11.github
+$ cd pygram11
+$ pip install .
+```
+
+### OpenMP Support
+
+The `setup.py` script tests to see of OpenMP is available during
+installation. The logic is not incredibly robust at the moment. On
+Linux, Arch Linux has been tested to work with the system python and
+`extra/openmp` installed. On macOS, OpenMP has been tested to work
+with `libomp` installed from Homebrew, and using the Anaconda Python
+distribution. If OpenMP was using during installation, you'll see:
+
+```python
+>>> import pygram11
+>>> pygram11.OPENMP
+True
+```
+
+## Feature Support
+
+- [x] 1D, fixed bin, unweighted histograms
+- [x] 1D, fixed bin, weighted histograms
+- [ ] 1D, variable bin, unweighted histograms
+- [ ] 1D, variable bin, weighted histograms
+- [ ] 2D ...
 
 ## Alternatives
 
-- NumPy's [numpy.histogram](https://docs.scipy.org/doc/numpy/reference/generated/numpy.histogram.html)
-- [fast-histogram](https://github.com/astrofrog/fast-histogram)
+- NumPy's
+  [numpy.histogram](https://docs.scipy.org/doc/numpy/reference/generated/numpy.histogram.html):
+  the classic. Slow and doesn't handle statistical uncertainty.
+- [fast-histogram](https://github.com/astrofrog/fast-histogram):
+  leverages NumPy's C API. Very fast (fixed bin only)
+  histogramming. No OpenMP support or statistical uncertainty.
