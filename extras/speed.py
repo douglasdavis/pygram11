@@ -14,7 +14,7 @@ print("OpenMP available: {}".format(pygram11.OPENMP))
 
 ipython = get_ipython()
 
-x = np.random.randn(5000000)
+x = np.random.randn(1000000)
 w = np.random.uniform(0.8, 1.2, len(x))
 nbins = 20
 xmin = -3

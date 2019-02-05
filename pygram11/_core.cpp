@@ -27,8 +27,8 @@ void C_uniform1d(const double* data, int* count,
 void C_uniform1d_omp(const double *data, int* count,
                      const int n, const int nbins, const double xmin, const double xmax);
 
-py::array_t<int> py_uniform1d(py::array_t<double, py::array::c_style | py::array::forcecast> x,
-                              int nbins, double xmin, double xmax);
+py::array py_uniform1d(py::array_t<double, py::array::c_style | py::array::forcecast> x,
+                       int nbins, double xmin, double xmax);
 
 py::tuple py_uniform1d_weighted(py::array_t<double, py::array::c_style | py::array::forcecast> x,
                                 py::array_t<double, py::array::c_style | py::array::forcecast> w,
@@ -65,8 +65,8 @@ void C_uniform1d_weighted_omp(const double* data, const double* weights, double 
   {
     double* count_priv = new double[nbins];
     double* sumw2_priv = new double[nbins];
-    memset(count_priv, 0, sizeof(double)*nbins);
-    memset(sumw2_priv, 0, sizeof(double)*nbins);
+    memset(count_priv, 0, sizeof(double) * nbins);
+    memset(sumw2_priv, 0, sizeof(double) * nbins);
 
 #pragma omp for nowait
     for (int i = 0; i < n; i++) {
@@ -89,9 +89,9 @@ void C_uniform1d_weighted_omp(const double* data, const double* weights, double 
 
 void C_uniform1d_weighted(const double *data, const double* weights, double *count, double *sumw2,
                           const int n, const int nbins, const double xmin, const double xmax) {
-  const double norm = 1.0/(xmax-xmin);
-  memset(count, 0, sizeof(double)*nbins);
-  memset(sumw2, 0, sizeof(double)*nbins);
+  const double norm = 1.0 / (xmax - xmin);
+  memset(count, 0, sizeof(double) * nbins);
+  memset(sumw2, 0, sizeof(double) * nbins);
   size_t bin_id;
   for (int i = 0; i < n; i++) {
     if (!(data[i] >= xmin && data[i] < xmax)) continue;
@@ -101,10 +101,34 @@ void C_uniform1d_weighted(const double *data, const double* weights, double *cou
   }
 }
 
-void C_uniform1d(const double* data, int* count,
+#ifdef PYGRAMUSEOMP
+void C_uniform1d_omp(const double* data, long* count,
+                     const int n, const int nbins, const double xmin, const double xmax) {
+  const double norm = 1.0 / (xmax - xmin);
+  memset(count, 0, sizeof(long)*nbins);
+#pragma omp parallel
+  {
+    long* count_priv = new long[nbins];
+    memset(count_priv, 0, sizeof(long) * nbins);
+#pragma omp for nowait
+    for (int i = 0; i < n; i++) {
+      if (!(data[i] >= xmin && data[i] < xmax)) continue;
+      size_t bin_id = (data[i] - xmin) * norm * nbins;
+      count_priv[bin_id]++;
+    }
+#pragma omp critical
+    for (int i = 0; i < nbins; i++) {
+      count[i] += count_priv[i];
+    }
+    delete[] count_priv;
+  }
+}
+#endif
+
+void C_uniform1d(const double* data, long* count,
                  const int n, const int nbins, const double xmin, const double xmax) {
   const double norm = 1.0 / (xmax - xmin);
-  memset(count, 0, sizeof(int) * nbins);
+  memset(count, 0, sizeof(long) * nbins);
   size_t bin_id;
   for (int i = 0; i < n; i++) {
     if (!(data[i] >= xmin && data[i] < xmax)) continue;
@@ -113,31 +137,15 @@ void C_uniform1d(const double* data, int* count,
   }
 }
 
-#ifdef PYGRAMUSEOMP
-void C_uniform1d_omp(const double* data, int* count,
-                     const int n, const int nbins, const double xmin, const double xmax) {
-  const double norm = 1.0 / (xmax - xmin);
-  memset(count, 0, sizeof(int) * nbins);
-#pragma omp parallel for
-  for (int i = 0; i < nbins; i++) {
-    if (!(data[i] >= xmin && data[i] < xmax)) continue;
-    size_t bin_id = (data[i] - xmin) * norm * nbins;
-#pragma omp atomic update
-    count[bin_id]++;
-  }
-}
-#endif
-
 /// openmp for nonweighted not implemented yet
-py::array_t<int> py_uniform1d(py::array_t<double, py::array::c_style | py::array::forcecast> x,
+py::array py_uniform1d(py::array_t<double, py::array::c_style | py::array::forcecast> x,
                        int nbins, double xmin, double xmax) {
-  auto result_count = py::array_t<int>(nbins);
-  auto result_count_ptr = static_cast<int*>(result_count.request().ptr);
+  auto result_count = py::array_t<long>(nbins);
+  auto result_count_ptr = static_cast<long*>(result_count.request().ptr);
   int ndata = x.request().size;
 
-  // C_uniformed1d_omp not ready yet
 #ifdef PYGRAMUSEOMP
-  C_uniform1d(static_cast<const double*>(x.request().ptr),
+  C_uniform1d_omp(static_cast<const double*>(x.request().ptr),
                   result_count_ptr, ndata, nbins, xmin, xmax);
 #else
   C_uniform1d(static_cast<const double*>(x.request().ptr),
