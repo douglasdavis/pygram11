@@ -31,7 +31,7 @@ ext_modules = [
     Extension(
         "pygram11._core",
         [os.path.join("pygram11", "_core.cpp")],
-        include_dirs=[get_pybind_include()],
+        include_dirs=[get_pybind_include(), get_pybind_include(user=True)],
         language="c++",
     )
 ]

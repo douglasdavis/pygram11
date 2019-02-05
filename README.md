@@ -36,7 +36,8 @@ installation. The logic is not incredibly robust at the moment. On
 Linux, Arch Linux has been tested to work with the system python and
 `extra/openmp` installed. On macOS, OpenMP has been tested to work
 with `libomp` installed from Homebrew, and using the Anaconda Python
-distribution. If OpenMP was using during installation, you'll see:
+distribution. If OpenMP was successfully tested during installation,
+you'll see:
 
 ```python
 >>> import pygram11
