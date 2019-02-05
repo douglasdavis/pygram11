@@ -1,10 +1,16 @@
 from setuptools import setup, Extension
 from setuptools.command.build_ext import build_ext
 import pybind11
+import glob
 import tempfile
 import os
 import sys
 import setuptools
+import subprocess
+from distutils import log
+from distutils.ccompiler import new_compiler
+from distutils.sysconfig import customize_compiler, get_config_var
+from distutils.errors import CompileError, LinkError
 
 
 class get_pybind_include(object):
@@ -46,22 +52,74 @@ def has_flag(compiler, flagname):
     return True
 
 
-def has_omp(compiler):
+CCODE = """
+#include <omp.h>
+#include <stdio.h>
+int main(void) {
+  #pragma omp parallel
+  printf("nthreads=%d\\n", omp_get_num_threads());
+ return 0;
+}
+"""
+
+
+def has_omp():
     """Check if omp available"""
+    haveit = False
+
+    ccompiler = new_compiler()
+    customize_compiler(ccompiler)
+
     if sys.platform == "darwin":
-        xprea = ["-Xpreprocessor", "-fopenmp"]
-        xposta = ["-lomp"]
+        compflags = ["-Xpreprocessor", "-fopenmp"]
+        linkflags = ["-Xpreprocessor", "-fopenmp", "-lomp"]
     else:
-        xprea = ["-fopenmp"]
-        xposta = None
-    with tempfile.NamedTemporaryFile("w", suffix=".cpp") as f:
-        f.write("#include <omp.h>")
-        f.write("int main() (int argc, char **argv) { return 0; }")
-        try:
-            compiler.compile([f.name], extra_preargs=xprea, extra_postargs=xposta)
-        except setuptools.distutils.errors.CompileError:
-            return false
-    return True
+        compflags = ["-fopenmp"]
+        linkflags = ["-fopenmp", "-lomp"]
+
+    tmp_dir = tempfile.mkdtemp()
+    start_dir = os.path.abspath(".")
+
+    try:
+        os.chdir(tmp_dir)
+        with open("test_openmp.c", "w") as f:
+            f.write(CCODE)
+
+        os.mkdir("objects")
+        ccompiler.compile(
+            ["test_openmp.c"], output_dir="objects", extra_postargs=compflags
+        )
+        objects = glob.glob(os.path.join("objects", "*" + ccompiler.obj_extension))
+        ccompiler.link_executable(objects, "test_openmp", extra_postargs=linkflags)
+
+        output = subprocess.check_output("./test_openmp")
+        output = output.decode(sys.stdout.encoding or "utf-8").splitlines()
+        if "nthreads=" in output[0]:
+            nthreads = int(output[0].strip().split("=")[1])
+            if len(output) == nthreads:
+                haveit = True
+            else:
+                log.warn(
+                    "Unexpected number of lines from output of test OpenMP "
+                    "program (output was {0})".format(output)
+                )
+                haveit = False
+        else:
+            log.warn(
+                "Unexpected output from test OpenMP "
+                "program (output was {0})".format(output)
+            )
+            haveit = False
+
+        haveit = True
+
+    except (CompilerError, LinkError):
+        haveit = False
+
+    finally:
+        os.chdir(start_dir)
+
+    return haveit
 
 
 def cpp_flag(compiler):
@@ -88,7 +146,7 @@ class BuildExt(build_ext):
         c_opts["unix"] += ["-stdlib=libc++", "-mmacosx-version-min=10.10"]
 
     def build_extensions(self):
-        use_omp = has_omp(self.compiler)
+        use_omp = has_omp()
 
         if use_omp:
             if sys.platform == "darwin":
@@ -108,7 +166,8 @@ class BuildExt(build_ext):
             ext.extra_compile_args = opts
             if use_omp:
                 if sys.platform == "darwin":
-                    ext.extra_link_args = ["-mmacosx-version-min=10.10", "-lomp"]
+                    ext.extra_link_args = ["-mmacosx-version-min=10.10"]
+                ext.extra_link_args.append("-lomp")
         build_ext.build_extensions(self)
 
 
