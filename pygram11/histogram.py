@@ -19,8 +19,10 @@ def uniform1d(x, bins=10, range=None, weights=None):
 
     Returns
     -------
-    (:obj:`numpy.ndarray`, :obj:`numpy.ndarray`)
-        bin counts and the statistical uncertainty on each bin
+    :obj:`numpy.ndarray`
+        bin counts
+    :obj:`numpy.ndarray`
+        sum of weights squared (if ``weights`` is not None)
 
     Examples
     --------
@@ -34,12 +36,9 @@ def uniform1d(x, bins=10, range=None, weights=None):
     if weights is not None:
         weights = np.asarray(weights)
         assert weights.shape == x.shape, "weights must be the same shape as the data"
-        count, sumw2 = _uniform1d_weighted(x, weights, bins, range[0], range[1])
-        return count, np.sqrt(sumw2)
+        return _uniform1d_weighted(x, weights, bins, range[0], range[1])
     else:
-        count = _uniform1d(x, bins, range[0], range[1])
-        uncertainty = np.sqrt(count)
-        return count, uncertainty
+        return _uniform1d(x, bins, range[0], range[1])
 
 
 def nonuniform1d(x, bins, weights=None):
