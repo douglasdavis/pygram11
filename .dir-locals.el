@@ -1,7 +1,0 @@
-((python-mode . ((eglot-server-programs    . ((python-mode "~/Software/Python/anaconda3/envs/pyg/bin/pyls")))
-                 (company-backends         . (company-capf))
-                 (python-shell-interpreter . "~/Software/Python/anaconda3/envs/pyg/bin/python")
-                 (eval . (add-hook 'before-save-hook #'blacken-buffer))
-                 ;;(py-shell-name . "~/Software/Python/anaconda3/envs/twaml/bin/python")
-                 ;;(py-ipython-command . "~/Software/Python/anaconda3/envs/twaml/bin/ipython")
-                 )))
