@@ -26,10 +26,10 @@ copyright = "2019, Doug Davis"
 author = "Doug Davis"
 
 # The short X.Y version
-version = pygram11.version.version
+version = '.'.join(pygram11.version.version..split('.')[:3])
 
 # The full version, including alpha/beta/rc tags
-release = ""
+release = pygram11.version.version
 
 # -- General configuration ---------------------------------------------------
 
