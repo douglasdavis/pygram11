@@ -9,7 +9,7 @@ Simple and fast histogramming in python via
 [pybind11](https://github.com/pybind/pybind11) and (optionally)
 [OpenMP](https://www.openmp.org/)
 
-Very much pre-alpha -- use with caution.
+Very much pre-alpha -- **use with caution**
 
 ## Installing
 
@@ -32,12 +32,17 @@ $ pip install .
 ### OpenMP Support
 
 The `setup.py` script tests to see of OpenMP is available during
-installation. The logic is not incredibly robust at the moment. On
-Linux, Arch Linux has been tested to work with the system python and
-`extra/openmp` installed. On macOS, OpenMP has been tested to work
-with `libomp` installed from Homebrew, and using the Anaconda Python
-distribution. If OpenMP was successfully tested during installation,
-you'll see:
+installation. The logic is not incredibly robust at the moment.
+
+Three methods have been tested:
+
+- Arch Linux: System python with `extra/openmp` installed.
+- macOS: Homebrew python3 with `libomp` installed from Homebrew
+- macOS: Anaconda python3 and python2 distributions with `libomp`
+  installed from Homebrew (you probably need to remove the extra
+  `libiomp5.dylib` from the Anaconda environment `lib` folder or
+  `conda install nomkl`, see
+  [here](https://github.com/dmlc/xgboost/issues/1715)).
 
 ```python
 >>> import pygram11

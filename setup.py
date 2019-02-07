@@ -31,7 +31,7 @@ ext_modules = [
     Extension(
         "pygram11._core",
         [os.path.join("pygram11", "_core.cpp")],
-        include_dirs=[get_pybind_include(), get_pybind_include(user=True)],
+        include_dirs=["/usr/local/include", get_pybind_include(), get_pybind_include(user=True)],
         language="c++",
     )
 ]
@@ -87,7 +87,9 @@ def has_omp():
 
         os.mkdir("objects")
         ccompiler.compile(
-            ["test_openmp.c"], output_dir="objects", extra_postargs=compflags
+            ["test_openmp.c"], output_dir="objects",
+            extra_preargs=["-I/usr/local/include"] if sys.platform == "darwin" else None,
+            extra_postargs=compflags
         )
         objects = glob.glob(os.path.join("objects", "*" + ccompiler.obj_extension))
         ccompiler.link_executable(objects, "test_openmp", extra_postargs=linkflags)
