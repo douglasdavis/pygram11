@@ -1,9 +1,9 @@
 # pygram11
 
 [![builds.sr.ht status](https://builds.sr.ht/~ddavis/pygram11.svg)](https://builds.sr.ht/~ddavis/pygram11?)
-[![PyPI version](https://img.shields.io/pypi/v/pygram11.svg?colorB=bf5700&style=flat)](https://pypi.org/project/pygram11/)
-![](https://img.shields.io/pypi/pyversions/pygram11.svg?colorB=blue&style=flat)
 [![Documentation Status](https://readthedocs.org/projects/pygram11/badge/?version=latest)](https://pygram11.readthedocs.io/en/latest/?badge=latest)
+![](https://img.shields.io/pypi/pyversions/pygram11.svg?colorB=blue&style=flat)
+[![PyPI version](https://img.shields.io/pypi/v/pygram11.svg?colorB=486b87&style=flat)](https://pypi.org/project/pygram11/)
 
 
 Simple and fast histogramming in python via
@@ -51,6 +51,8 @@ Three methods have been tested:
 True
 ```
 
+In the future the flag can be set to `False` manually.
+
 ## Feature Support
 
 pygram11 plans to provide fast functions for generating histograms and
@@ -70,3 +72,5 @@ their statistical uncertainties.
 - [fast-histogram](https://github.com/astrofrog/fast-histogram):
   leverages NumPy's C API. Very fast (fixed bin only) histogramming
   and easy to install; no OpenMP support or statistical uncertainty.
+- [physt](https://github.com/janpipek/physt): *way* more than just
+  sorting data into bins.
