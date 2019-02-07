@@ -3,6 +3,7 @@
 [![builds.sr.ht status](https://builds.sr.ht/~ddavis/pygram11.svg)](https://builds.sr.ht/~ddavis/pygram11?)
 [![PyPI version](https://img.shields.io/pypi/v/pygram11.svg?colorB=bf5700&style=flat)](https://pypi.org/project/pygram11/)
 ![](https://img.shields.io/pypi/pyversions/pygram11.svg?colorB=blue&style=flat)
+[![Documentation Status](https://readthedocs.org/projects/pygram11/badge/?version=latest)](https://pygram11.readthedocs.io/en/latest/?badge=latest)
 
 
 Simple and fast histogramming in python via
