@@ -9,6 +9,7 @@
    :maxdepth: 1
    :caption: Contents:
 
+   omp.rst
    purpose.rst
    examples.rst
    api_reference.rst

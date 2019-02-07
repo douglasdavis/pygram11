@@ -1,0 +1,1 @@
+.. mdinclude:: omp.md
