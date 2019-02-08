@@ -1,0 +1,7 @@
+pre {
+    padding: 7px 15px;
+}
+
+dl pre, blockquote pre, li pre {
+    padding-left: 15px;
+}
