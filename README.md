@@ -32,20 +32,22 @@ $ pip install .
 
 ## Feature Support
 
-pygram11 plans to provide fast functions for generating histograms and
-their statistical uncertainties.
+`pygram11` plans to provide fast functions for generating histograms
+and their statistical uncertainties. Fixed and variable width binned
+histograms in multiple dimensions will be supported.
 
-- [x] 1D, fixed bin, unweighted histograms
-- [x] 1D, fixed bin, weighted histograms
-- [ ] 1D, variable bin, unweighted histograms
-- [ ] 1D, variable bin, weighted histograms
-- [ ] 2D ...
+| Histogram type               | Available | API stable |
+| -----------------------------|:---------:|:----------:|
+| 1D, fixed bin, unweighted    | Yes       | No         |
+| 1D, fixed bin, weighted      | Yes       | No         |
+| 1D, variable bin, unweighted | No        | No         |
+| 1D, variable bin, weighted   | No        | No         |
+| 2D ....                      | No        | No         |
 
 ## Alternatives
 
-- NumPy's
-  [numpy.histogram](https://docs.scipy.org/doc/numpy/reference/generated/numpy.histogram.html):
-  Versatile but slow; doesn't handle statistical uncertainty.
+- [numpy.histogram](https://docs.scipy.org/doc/numpy/reference/generated/numpy.histogram.html):
+  versatile but slow; doesn't handle statistical uncertainty.
 - [fast-histogram](https://github.com/astrofrog/fast-histogram):
   leverages NumPy's C API. Very fast (fixed bin only) histogramming
   and easy to install; no OpenMP support or statistical uncertainty.

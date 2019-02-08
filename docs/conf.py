@@ -26,7 +26,7 @@ copyright = "2019, Doug Davis"
 author = "Doug Davis"
 
 # The short X.Y version
-version = '.'.join(pygram11.version.version.split('.')[:3])
+version = ".".join(pygram11.version.version.split(".")[:3])
 
 # The full version, including alpha/beta/rc tags
 release = pygram11.version.version
@@ -75,7 +75,7 @@ language = None
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = None
+pygments_style = "sphinx"
 
 
 # -- Options for HTML output -------------------------------------------------
@@ -92,10 +92,18 @@ html_theme = "alabaster"
 # html_theme_options = {}
 
 html_theme_options = {
+    "page_width": "1000px",
+    "sidebar_width": "250px",
     "github_user": "drdavis",
     "github_repo": "pygram11",
     "github_count": False,
     "github_type": "star",
+    "fixed_sidebar": True,
+    "show_powered_by": False,
+    "code_font_size": "0.8em",
+    "head_font_family": '"Georga", serif, "Garamond"',
+    "font_family": '"Segoe UI", "Roboto", "Libration Sans"',
+    "code_font_family": '"Fira Code", monospace',
 }
 
 # Add any paths that contain custom static files (such as style sheets) here,
