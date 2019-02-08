@@ -25,7 +25,7 @@ $ pip install pygram11
 ### From Source
 
 ```none
-$ git clone https://github.com/drdavis/pygram11.github
+$ git clone https://github.com/drdavis/pygram11.git
 $ cd pygram11
 $ pip install .
 ```
