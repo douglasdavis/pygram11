@@ -14,8 +14,8 @@ print("OpenMP available: {}".format(pygram11.OPENMP))
 
 ipython = get_ipython()
 
-x = np.random.randn(1000000).astype(np.float32)
-w = np.random.uniform(0.8, 1.2, len(x)).astype(np.float32)
+x = np.random.randn(1000000) ##.astype(np.float32)
+w = np.random.uniform(0.8, 1.2, len(x)) ##.astype(np.float32)
 nbins = 20
 xmin = -3
 xmax = 3
@@ -31,7 +31,7 @@ def run_fast_histogram():
 
 
 def run_pygram11():
-    return uniform1d(x, bins=nbins, range=(xmin, xmax), weights=w)
+    return uniform1d(x, bins=nbins, range=(xmin, xmax), weights=w, omp=True)
 
 
 print("numpy histogram:")
@@ -61,5 +61,5 @@ print(histogram1d(x, bins=nbins, range=(xmin, xmax)))
 print("")
 
 print("pygram11:")
-ipython.magic("timeit uniform1d(x, bins=nbins, range=(xmin, xmax))")
+ipython.magic("timeit uniform1d(x, bins=nbins, range=(xmin, xmax), omp=True)")
 print(uniform1d(x, bins=nbins, range=(xmin, xmax)))

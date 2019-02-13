@@ -1,10 +1,11 @@
-from ._core import _uniform1d
-from ._core import _uniform1d_weighted_f
-from ._core import _uniform1d_weighted_d
+from ._core import _uniform1d_f4
+from ._core import _uniform1d_f8
+from ._core import _uniform1d_weighted_f4
+from ._core import _uniform1d_weighted_f8
 import numpy as np
 
 
-def uniform1d(x, bins=10, range=None, weights=None):
+def uniform1d(x, bins=10, range=None, weights=None, omp=False):
     """histogram ``x`` with uniform binning
 
     Parameters
@@ -17,6 +18,8 @@ def uniform1d(x, bins=10, range=None, weights=None):
         axis limits to histogram over
     weights: array_like, optional
         weight for each element of ``x``.
+    omp: bool
+        use OpenMP if available
 
     Returns
     -------
@@ -33,17 +36,19 @@ def uniform1d(x, bins=10, range=None, weights=None):
     """
     x = np.asarray(x)
     if x.dtype == np.float64:
-        weighted_func = _uniform1d_weighted_d
+        weighted_func = _uniform1d_weighted_f8
+        unweight_func = _uniform1d_f8
     elif x.dtype == np.float32:
-        weighted_func = _uniform1d_weighted_f
+        weighted_func = _uniform1d_weighted_f4
+        unweight_func = _uniform1d_f4
     if range is None:
         range = (x.min(), x.max())
     if weights is not None:
         weights = np.asarray(weights)
         assert weights.shape == x.shape, "weights must be the same shape as the data"
-        return weighted_func(x, weights, bins, range[0], range[1])
+        return weighted_func(x, weights, bins, range[0], range[1], omp)
     else:
-        return _uniform1d(x, bins, range[0], range[1])
+        return unweight_func(x, bins, range[0], range[1], omp)
 
 
 def nonuniform1d(x, bins, weights=None):

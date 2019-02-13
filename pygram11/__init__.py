@@ -1,6 +1,6 @@
 from .histogram import uniform1d, nonuniform1d
-from ._core import _OPENMP
+from ._core import _HAS_OPENMP
 
 __all__ = ["uniform1d", "nonuniform1d"]
 
-OPENMP = _OPENMP()
+OPENMP = _HAS_OPENMP()
