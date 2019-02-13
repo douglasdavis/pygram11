@@ -1,5 +1,3 @@
 # Examples
 
-```python
->>> h, u = uniform1d([1, 2, 3], weights=[.5, .25, .35])
-```
+For now, check out the API reference for examples.
