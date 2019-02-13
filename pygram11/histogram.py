@@ -35,10 +35,9 @@ def uniform1d(x, bins=10, range=None, weights=None, omp=False):
 
     """
     x = np.asarray(x)
-    if x.dtype == np.float64:
-        weighted_func = _uniform1d_weighted_f8
-        unweight_func = _uniform1d_f8
-    elif x.dtype == np.float32:
+    weighted_func = _uniform1d_weighted_f8
+    unweight_func = _uniform1d_f8
+    if x.dtype == np.float32:
         weighted_func = _uniform1d_weighted_f4
         unweight_func = _uniform1d_f4
     if range is None:
