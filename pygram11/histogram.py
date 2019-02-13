@@ -1,5 +1,6 @@
 from ._core import _uniform1d
-from ._core import _uniform1d_weighted
+from ._core import _uniform1d_weighted_f
+from ._core import _uniform1d_weighted_d
 import numpy as np
 
 
@@ -31,12 +32,16 @@ def uniform1d(x, bins=10, range=None, weights=None):
 
     """
     x = np.asarray(x)
+    if x.dtype == np.float64:
+        weighted_func = _uniform1d_weighted_d
+    elif x.dtype == np.float32:
+        weighted_func = _uniform1d_weighted_f
     if range is None:
         range = (x.min(), x.max())
     if weights is not None:
         weights = np.asarray(weights)
         assert weights.shape == x.shape, "weights must be the same shape as the data"
-        return _uniform1d_weighted(x, weights, bins, range[0], range[1])
+        return weighted_func(x, weights, bins, range[0], range[1])
     else:
         return _uniform1d(x, bins, range[0], range[1])
 

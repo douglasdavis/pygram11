@@ -18,10 +18,18 @@ bool has_openMP() {
 #endif
 }
 
-void C_uniform1d_weighted_omp(const double* data, const double* weights, double *count, double* sumw2,
+
+
+template <typename T>
+void C_uniform1d_weighted_omp(const T* data, const T* weights, double *count, double* sumw2,
                               const int n, const int nbins, const double xmin, const double xmax);
-void C_uniform1d_weighted(const double *data, const double* weights, double *count, double *sumw2,
+
+
+template <typename T>
+void C_uniform1d_weighted(const T* data, const T* weights, double *count, double *sumw2,
                           const int n, const int nbins, const double xmin, const double xmax);
+
+
 void C_uniform1d(const double* data, int* count,
                  const int n, const int nbins, const double xmin, const double xmax);
 void C_uniform1d_omp(const double *data, int* count,
@@ -30,15 +38,20 @@ void C_uniform1d_omp(const double *data, int* count,
 py::array py_uniform1d(py::array_t<double, py::array::c_style | py::array::forcecast> x,
                        int nbins, double xmin, double xmax);
 
-py::tuple py_uniform1d_weighted(py::array_t<double, py::array::c_style | py::array::forcecast> x,
-                                py::array_t<double, py::array::c_style | py::array::forcecast> w,
-                                int nbins, double xmin, double xmax);
+py::tuple py_uniform1d_weighted_d(py::array_t<double, py::array::c_style> x,
+                                  py::array_t<double, py::array::c_style> w,
+                                  int nbins, double xmin, double xmax);
+
+py::tuple py_uniform1d_weighted_f(py::array_t<float, py::array::c_style> x,
+                                  py::array_t<float, py::array::c_style> w,
+                                  int nbins, double xmin, double xmax);
 
 PYBIND11_MODULE(_core, m) {
   m.doc() = "Core pygram11 histogramming code";
   m.def("_OPENMP", &has_openMP);
   m.def("_uniform1d", &py_uniform1d, "unweighted 1D histogram with uniform bins");
-  m.def("_uniform1d_weighted", &py_uniform1d_weighted, "weighted 1D histogram with uniform bins");
+  m.def("_uniform1d_weighted_d", &py_uniform1d_weighted_d, "weighted 1D histogram with uniform bins");
+  m.def("_uniform1d_weighted_f", &py_uniform1d_weighted_f, "weighted 1D histogram with uniform bins");
 }
 
 ///////////////////////////////////////////////////////////
@@ -55,7 +68,8 @@ typename FItr::difference_type nonuniform_bin_find(FItr first, FItr last, const 
 }
 
 #ifdef PYGRAMUSEOMP
-void C_uniform1d_weighted_omp(const double* data, const double* weights, double *count, double* sumw2,
+template <typename T>
+void C_uniform1d_weighted_omp(const T* data, const T* weights, double *count, double* sumw2,
                               const int n, const int nbins, const double xmin, const double xmax) {
   const double norm = 1.0 / (xmax - xmin);
   memset(count, 0, sizeof(double)*nbins);
@@ -87,7 +101,8 @@ void C_uniform1d_weighted_omp(const double* data, const double* weights, double 
 }
 #endif
 
-void C_uniform1d_weighted(const double *data, const double* weights, double *count, double *sumw2,
+template <typename T>
+void C_uniform1d_weighted(const T* data, const T* weights, double *count, double *sumw2,
                           const int n, const int nbins, const double xmin, const double xmax) {
   const double norm = 1.0 / (xmax - xmin);
   memset(count, 0, sizeof(double) * nbins);
@@ -154,8 +169,8 @@ py::array py_uniform1d(py::array_t<double, py::array::c_style | py::array::force
   return result_count;
 }
 
-py::tuple py_uniform1d_weighted(py::array_t<double, py::array::c_style | py::array::forcecast> x,
-                                py::array_t<double, py::array::c_style | py::array::forcecast> w,
+py::tuple py_uniform1d_weighted_d(py::array_t<double, py::array::c_style> x,
+                                py::array_t<double, py::array::c_style> w,
                                 int nbins, double xmin, double xmax) {
   auto result_count = py::array_t<double>(nbins);
   auto result_sumw2 = py::array_t<double>(nbins);
@@ -164,13 +179,35 @@ py::tuple py_uniform1d_weighted(py::array_t<double, py::array::c_style | py::arr
   int ndata = x.request().size;
 
 #ifdef PYGRAMUSEOMP
-  C_uniform1d_weighted_omp(static_cast<const double*>(x.request().ptr),
-                           static_cast<const double*>(w.request().ptr),
-                           result_count_ptr, result_sumw2_ptr, ndata, nbins, xmin, xmax);
+  C_uniform1d_weighted_omp<double>(static_cast<const double*>(x.request().ptr),
+                                   static_cast<const double*>(w.request().ptr),
+                                   result_count_ptr, result_sumw2_ptr, ndata, nbins, xmin, xmax);
 #else
-  C_uniform1d_weighted(static_cast<const double*>(x.request().ptr),
-                       static_cast<const double*>(w.request().ptr),
-                       result_count_ptr, result_sumw2_ptr, ndata, nbins, xmin, xmax);
+  C_uniform1d_weighted<double>(static_cast<const double*>(x.request().ptr),
+                               static_cast<const double*>(w.request().ptr),
+                               result_count_ptr, result_sumw2_ptr, ndata, nbins, xmin, xmax);
+#endif
+
+  return py::make_tuple(result_count, result_sumw2);
+}
+
+py::tuple py_uniform1d_weighted_f(py::array_t<float, py::array::c_style> x,
+                                  py::array_t<float, py::array::c_style> w,
+                                  int nbins, double xmin, double xmax) {
+  auto result_count = py::array_t<double>(nbins);
+  auto result_sumw2 = py::array_t<double>(nbins);
+  auto result_count_ptr = static_cast<double*>(result_count.request().ptr);
+  auto result_sumw2_ptr = static_cast<double*>(result_sumw2.request().ptr);
+  int ndata = x.request().size;
+
+#ifdef PYGRAMUSEOMP
+  C_uniform1d_weighted_omp<float>(static_cast<const float*>(x.request().ptr),
+                                  static_cast<const float*>(w.request().ptr),
+                                  result_count_ptr, result_sumw2_ptr, ndata, nbins, xmin, xmax);
+#else
+  C_uniform1d_weighted<float>(static_cast<const float*>(x.request().ptr),
+                              static_cast<const float*>(w.request().ptr),
+                              result_count_ptr, result_sumw2_ptr, ndata, nbins, xmin, xmax);
 #endif
 
   return py::make_tuple(result_count, result_sumw2);
