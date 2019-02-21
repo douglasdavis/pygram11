@@ -20,6 +20,20 @@ py::array py_nonuniform1d_f8(py::array_t<double, py::array::c_style | py::array:
                              py::array_t<double, py::array::c_style | py::array::forcecast> edges,
                              bool use_omp);
 
+py::array py_nonuniform1d_f4(py::array_t<float, py::array::c_style | py::array::forcecast> x,
+                             py::array_t<double, py::array::c_style | py::array::forcecast> edges,
+                             bool use_omp);
+
+py::array py_nonuniform1d_weighted_f8(py::array_t<double, py::array::c_style | py::array::forcecast> x,
+                                      py::array_t<double, py::array::c_style | py::array::forcecast> w,
+                                      py::array_t<double, py::array::c_style | py::array::forcecast> edges,
+                                      bool use_omp);
+
+py::array py_nonuniform1d_weighted_f4(py::array_t<float, py::array::c_style | py::array::forcecast> x,
+                                      py::array_t<float, py::array::c_style | py::array::forcecast> w,
+                                      py::array_t<double, py::array::c_style | py::array::forcecast> edges,
+                                      bool use_omp);
+
 bool has_OpenMP();
 
 PYBIND11_MODULE(_core, m) {
@@ -33,7 +47,11 @@ PYBIND11_MODULE(_core, m) {
   m.def("_uniform1d_weighted_f4", &py_uniform1d_weighted_f4);
 
   m.def("_nonuniform1d_f8", &py_nonuniform1d_f8);
- }
+  m.def("_nonuniform1d_f4", &py_nonuniform1d_f8);
+
+  m.def("_nonuniform1d_weighted_f8", &py_nonuniform1d_weighted_f8);
+  m.def("_nonuniform1d_weighted_f4", &py_nonuniform1d_weighted_f8);
+}
 
 ///////////////////////////////////////////////////////////
 
@@ -152,4 +170,71 @@ py::array py_nonuniform1d_f8(py::array_t<double, py::array::c_style | py::array:
   c_nonuniform1d<double>(static_cast<const double*>(x.request().ptr),
                          result_count_ptr, ndata, nbins, edges_vec);
   return result_count;
+}
+
+py::array py_nonuniform1d_f4(py::array_t<float, py::array::c_style | py::array::forcecast> x,
+                             py::array_t<double, py::array::c_style | py::array::forcecast> edges,
+                             bool use_omp) {
+  size_t edges_len = edges.request().size;
+  auto edges_ptr = static_cast<const double*>(edges.request().ptr);
+  std::vector<double> edges_vec(edges_ptr, edges_ptr + edges_len);
+
+  int ndata = x.request().size;
+  int nbins = edges_len - 1;
+
+  auto result_count = py::array_t<std::int64_t>(nbins);
+  auto result_count_ptr = static_cast<std::int64_t*>(result_count.request().ptr);
+
+
+#ifdef PYGRAMUSEOMP
+  if (use_omp) {
+    c_nonuniform1d_omp<float>(static_cast<const float*>(x.request().ptr),
+                              result_count_ptr, ndata, nbins, edges_vec);
+    return result_count;
+  }
+#endif
+  c_nonuniform1d<float>(static_cast<const float*>(x.request().ptr),
+                        result_count_ptr, ndata, nbins, edges_vec);
+  return result_count;
+}
+
+/////////////////////////////
+/** TODO: NOT IMPLEMENTED **/
+/////////////////////////////
+py::array py_nonuniform1d_weighted_f8(py::array_t<double, py::array::c_style | py::array::forcecast> x,
+                                      py::array_t<double, py::array::c_style | py::array::forcecast> w,
+                                      py::array_t<double, py::array::c_style | py::array::forcecast> edges,
+                                      bool use_omp) {
+  size_t edges_len = edges.request().size;
+  auto edges_ptr = static_cast<const double*>(edges.request().ptr);
+  std::vector<double> edges_vec(edges_ptr, edges_ptr + edges_len);
+
+  int ndata = x.request().size;
+  int nbins = edges_len - 1;
+
+  auto result_count = py::array_t<double>(nbins);
+  auto result_sumw2 = py::array_t<double>(nbins);
+
+  return py::make_tuple(result_count, result_sumw2);
+}
+
+/////////////////////////////
+/** TODO: NOT IMPLEMENTED **/
+/////////////////////////////
+py::array py_nonuniform1d_weighted_f4(py::array_t<float, py::array::c_style | py::array::forcecast> x,
+                                      py::array_t<float, py::array::c_style | py::array::forcecast> w,
+                                      py::array_t<double, py::array::c_style | py::array::forcecast> edges,
+                                      bool use_omp) {
+
+  size_t edges_len = edges.request().size;
+  auto edges_ptr = static_cast<const double*>(edges.request().ptr);
+  std::vector<double> edges_vec(edges_ptr, edges_ptr + edges_len);
+
+  int ndata = x.request().size;
+  int nbins = edges_len - 1;
+
+  auto result_count = py::array_t<double>(nbins);
+  auto result_sumw2 = py::array_t<double>(nbins);
+
+  return py::make_tuple(result_count, result_sumw2);
 }

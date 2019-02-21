@@ -100,11 +100,14 @@ void c_uniform1d(const T* data, std::int64_t* count,
 ///////////////////////////// non-uniform /////////////////
 ///////////////////////////////////////////////////////////
 
+/////////////////////////////
+/** TODO: NOT IMPLEMENTED **/
+/////////////////////////////
 #ifdef PYGRAMUSEOMP
 template <typename T>
 void c_nonuniform1d_omp(const T* data, std::int64_t* count, const int n, const int nbins,
                         const std::vector<double>& edges) {
-  (void);
+  (void)n;
 }
 #endif
 

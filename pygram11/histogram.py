@@ -2,6 +2,9 @@ from ._core import _uniform1d_f4
 from ._core import _uniform1d_f8
 from ._core import _uniform1d_weighted_f4
 from ._core import _uniform1d_weighted_f8
+from ._core import _nonuniform1d_f4
+from ._core import _nonuniform1d_f8
+
 import numpy as np
 
 
@@ -31,7 +34,7 @@ def uniform1d(x, bins=10, range=None, weights=None, omp=False):
     Examples
     --------
 
-    >>> h, w = fixed_histogram1d([1,2,3], weights=[.1, .2, .3])
+    >>> h, w = fixed_histogram1d([1, 2, 3], weights=[.1, .2, .3])
 
     """
     x = np.asarray(x)
@@ -50,7 +53,7 @@ def uniform1d(x, bins=10, range=None, weights=None, omp=False):
         return unweight_func(x, bins, range[0], range[1], omp)
 
 
-def nonuniform1d(x, bins, weights=None):
+def nonuniform1d(x, bins, weights=None, omp=False):
     """histogram ``x`` with non-uniform binning
 
     Parameters
@@ -61,6 +64,8 @@ def nonuniform1d(x, bins, weights=None):
         bin edges
     weights: array_like, optional
         weight for each element of ``x``
+    omp: bool
+        use OpenMP if available
 
     """
     raise NotImplementedError
