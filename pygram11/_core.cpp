@@ -24,12 +24,12 @@ py::array py_nonuniform1d_f4(py::array_t<float, py::array::c_style | py::array::
                              py::array_t<double, py::array::c_style | py::array::forcecast> edges,
                              bool use_omp);
 
-py::array py_nonuniform1d_weighted_f8(py::array_t<double, py::array::c_style | py::array::forcecast> x,
+py::tuple py_nonuniform1d_weighted_f8(py::array_t<double, py::array::c_style | py::array::forcecast> x,
                                       py::array_t<double, py::array::c_style | py::array::forcecast> w,
                                       py::array_t<double, py::array::c_style | py::array::forcecast> edges,
                                       bool use_omp);
 
-py::array py_nonuniform1d_weighted_f4(py::array_t<float, py::array::c_style | py::array::forcecast> x,
+py::tuple py_nonuniform1d_weighted_f4(py::array_t<float, py::array::c_style | py::array::forcecast> x,
                                       py::array_t<float, py::array::c_style | py::array::forcecast> w,
                                       py::array_t<double, py::array::c_style | py::array::forcecast> edges,
                                       bool use_omp);
@@ -159,7 +159,6 @@ py::array py_nonuniform1d_f8(py::array_t<double, py::array::c_style | py::array:
   auto result_count = py::array_t<std::int64_t>(nbins);
   auto result_count_ptr = static_cast<std::int64_t*>(result_count.request().ptr);
 
-
 #ifdef PYGRAMUSEOMP
   if (use_omp) {
     c_nonuniform1d_omp<double>(static_cast<const double*>(x.request().ptr),
@@ -198,7 +197,7 @@ py::array py_nonuniform1d_f4(py::array_t<float, py::array::c_style | py::array::
   return result_count;
 }
 
-py::array py_nonuniform1d_weighted_f8(py::array_t<double, py::array::c_style | py::array::forcecast> x,
+py::tuple py_nonuniform1d_weighted_f8(py::array_t<double, py::array::c_style | py::array::forcecast> x,
                                       py::array_t<double, py::array::c_style | py::array::forcecast> w,
                                       py::array_t<double, py::array::c_style | py::array::forcecast> edges,
                                       bool use_omp) {
@@ -231,7 +230,7 @@ py::array py_nonuniform1d_weighted_f8(py::array_t<double, py::array::c_style | p
   return py::make_tuple(result_count, result_sumw2);
 }
 
-py::array py_nonuniform1d_weighted_f4(py::array_t<float, py::array::c_style | py::array::forcecast> x,
+py::tuple py_nonuniform1d_weighted_f4(py::array_t<float, py::array::c_style | py::array::forcecast> x,
                                       py::array_t<float, py::array::c_style | py::array::forcecast> w,
                                       py::array_t<double, py::array::c_style | py::array::forcecast> edges,
                                       bool use_omp) {
