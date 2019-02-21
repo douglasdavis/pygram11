@@ -5,6 +5,8 @@
 #include <omp.h>
 #endif
 
+#include "_utils.h"
+
 namespace py = pybind11;
 
 #ifdef PYGRAMUSEOMP
@@ -90,6 +92,32 @@ void c_uniform1d(const T* data, std::int64_t* count,
   for (int i = 0; i < n; i++) {
     if (!(data[i] >= xmin && data[i] < xmax)) continue;
     bin_id = (data[i] - xmin) * norm * nbins;
+    count[bin_id]++;
+  }
+}
+
+///////////////////////////////////////////////////////////
+///////////////////////////// non-uniform /////////////////
+///////////////////////////////////////////////////////////
+
+#ifdef PYGRAMUSEOMP
+template <typename T>
+void c_nonuniform1d_omp(const T* data, std::int64_t* count, const int n, const int nbins,
+                        const std::vector<double>& edges) {
+  (void);
+}
+#endif
+
+template <typename T>
+void c_nonuniform1d(const T* data, std::int64_t* count, const int n, const int nbins,
+                    const std::vector<double>& edges) {
+  memset(count, 0, sizeof(std::int64_t) * nbins);
+  size_t bin_id;
+  size_t edges_len = edges.size();
+
+  for (int i = 0; i < n; i++) {
+    if (!(data[i] >= edges[0] && data[i] < edges[nbins])) continue;
+    bin_id = pygram11::detail::nonuniform_bin_find(std::begin(edges), std::end(edges), data[i]);
     count[bin_id]++;
   }
 }

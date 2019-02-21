@@ -40,7 +40,7 @@ histograms in multiple dimensions will be supported.
 | -----------------------------|:---------:|:----------:|
 | 1D, fixed bin, unweighted    | Yes       | No         |
 | 1D, fixed bin, weighted      | Yes       | No         |
-| 1D, variable bin, unweighted | No        | No         |
+| 1D, variable bin, unweighted | Partial   | No         |
 | 1D, variable bin, weighted   | No        | No         |
 | 2D ....                      | No        | No         |
 
