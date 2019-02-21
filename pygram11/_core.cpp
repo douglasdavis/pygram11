@@ -198,13 +198,11 @@ py::array py_nonuniform1d_f4(py::array_t<float, py::array::c_style | py::array::
   return result_count;
 }
 
-/////////////////////////////
-/** TODO: NOT IMPLEMENTED **/
-/////////////////////////////
 py::array py_nonuniform1d_weighted_f8(py::array_t<double, py::array::c_style | py::array::forcecast> x,
                                       py::array_t<double, py::array::c_style | py::array::forcecast> w,
                                       py::array_t<double, py::array::c_style | py::array::forcecast> edges,
                                       bool use_omp) {
+
   size_t edges_len = edges.request().size;
   auto edges_ptr = static_cast<const double*>(edges.request().ptr);
   std::vector<double> edges_vec(edges_ptr, edges_ptr + edges_len);
@@ -214,13 +212,25 @@ py::array py_nonuniform1d_weighted_f8(py::array_t<double, py::array::c_style | p
 
   auto result_count = py::array_t<double>(nbins);
   auto result_sumw2 = py::array_t<double>(nbins);
+  auto result_count_ptr = static_cast<double*>(result_count.request().ptr);
+  auto result_sumw2_ptr = static_cast<double*>(result_sumw2.request().ptr);
 
+#ifdef PYGRAMUSEOMP
+  if (use_omp) {
+    c_nonuniform1d_weighted_omp<double>(static_cast<const double*>(x.request().ptr),
+                                        static_cast<const double*>(w.request().ptr),
+                                        result_count_ptr, result_sumw2_ptr,
+                                        ndata, nbins, edges_vec);
+    return py::make_tuple(result_count, result_sumw2);
+  }
+#endif
+  c_nonuniform1d_weighted<double>(static_cast<const double*>(x.request().ptr),
+                                  static_cast<const double*>(w.request().ptr),
+                                  result_count_ptr, result_sumw2_ptr,
+                                  ndata, nbins, edges_vec);
   return py::make_tuple(result_count, result_sumw2);
 }
 
-/////////////////////////////
-/** TODO: NOT IMPLEMENTED **/
-/////////////////////////////
 py::array py_nonuniform1d_weighted_f4(py::array_t<float, py::array::c_style | py::array::forcecast> x,
                                       py::array_t<float, py::array::c_style | py::array::forcecast> w,
                                       py::array_t<double, py::array::c_style | py::array::forcecast> edges,
@@ -235,6 +245,21 @@ py::array py_nonuniform1d_weighted_f4(py::array_t<float, py::array::c_style | py
 
   auto result_count = py::array_t<double>(nbins);
   auto result_sumw2 = py::array_t<double>(nbins);
+  auto result_count_ptr = static_cast<double*>(result_count.request().ptr);
+  auto result_sumw2_ptr = static_cast<double*>(result_sumw2.request().ptr);
 
+#ifdef PYGRAMUSEOMP
+  if (use_omp) {
+    c_nonuniform1d_weighted_omp<float>(static_cast<const float*>(x.request().ptr),
+                                       static_cast<const float*>(w.request().ptr),
+                                       result_count_ptr, result_sumw2_ptr,
+                                       ndata, nbins, edges_vec);
+    return py::make_tuple(result_count, result_sumw2);
+  }
+#endif
+  c_nonuniform1d_weighted<float>(static_cast<const float*>(x.request().ptr),
+                                 static_cast<const float*>(w.request().ptr),
+                                 result_count_ptr, result_sumw2_ptr,
+                                 ndata, nbins, edges_vec);
   return py::make_tuple(result_count, result_sumw2);
 }

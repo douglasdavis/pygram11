@@ -13,11 +13,17 @@ Three methods have been tested:
   `conda install nomkl`, see
   [here](https://github.com/dmlc/xgboost/issues/1715)).
 
+To check if OpenMP was detected and used, try the following:
+
 ```python
 >>> import pygram11
 >>> pygram11.OPENMP
 True
 ```
 
-I plan to make the flag toggle-able in the future to turn off OpenMP
-usage even if the package was installed with OpenMP support.
+Needless to say, if you see `False` OpenMP wasn't used.
+
+
+The histogramming functions use a named argument for requesting OpenMP
+usage. If `pygram11.OPENMP` is `False` then the argument is ignored by
+the C++ code.

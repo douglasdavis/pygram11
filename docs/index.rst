@@ -11,7 +11,6 @@
 
    omp.rst
    purpose.rst
-   examples.rst
    api_reference.rst
 
 
