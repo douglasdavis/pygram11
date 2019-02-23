@@ -1,6 +1,4 @@
-![pygram11 Logo](https://raw.githubusercontent.com/drdavis/pygram11/master/docs/_static/logo.png)
-
-<br/>
+# pygram11
 
 [![builds.sr.ht status](https://builds.sr.ht/~ddavis/pygram11.svg)](https://builds.sr.ht/~ddavis/pygram11?)
 [![Documentation Status](https://readthedocs.org/projects/pygram11/badge/?version=latest)](https://pygram11.readthedocs.io/en/latest/?badge=latest)
@@ -8,8 +6,6 @@
 [![PyPI version](https://img.shields.io/pypi/v/pygram11.svg?colorB=486b87&style=flat)](https://pypi.org/project/pygram11/)
 
 ------
-
-# pygram11
 
 Simple and fast histogramming in python via
 [pybind11](https://github.com/pybind/pybind11) and (optionally)
