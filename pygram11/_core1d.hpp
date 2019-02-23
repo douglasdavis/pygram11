@@ -4,11 +4,12 @@
 // STL
 #include <vector>
 #include <cstring>
+#include <cstdint>
 
-// omp
-#ifdef PYGRAMUSEOMP
-#include <omp.h>
-#endif
+// // omp
+// #ifdef PYGRAMUSEOMP
+// #include <omp.h>
+// #endif
 
 #ifdef PYGRAMUSEOMP
 template <typename T>
