@@ -5,8 +5,6 @@
 ![](https://img.shields.io/pypi/pyversions/pygram11.svg?colorB=blue&style=flat)
 [![PyPI version](https://img.shields.io/pypi/v/pygram11.svg?colorB=486b87&style=flat)](https://pypi.org/project/pygram11/)
 
-------
-
 Simple and fast histogramming in python via
 [pybind11](https://github.com/pybind/pybind11) and (optionally)
 [OpenMP](https://www.openmp.org/)
