@@ -3,6 +3,7 @@
 
 // STL
 #include <vector>
+#include <cstring>
 
 // omp
 #ifdef PYGRAMUSEOMP
