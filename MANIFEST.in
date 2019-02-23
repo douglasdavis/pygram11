@@ -1,2 +1,1 @@
 include pygram11/*.hpp
-include pygram11/*.h

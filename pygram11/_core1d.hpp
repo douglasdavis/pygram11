@@ -1,13 +1,13 @@
-#include <pybind11/pybind11.h>
-#include <pybind11/numpy.h>
+// pygram11
+#include "_utils.hpp"
 
+// STL
+#include <vector>
+
+// omp
 #ifdef PYGRAMUSEOMP
 #include <omp.h>
 #endif
-
-#include "_utils.h"
-
-namespace py = pybind11;
 
 #ifdef PYGRAMUSEOMP
 template <typename T>

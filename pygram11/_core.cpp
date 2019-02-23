@@ -1,6 +1,12 @@
-#include "_core.hpp"
-
+// pygram11
+#include "_core1d.hpp"
+// pybind11
+#include <pybind11/pybind11.h>
+#include <pybind11/numpy.h>
+// STL
 #include <vector>
+
+namespace py = pybind11;
 
 py::array py_uniform1d_f8(py::array_t<double, py::array::c_style | py::array::forcecast> x,
                           int nbins, double xmin, double xmax, bool use_omp);
