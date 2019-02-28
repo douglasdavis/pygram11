@@ -12,7 +12,6 @@ namespace py = pybind11;
 #include <vector>
 #include <cstring>
 #include <cstdint>
-#include <iostream>
 
 // omp
 #ifdef PYGRAMUSEOMP

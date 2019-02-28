@@ -9,7 +9,9 @@ Simple and fast histogramming in python via
 [pybind11](https://github.com/pybind/pybind11) and (optionally)
 [OpenMP](https://www.openmp.org/)
 
-Very much pre-alpha -- **use with caution**
+Your mileage may vary with OpenMP. The unit tests which are run by
+continuous integration do not test the OpenMP features (but I do run
+these tests locally).
 
 ## Installing
 

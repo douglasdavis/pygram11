@@ -1,12 +1,13 @@
 #!/usr/bin/env ipython
 
 """
-Script to run a rough benchmark, requires running via ipython
+Script to run a _very_ rough benchmark, requires running via
+ipython and my branch if fast-histogram
 """
 
-from pygram11 import uniform1d
+from pygram11 import uniform1d, uniform2d
 import pygram11
-from fast_histogram import histogram1d
+from fast_histogram import histogram1d, histogram2d
 import numpy as np
 from IPython import get_ipython
 
@@ -14,16 +15,21 @@ print("OpenMP available: {}".format(pygram11.OPENMP))
 
 ipython = get_ipython()
 
-x = np.random.randn(1000000) ##.astype(np.float32)
-w = np.random.uniform(0.8, 1.2, len(x)) ##.astype(np.float32)
+x = np.random.randn(1000000)  ##.astype(np.float32)
+y = np.random.randn(1000000)
+w = np.random.uniform(0.8, 1.2, len(x))  ##.astype(np.float32)
 nbins = 20
-xmin = -3
-xmax = 3
+xmin, ymin = -3, -3
+xmax, ymax = 3, 3
 npbins = np.linspace(xmin, xmax, nbins + 1)
 
 
 def run_numpy():
     return np.histogram(x, bins=npbins, weights=w)
+
+
+def run_numpy2d():
+    return np.histogram2d(x, y, bins=[npbins, npbins], weights=w)
 
 
 def run_fast_histogram():
@@ -32,6 +38,16 @@ def run_fast_histogram():
 
 def run_pygram11():
     return uniform1d(x, bins=nbins, range=(xmin, xmax), weights=w, omp=True)
+
+
+def run_pygram112d():
+    return uniform2d(
+        x, y, bins=nbins, range=((xmin, xmax), (ymin, ymax)), weights=w, omp=True
+    )
+
+
+def run_fast_histogram2d():
+    return histogram2d(x, y, bins=nbins, range=((xmin, xmax), (ymin, ymax)), weights=w)
 
 
 print("numpy histogram:")
@@ -46,6 +62,21 @@ print("")
 
 print("pygram11:")
 ipython.magic("timeit run_pygram11()")
+print(run_pygram11())
+print("")
+
+print("numpy histogram2d:")
+ipython.magic("timeit run_numpy2d()")
+print(run_numpy())
+print("")
+
+print("fast_histogram2d:")
+ipython.magic("timeit run_fast_histogram2d()")
+print(run_fast_histogram())
+print("")
+
+print("pygram112d:")
+ipython.magic("timeit run_pygram112d()")
 print(run_pygram11())
 print("")
 
