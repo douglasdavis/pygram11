@@ -1,3 +1,6 @@
+#ifndef PYGRAM11_UTILS_H
+#define PYGRAM11_UTILS_H
+
 #include <algorithm>
 
 namespace pygram11 {
@@ -17,3 +20,5 @@ typename FItr::difference_type nonuniform_bin_find(FItr first, FItr last, const 
 
 }
 }
+
+#endif

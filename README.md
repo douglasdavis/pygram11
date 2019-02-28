@@ -39,8 +39,8 @@ histograms in multiple dimensions will be supported.
 | --------------------|:---------:|:----------:|
 | 1D, uniform bins    | Yes       | No         |
 | 1D, nonuniform bins | Yes       | No         |
-| 2D, ....            | No        | No         |
-| 3D, ....            | No        | No         |
+| 2D, uniform bins    | Yes       | No         |
+| 2D, nonuniform bins | No        | No         |
 
 ## Alternatives
 

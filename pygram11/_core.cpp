@@ -1,5 +1,6 @@
 // pygram11
 #include "_core1d.hpp"
+#include "_core2d.hpp"
 // pybind11
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
@@ -12,7 +13,7 @@ py::array py_uniform1d_f8(py::array_t<double, py::array::c_style | py::array::fo
                           int nbins, double xmin, double xmax, bool use_omp);
 
 py::array py_uniform1d_f4(py::array_t<float, py::array::c_style | py::array::forcecast> x,
-                          int nbins, double xmin, double xmax, bool use_omp);
+                          int nbins, float xmin, float xmax, bool use_omp);
 
 py::tuple py_uniform1d_weighted_f8(py::array_t<double, py::array::c_style | py::array::forcecast> x,
                                    py::array_t<double, py::array::c_style | py::array::forcecast> w,
@@ -20,14 +21,14 @@ py::tuple py_uniform1d_weighted_f8(py::array_t<double, py::array::c_style | py::
 
 py::tuple py_uniform1d_weighted_f4(py::array_t<float, py::array::c_style | py::array::forcecast> x,
                                    py::array_t<float, py::array::c_style | py::array::forcecast> w,
-                                   int nbins, double xmin, double xmax, bool use_omp);
+                                   int nbins, float xmin, float xmax, bool use_omp);
 
 py::array py_nonuniform1d_f8(py::array_t<double, py::array::c_style | py::array::forcecast> x,
                              py::array_t<double, py::array::c_style | py::array::forcecast> edges,
                              bool use_omp);
 
 py::array py_nonuniform1d_f4(py::array_t<float, py::array::c_style | py::array::forcecast> x,
-                             py::array_t<double, py::array::c_style | py::array::forcecast> edges,
+                             py::array_t<float, py::array::c_style | py::array::forcecast> edges,
                              bool use_omp);
 
 py::tuple py_nonuniform1d_weighted_f8(py::array_t<double, py::array::c_style | py::array::forcecast> x,
@@ -37,8 +38,30 @@ py::tuple py_nonuniform1d_weighted_f8(py::array_t<double, py::array::c_style | p
 
 py::tuple py_nonuniform1d_weighted_f4(py::array_t<float, py::array::c_style | py::array::forcecast> x,
                                       py::array_t<float, py::array::c_style | py::array::forcecast> w,
-                                      py::array_t<double, py::array::c_style | py::array::forcecast> edges,
+                                      py::array_t<float, py::array::c_style | py::array::forcecast> edges,
                                       bool use_omp);
+
+py::array py_uniform2d_f8(py::array_t<double, py::array::c_style | py::array::forcecast> x,
+                          py::array_t<double, py::array::c_style | py::array::forcecast> y,
+                          int nbinsx, double xmin, double xmax,
+                          int nbinsy, double ymin, double ymax, bool use_omp);
+
+py::array py_uniform2d_f4(py::array_t<float, py::array::c_style | py::array::forcecast> x,
+                          py::array_t<float, py::array::c_style | py::array::forcecast> y,
+                          int nbinsx, float xmin, float xmax,
+                          int nbinsy, float ymin, float ymax, bool use_omp);
+
+py::tuple py_uniform2d_weighted_f8(py::array_t<double, py::array::c_style | py::array::forcecast> x,
+                                   py::array_t<double, py::array::c_style | py::array::forcecast> y,
+                                   py::array_t<double, py::array::c_style | py::array::forcecast> w,
+                                   int nbinsx, double xmin, double xmax,
+                                   int nbinsy, double ymin, double ymax, bool use_omp);
+
+py::tuple py_uniform2d_weighted_f4(py::array_t<float, py::array::c_style | py::array::forcecast> x,
+                                   py::array_t<float, py::array::c_style | py::array::forcecast> y,
+                                   py::array_t<float, py::array::c_style | py::array::forcecast> w,
+                                   int nbinsx, float xmin, float xmax,
+                                   int nbinsy, float ymin, float ymax, bool use_omp);
 
 bool has_OpenMP();
 
@@ -48,15 +71,18 @@ PYBIND11_MODULE(_core, m) {
 
   m.def("_uniform1d_f8", &py_uniform1d_f8);
   m.def("_uniform1d_f4", &py_uniform1d_f4);
-
   m.def("_uniform1d_weighted_f8", &py_uniform1d_weighted_f8);
   m.def("_uniform1d_weighted_f4", &py_uniform1d_weighted_f4);
 
   m.def("_nonuniform1d_f8", &py_nonuniform1d_f8);
-  m.def("_nonuniform1d_f4", &py_nonuniform1d_f8);
-
+  m.def("_nonuniform1d_f4", &py_nonuniform1d_f4);
   m.def("_nonuniform1d_weighted_f8", &py_nonuniform1d_weighted_f8);
-  m.def("_nonuniform1d_weighted_f4", &py_nonuniform1d_weighted_f8);
+  m.def("_nonuniform1d_weighted_f4", &py_nonuniform1d_weighted_f4);
+
+  m.def("_uniform2d_f8", &py_uniform2d_f8);
+  m.def("_uniform2d_f4", &py_uniform2d_f4);
+  m.def("_uniform2d_weighted_f8", &py_uniform2d_weighted_f8);
+  m.def("_uniform2d_weighted_f4", &py_uniform2d_weighted_f4);
 }
 
 ///////////////////////////////////////////////////////////
@@ -88,7 +114,7 @@ py::array py_uniform1d_f8(py::array_t<double, py::array::c_style | py::array::fo
 }
 
 py::array py_uniform1d_f4(py::array_t<float, py::array::c_style | py::array::forcecast> x,
-                          int nbins, double xmin, double xmax, bool use_omp) {
+                          int nbins, float xmin, float xmax, bool use_omp) {
   auto result_count = py::array_t<std::int64_t>(nbins);
   auto result_count_ptr = static_cast<std::int64_t*>(result_count.request().ptr);
   int ndata = x.request().size;
@@ -130,11 +156,11 @@ py::tuple py_uniform1d_weighted_f8(py::array_t<double, py::array::c_style | py::
 
 py::tuple py_uniform1d_weighted_f4(py::array_t<float, py::array::c_style | py::array::forcecast> x,
                                    py::array_t<float, py::array::c_style | py::array::forcecast> w,
-                                   int nbins, double xmin, double xmax, bool use_omp) {
-  auto result_count = py::array_t<double>(nbins);
-  auto result_sumw2 = py::array_t<double>(nbins);
-  auto result_count_ptr = static_cast<double*>(result_count.request().ptr);
-  auto result_sumw2_ptr = static_cast<double*>(result_sumw2.request().ptr);
+                                   int nbins, float xmin, float xmax, bool use_omp) {
+  auto result_count = py::array_t<float>(nbins);
+  auto result_sumw2 = py::array_t<float>(nbins);
+  auto result_count_ptr = static_cast<float*>(result_count.request().ptr);
+  auto result_sumw2_ptr = static_cast<float*>(result_sumw2.request().ptr);
   int ndata = x.request().size;
 
 #ifdef PYGRAMUSEOMP
@@ -178,11 +204,11 @@ py::array py_nonuniform1d_f8(py::array_t<double, py::array::c_style | py::array:
 }
 
 py::array py_nonuniform1d_f4(py::array_t<float, py::array::c_style | py::array::forcecast> x,
-                             py::array_t<double, py::array::c_style | py::array::forcecast> edges,
+                             py::array_t<float, py::array::c_style | py::array::forcecast> edges,
                              bool use_omp) {
   size_t edges_len = edges.request().size;
-  auto edges_ptr = static_cast<const double*>(edges.request().ptr);
-  std::vector<double> edges_vec(edges_ptr, edges_ptr + edges_len);
+  auto edges_ptr = static_cast<const float*>(edges.request().ptr);
+  std::vector<float> edges_vec(edges_ptr, edges_ptr + edges_len);
 
   int ndata = x.request().size;
   int nbins = edges_len - 1;
@@ -238,20 +264,20 @@ py::tuple py_nonuniform1d_weighted_f8(py::array_t<double, py::array::c_style | p
 
 py::tuple py_nonuniform1d_weighted_f4(py::array_t<float, py::array::c_style | py::array::forcecast> x,
                                       py::array_t<float, py::array::c_style | py::array::forcecast> w,
-                                      py::array_t<double, py::array::c_style | py::array::forcecast> edges,
+                                      py::array_t<float, py::array::c_style | py::array::forcecast> edges,
                                       bool use_omp) {
 
   size_t edges_len = edges.request().size;
-  auto edges_ptr = static_cast<const double*>(edges.request().ptr);
-  std::vector<double> edges_vec(edges_ptr, edges_ptr + edges_len);
+  auto edges_ptr = static_cast<const float*>(edges.request().ptr);
+  std::vector<float> edges_vec(edges_ptr, edges_ptr + edges_len);
 
   int ndata = x.request().size;
   int nbins = edges_len - 1;
 
-  auto result_count = py::array_t<double>(nbins);
-  auto result_sumw2 = py::array_t<double>(nbins);
-  auto result_count_ptr = static_cast<double*>(result_count.request().ptr);
-  auto result_sumw2_ptr = static_cast<double*>(result_sumw2.request().ptr);
+  auto result_count = py::array_t<float>(nbins);
+  auto result_sumw2 = py::array_t<float>(nbins);
+  auto result_count_ptr = static_cast<float*>(result_count.request().ptr);
+  auto result_sumw2_ptr = static_cast<float*>(result_sumw2.request().ptr);
 
 #ifdef PYGRAMUSEOMP
   if (use_omp) {
@@ -266,5 +292,125 @@ py::tuple py_nonuniform1d_weighted_f4(py::array_t<float, py::array::c_style | py
                                  static_cast<const float*>(w.request().ptr),
                                  result_count_ptr, result_sumw2_ptr,
                                  ndata, nbins, edges_vec);
+  return py::make_tuple(result_count, result_sumw2);
+}
+
+
+py::array py_uniform2d_f8(py::array_t<double, py::array::c_style | py::array::forcecast> x,
+                          py::array_t<double, py::array::c_style | py::array::forcecast> y,
+                          int nbinsx, double xmin, double xmax,
+                          int nbinsy, double ymin, double ymax, bool use_omp) {
+  int nbins = nbinsx * nbinsy;
+  auto result_count = py::array_t<std::int64_t>({nbinsx, nbinsy});
+  auto result_count_ptr = static_cast<std::int64_t*>(result_count.request().ptr);
+  int ndata = x.request().size;
+
+#ifdef PYGRAMUSEOMP
+  if (use_omp) {
+    c_uniform2d_omp<double>(static_cast<const double*>(x.request().ptr),
+                            static_cast<const double*>(y.request().ptr),
+                            result_count_ptr, ndata,
+                            nbinsx, xmin, xmax,
+                            nbinsy, ymin, ymax);
+    return result_count;
+  }
+#endif
+  c_uniform2d<double>(static_cast<const double*>(x.request().ptr),
+                      static_cast<const double*>(y.request().ptr),
+                      result_count_ptr, ndata,
+                      nbinsx, xmin, xmax,
+                      nbinsy, ymin, ymax);
+  return result_count;
+}
+
+py::array py_uniform2d_f4(py::array_t<float, py::array::c_style | py::array::forcecast> x,
+                          py::array_t<float, py::array::c_style | py::array::forcecast> y,
+                          int nbinsx, float xmin, float xmax,
+                          int nbinsy, float ymin, float ymax, bool use_omp) {
+  int nbins = nbinsx * nbinsy;
+  auto result_count = py::array_t<std::int64_t>({nbinsx, nbinsy});
+  auto result_count_ptr = static_cast<std::int64_t*>(result_count.request().ptr);
+  int ndata = x.request().size;
+
+#ifdef PYGRAMUSEOMP
+  if (use_omp) {
+    c_uniform2d_omp<float>(static_cast<const float*>(x.request().ptr),
+                           static_cast<const float*>(y.request().ptr),
+                           result_count_ptr, ndata,
+                           nbinsx, xmin, xmax,
+                           nbinsy, ymin, ymax);
+    return result_count;
+  }
+#endif
+  c_uniform2d<float>(static_cast<const float*>(x.request().ptr),
+                     static_cast<const float*>(y.request().ptr),
+                     result_count_ptr, ndata,
+                     nbinsx, xmin, xmax,
+                     nbinsy, ymin, ymax);
+  return result_count;
+}
+
+
+py::tuple py_uniform2d_weighted_f8(py::array_t<double, py::array::c_style | py::array::forcecast> x,
+                                   py::array_t<double, py::array::c_style | py::array::forcecast> y,
+                                   py::array_t<double, py::array::c_style | py::array::forcecast> w,
+                                   int nbinsx, double xmin, double xmax,
+                                   int nbinsy, double ymin, double ymax, bool use_omp) {
+  int nbins = nbinsx * nbinsy;
+  auto result_count = py::array_t<double>({nbinsx, nbinsy});
+  auto result_sumw2 = py::array_t<double>({nbinsx, nbinsy});
+  auto result_count_ptr = static_cast<double*>(result_count.request().ptr);
+  auto result_sumw2_ptr = static_cast<double*>(result_sumw2.request().ptr);
+  int ndata = x.request().size;
+
+#ifdef PYGRAMUSEOMP
+  if (use_omp) {
+    c_uniform2d_weighted_omp<double>(static_cast<const double*>(x.request().ptr),
+                                     static_cast<const double*>(y.request().ptr),
+                                     static_cast<const double*>(w.request().ptr),
+                                     result_count_ptr, result_sumw2_ptr, ndata,
+                                     nbinsx, xmin, xmax,
+                                     nbinsy, ymin, ymax);
+    return py::make_tuple(result_count, result_sumw2);
+  }
+#endif
+  c_uniform2d_weighted<double>(static_cast<const double*>(x.request().ptr),
+                               static_cast<const double*>(y.request().ptr),
+                               static_cast<const double*>(w.request().ptr),
+                               result_count_ptr, result_sumw2_ptr, ndata,
+                               nbinsx, xmin, xmax,
+                               nbinsy, ymin, ymax);
+  return py::make_tuple(result_count, result_sumw2);
+}
+
+py::tuple py_uniform2d_weighted_f4(py::array_t<float, py::array::c_style | py::array::forcecast> x,
+                                   py::array_t<float, py::array::c_style | py::array::forcecast> y,
+                                   py::array_t<float, py::array::c_style | py::array::forcecast> w,
+                                   int nbinsx, float xmin, float xmax,
+                                   int nbinsy, float ymin, float ymax, bool use_omp) {
+  int nbins = nbinsx * nbinsy;
+  auto result_count = py::array_t<float>({nbinsx, nbinsy});
+  auto result_sumw2 = py::array_t<float>({nbinsx, nbinsy});
+  auto result_count_ptr = static_cast<float*>(result_count.request().ptr);
+  auto result_sumw2_ptr = static_cast<float*>(result_sumw2.request().ptr);
+  int ndata = x.request().size;
+
+#ifdef PYGRAMUSEOMP
+  if (use_omp) {
+    c_uniform2d_weighted_omp<float>(static_cast<const float*>(x.request().ptr),
+                                    static_cast<const float*>(y.request().ptr),
+                                    static_cast<const float*>(w.request().ptr),
+                                    result_count_ptr, result_sumw2_ptr, ndata,
+                                    nbinsx, xmin, xmax,
+                                    nbinsy, ymin, ymax);
+    return py::make_tuple(result_count, result_sumw2);
+  }
+#endif
+  c_uniform2d_weighted<float>(static_cast<const float*>(x.request().ptr),
+                              static_cast<const float*>(y.request().ptr),
+                              static_cast<const float*>(w.request().ptr),
+                              result_count_ptr, result_sumw2_ptr, ndata,
+                              nbinsx, xmin, xmax,
+                              nbinsy, ymin, ymax);
   return py::make_tuple(result_count, result_sumw2);
 }

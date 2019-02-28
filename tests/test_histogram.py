@@ -2,6 +2,7 @@ import numpy as np
 import numpy.testing as npt
 from pygram11 import uniform1d
 from pygram11 import nonuniform1d
+from pygram11 import uniform2d
 import pygram11
 
 
@@ -47,3 +48,21 @@ def test_nonuniform1d():
         pygram_h, _ = nonuniform1d(x, bins=bins, weights=w, omp=True)
         numpy_h, _ = np.histogram(x, bins=bins, weights=w)
         npt.assert_almost_equal(pygram_h, numpy_h, 5)
+
+
+def test_uniform2d():
+    x = np.random.randn(5000)
+    y = np.random.randn(5000)
+    bins = 25
+    pygram_h = uniform2d(x, y, bins=bins, range=((-3, 3), (-2, 2)))
+    numpy_h, _, _ = np.histogram2d(
+        x, y, bins=[np.linspace(-3, 3, 26), np.linspace(-2, 2, 26)]
+    )
+    npt.assert_almost_equal(pygram_h, numpy_h, 5)
+
+    w = np.random.uniform(-0.5, 0.5, 5000)
+    pygram_h, _ = uniform2d(x, y, bins=(25, 27), range=((-3, 3), (-2, 1)), weights=w)
+    numpy_h, _, _ = np.histogram2d(
+        x, y, bins=[np.linspace(-3, 3, 26), np.linspace(-2, 1, 28)], weights=w
+    )
+    npt.assert_almost_equal(pygram_h, numpy_h, 5)
