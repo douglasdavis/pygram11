@@ -3,7 +3,7 @@ packages:
   - git
   - wget
 sources:
-  - https://git.sr.ht/~ddavis/pygram11
+  - https://github.com/drdavis/pygram11
 secrets:
   - a7bb07f9-3681-4e7e-8650-e49e3ca8c822
 tasks:
