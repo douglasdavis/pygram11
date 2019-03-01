@@ -69,20 +69,20 @@ PYBIND11_MODULE(_core, m) {
   m.doc() = "Core pygram11 histogramming code";
   m.def("_HAS_OPENMP", &has_OpenMP);
 
-  m.def("_uniform1d_f8", &py_uniform1d_f8);
-  m.def("_uniform1d_f4", &py_uniform1d_f4);
-  m.def("_uniform1d_weighted_f8", &py_uniform1d_weighted_f8);
-  m.def("_uniform1d_weighted_f4", &py_uniform1d_weighted_f4);
+  m.def("_uniform1d_f8", &py_uniform1d_f8, py::return_value_policy::move);
+  m.def("_uniform1d_f4", &py_uniform1d_f4, py::return_value_policy::move);
+  m.def("_uniform1d_weighted_f8", &py_uniform1d_weighted_f8, py::return_value_policy::move);
+  m.def("_uniform1d_weighted_f4", &py_uniform1d_weighted_f4, py::return_value_policy::move);
 
-  m.def("_nonuniform1d_f8", &py_nonuniform1d_f8);
-  m.def("_nonuniform1d_f4", &py_nonuniform1d_f4);
-  m.def("_nonuniform1d_weighted_f8", &py_nonuniform1d_weighted_f8);
-  m.def("_nonuniform1d_weighted_f4", &py_nonuniform1d_weighted_f4);
+  m.def("_nonuniform1d_f8", &py_nonuniform1d_f8, py::return_value_policy::move);
+  m.def("_nonuniform1d_f4", &py_nonuniform1d_f4, py::return_value_policy::move);
+  m.def("_nonuniform1d_weighted_f8", &py_nonuniform1d_weighted_f8, py::return_value_policy::move);
+  m.def("_nonuniform1d_weighted_f4", &py_nonuniform1d_weighted_f4, py::return_value_policy::move);
 
-  m.def("_uniform2d_f8", &py_uniform2d_f8);
-  m.def("_uniform2d_f4", &py_uniform2d_f4);
-  m.def("_uniform2d_weighted_f8", &py_uniform2d_weighted_f8);
-  m.def("_uniform2d_weighted_f4", &py_uniform2d_weighted_f4);
+  m.def("_uniform2d_f8", &py_uniform2d_f8, py::return_value_policy::move);
+  m.def("_uniform2d_f4", &py_uniform2d_f4, py::return_value_policy::move);
+  m.def("_uniform2d_weighted_f8", &py_uniform2d_weighted_f8, py::return_value_policy::move);
+  m.def("_uniform2d_weighted_f4", &py_uniform2d_weighted_f4, py::return_value_policy::move);
 }
 
 ///////////////////////////////////////////////////////////
