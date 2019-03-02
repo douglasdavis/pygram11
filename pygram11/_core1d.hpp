@@ -5,9 +5,9 @@
 #include "_utils.hpp"
 
 // STL
-#include <vector>
-#include <cstring>
 #include <cstdint>
+#include <cstring>
+#include <vector>
 
 // omp
 #ifdef PYGRAMUSEOMP
@@ -16,11 +16,12 @@
 
 #ifdef PYGRAMUSEOMP
 template <typename T>
-void c_fix1d_weighted_omp(const T* data, const T* weights, T *count, T* sumw2,
-                          const std::size_t n, const int nbins, const T xmin, const T xmax) {
+void c_fix1d_weighted_omp(const T* data, const T* weights, T* count, T* sumw2,
+                          const std::size_t n, const int nbins, const T xmin,
+                          const T xmax) {
   const T norm = 1.0 / (xmax - xmin);
-  memset(count, 0, sizeof(T)*nbins);
-  memset(sumw2, 0, sizeof(T)*nbins);
+  memset(count, 0, sizeof(T) * nbins);
+  memset(sumw2, 0, sizeof(T) * nbins);
 
 #pragma omp parallel
   {
@@ -31,8 +32,8 @@ void c_fix1d_weighted_omp(const T* data, const T* weights, T *count, T* sumw2,
 
 #pragma omp for nowait
     for (std::size_t i = 0; i < n; i++) {
-      pygram11::detail::fill(i, count_priv.get(), sumw2_priv.get(),
-                             data, weights, nbins, norm, xmin, xmax);
+      pygram11::detail::fill(i, count_priv.get(), sumw2_priv.get(), data, weights, nbins,
+                             norm, xmin, xmax);
     }
 
 #pragma omp critical
@@ -41,28 +42,26 @@ void c_fix1d_weighted_omp(const T* data, const T* weights, T *count, T* sumw2,
       sumw2[i] += sumw2_priv[i];
     }
   }
-
 }
 #endif
 
 template <typename T>
-void c_fix1d_weighted(const T* data, const T* weights, T *count, T *sumw2,
+void c_fix1d_weighted(const T* data, const T* weights, T* count, T* sumw2,
                       const std::size_t n, const int nbins, const T xmin, const T xmax) {
   const T norm = 1.0 / (xmax - xmin);
   memset(count, 0, sizeof(T) * nbins);
   memset(sumw2, 0, sizeof(T) * nbins);
   for (std::size_t i = 0; i < n; i++) {
-    pygram11::detail::fill(i, count, sumw2, data, weights,
-                           nbins, norm, xmin, xmax);
+    pygram11::detail::fill(i, count, sumw2, data, weights, nbins, norm, xmin, xmax);
   }
 }
 
 #ifdef PYGRAMUSEOMP
 template <typename T>
-void c_fix1d_omp(const T* data, std::int64_t* count,
-                 const std::size_t n, const int nbins, const T xmin, const T xmax) {
+void c_fix1d_omp(const T* data, std::int64_t* count, const std::size_t n, const int nbins,
+                 const T xmin, const T xmax) {
   const T norm = 1.0 / (xmax - xmin);
-  memset(count, 0, sizeof(std::int64_t)*nbins);
+  memset(count, 0, sizeof(std::int64_t) * nbins);
 
 #pragma omp parallel
   {
@@ -79,13 +78,12 @@ void c_fix1d_omp(const T* data, std::int64_t* count,
       count[i] += count_priv[i];
     }
   }
-
 }
 #endif
 
 template <typename T>
-void c_fix1d(const T* data, std::int64_t* count,
-             const std::size_t n, const int nbins, const T xmin, const T xmax) {
+void c_fix1d(const T* data, std::int64_t* count, const std::size_t n, const int nbins,
+             const T xmin, const T xmax) {
   const T norm = 1.0 / (xmax - xmin);
   memset(count, 0, sizeof(std::int64_t) * nbins);
   for (std::size_t i = 0; i < n; i++) {
@@ -97,13 +95,13 @@ void c_fix1d(const T* data, std::int64_t* count,
 ///////////////////////////// non-fixed (variable) ////////
 ///////////////////////////////////////////////////////////
 
-
 #ifdef PYGRAMUSEOMP
 template <typename T>
-void c_var1d_weighted_omp(const T* data, const T* weights, T *count, T* sumw2,
-                          const std::size_t n, const int nbins, const std::vector<T>& edges) {
-  memset(count, 0, sizeof(T)*nbins);
-  memset(sumw2, 0, sizeof(T)*nbins);
+void c_var1d_weighted_omp(const T* data, const T* weights, T* count, T* sumw2,
+                          const std::size_t n, const int nbins,
+                          const std::vector<T>& edges) {
+  memset(count, 0, sizeof(T) * nbins);
+  memset(sumw2, 0, sizeof(T) * nbins);
 
 #pragma omp parallel
   {
@@ -114,8 +112,8 @@ void c_var1d_weighted_omp(const T* data, const T* weights, T *count, T* sumw2,
 
 #pragma omp for nowait
     for (std::size_t i = 0; i < n; i++) {
-      pygram11::detail::fill(i, count_priv.get(), sumw2_priv.get(),
-                             data, weights, nbins, edges);
+      pygram11::detail::fill(i, count_priv.get(), sumw2_priv.get(), data, weights, nbins,
+                             edges);
     }
 
 #pragma omp critical
@@ -124,12 +122,11 @@ void c_var1d_weighted_omp(const T* data, const T* weights, T *count, T* sumw2,
       sumw2[i] += sumw2_priv[i];
     }
   }
-
 }
 #endif
 
 template <typename T>
-void c_var1d_weighted(const T* data, const T* weights, T *count, T *sumw2,
+void c_var1d_weighted(const T* data, const T* weights, T* count, T* sumw2,
                       const std::size_t n, const int nbins, const std::vector<T>& edges) {
   memset(count, 0, sizeof(T) * nbins);
   memset(sumw2, 0, sizeof(T) * nbins);
@@ -137,7 +134,6 @@ void c_var1d_weighted(const T* data, const T* weights, T *count, T *sumw2,
     pygram11::detail::fill(i, count, sumw2, data, weights, nbins, edges);
   }
 }
-
 
 #ifdef PYGRAMUSEOMP
 template <typename T>
@@ -159,7 +155,6 @@ void c_var1d_omp(const T* data, std::int64_t* count, const std::size_t n, const 
       count[i] += count_priv[i];
     }
   }
-
 }
 #endif
 

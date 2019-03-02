@@ -1,0 +1,7 @@
+---
+Language: Cpp
+BasedOnStyle: Google
+BreakBeforeBraces: Custom
+BraceWrapping:
+  BeforeElse: true
+ColumnLimit: 92

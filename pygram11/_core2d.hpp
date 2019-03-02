@@ -9,22 +9,20 @@
 namespace py = pybind11;
 
 // STL
-#include <vector>
-#include <cstring>
 #include <cstdint>
+#include <cstring>
 #include <memory>
+#include <vector>
 
 // omp
 #ifdef PYGRAMUSEOMP
 #include <omp.h>
 #endif
 
-
 #ifdef PYGRAMUSEOMP
 template <typename T>
-void c_fix2d_weighted_omp(const T* x, const T* y, const T* weights,
-                          T* count, T* sumw2, const std::size_t n,
-                          const int nbinsx, const T xmin, const T xmax,
+void c_fix2d_weighted_omp(const T* x, const T* y, const T* weights, T* count, T* sumw2,
+                          const std::size_t n, const int nbinsx, const T xmin, const T xmax,
                           const int nbinsy, const T ymin, const T ymax) {
   const int nbins = nbinsx * nbinsy;
   const T normx = 1.0 / (xmax - xmin);
@@ -41,10 +39,8 @@ void c_fix2d_weighted_omp(const T* x, const T* y, const T* weights,
 
 #pragma omp for nowait
     for (std::size_t i = 0; i < n; i++) {
-      pygram11::detail::fill(i, count_priv.get(), sumw2_priv.get(),
-                             x, y, weights,
-                             normx, nbinsx, xmin, xmax,
-                             normy, nbinsy, ymin, ymax);
+      pygram11::detail::fill(i, count_priv.get(), sumw2_priv.get(), x, y, weights, normx,
+                             nbinsx, xmin, xmax, normy, nbinsy, ymin, ymax);
     }
 
 #pragma omp critical
@@ -53,14 +49,12 @@ void c_fix2d_weighted_omp(const T* x, const T* y, const T* weights,
       sumw2[i] += sumw2_priv[i];
     }
   }
-
 }
-#endif // PYGRAMUSEOMP
+#endif  // PYGRAMUSEOMP
 
 template <typename T>
-void c_fix2d_weighted(const T* x, const T* y, const T* weights,
-                      T* count, T* sumw2, const std::size_t n,
-                      const int nbinsx, const T xmin, const T xmax,
+void c_fix2d_weighted(const T* x, const T* y, const T* weights, T* count, T* sumw2,
+                      const std::size_t n, const int nbinsx, const T xmin, const T xmax,
                       const int nbinsy, const T ymin, const T ymax) {
   const int nbins = nbinsx * nbinsy;
   const T normx = 1.0 / (xmax - xmin);
@@ -68,18 +62,16 @@ void c_fix2d_weighted(const T* x, const T* y, const T* weights,
   memset(count, 0, sizeof(T) * nbins);
   memset(sumw2, 0, sizeof(T) * nbins);
   for (std::size_t i = 0; i < n; i++) {
-    pygram11::detail::fill(i, count, sumw2, x, y, weights,
-                           normx, nbinsx, xmin, xmax,
-                           normy, nbinsy, ymin, ymax);
+    pygram11::detail::fill(i, count, sumw2, x, y, weights, normx, nbinsx, xmin, xmax, normy,
+                           nbinsy, ymin, ymax);
   }
 }
 
 #ifdef PYGRAMUSEOMP
 template <typename T>
-void c_fix2d_omp(const T* x, const T* y,
-                 std::int64_t* count, const std::size_t n,
-                 const int nbinsx, const T xmin, const T xmax,
-                 const int nbinsy, const T ymin, const T ymax) {
+void c_fix2d_omp(const T* x, const T* y, std::int64_t* count, const std::size_t n,
+                 const int nbinsx, const T xmin, const T xmax, const int nbinsy,
+                 const T ymin, const T ymax) {
   const int nbins = nbinsx * nbinsy;
   const T normx = 1.0 / (xmax - xmin);
   const T normy = 1.0 / (ymax - ymin);
@@ -92,9 +84,8 @@ void c_fix2d_omp(const T* x, const T* y,
 
 #pragma omp for nowait
     for (std::size_t i = 0; i < n; i++) {
-      pygram11::detail::fill(i, count_priv.get(), x, y,
-                             normx, nbinsx, xmin, xmax,
-                             normy, nbinsy, ymin, ymax);
+      pygram11::detail::fill(i, count_priv.get(), x, y, normx, nbinsx, xmin, xmax, normy,
+                             nbinsy, ymin, ymax);
     }
 
 #pragma omp critical
@@ -102,24 +93,21 @@ void c_fix2d_omp(const T* x, const T* y,
       count[i] += count_priv[i];
     }
   }
-
 }
-#endif // PYGRAMUSEOMP
+#endif  // PYGRAMUSEOMP
 
 template <typename T>
-void c_fix2d(const T* x, const T* y,
-             std::int64_t* count, const std::size_t n,
-             const int nbinsx, const T xmin, const T xmax,
-             const int nbinsy, const T ymin, const T ymax) {
+void c_fix2d(const T* x, const T* y, std::int64_t* count, const std::size_t n,
+             const int nbinsx, const T xmin, const T xmax, const int nbinsy, const T ymin,
+             const T ymax) {
   const int nbins = nbinsx * nbinsy;
   const T normx = 1.0 / (xmax - xmin);
   const T normy = 1.0 / (ymax - ymin);
   memset(count, 0, sizeof(std::int64_t) * nbins);
 
   for (std::size_t i = 0; i < n; i++) {
-    pygram11::detail::fill(i, count, x, y,
-                           normx, nbinsx, xmin, xmax,
-                           normy, nbinsy, ymin, ymax);
+    pygram11::detail::fill(i, count, x, y, normx, nbinsx, xmin, xmax, normy, nbinsy, ymin,
+                           ymax);
   }
 }
 
@@ -127,25 +115,22 @@ void c_fix2d(const T* x, const T* y,
 ///////////////////////////// non-fixed (variable) ////////
 ///////////////////////////////////////////////////////////
 
-
-template<typename T>
+template <typename T>
 void c_var2d(const T* x, const T* y, std::int64_t* count, const std::size_t n,
-             const int nbinsx, const int nbinsy,
-             const std::vector<T>& xedges, const std::vector<T>& yedges) {
+             const int nbinsx, const int nbinsy, const std::vector<T>& xedges,
+             const std::vector<T>& yedges) {
   const int nbins = nbinsx * nbinsy;
   memset(count, 0, sizeof(std::int64_t) * nbins);
   for (std::size_t i = 0; i < n; i++) {
-    pygram11::detail::fill(i, count, x, y,
-                           nbinsx, xedges, nbinsy, yedges);
+    pygram11::detail::fill(i, count, x, y, nbinsx, xedges, nbinsy, yedges);
   }
 }
 
-
 #ifdef PYGRAMUSEOMP
-template<typename T>
+template <typename T>
 void c_var2d_omp(const T* x, const T* y, std::int64_t* count, const std::size_t n,
-                 const int nbinsx, const int nbinsy,
-                 const std::vector<T>& xedges, const std::vector<T>& yedges) {
+                 const int nbinsx, const int nbinsy, const std::vector<T>& xedges,
+                 const std::vector<T>& yedges) {
   const int nbins = nbinsx * nbinsy;
   memset(count, 0, sizeof(std::int64_t) * nbins);
 
@@ -156,8 +141,7 @@ void c_var2d_omp(const T* x, const T* y, std::int64_t* count, const std::size_t 
 
 #pragma omp for nowait
     for (std::size_t i = 0; i < n; i++) {
-      pygram11::detail::fill(i, count_priv.get(), x, y,
-                             nbinsx, xedges, nbinsy, yedges);
+      pygram11::detail::fill(i, count_priv.get(), x, y, nbinsx, xedges, nbinsy, yedges);
     }
 
 #pragma omp critical
@@ -165,35 +149,29 @@ void c_var2d_omp(const T* x, const T* y, std::int64_t* count, const std::size_t 
       count[i] += count_priv[i];
     }
   }
-
 }
-#endif // PYGRAMUSEOMP
-
+#endif  // PYGRAMUSEOMP
 
 template <typename T>
-void c_var2d_weighted(const T* x, const T* y, const T* weights,
-                      T* count, T* sumw2,
+void c_var2d_weighted(const T* x, const T* y, const T* weights, T* count, T* sumw2,
                       const std::size_t n, const int nbinsx, const int nbinsy,
                       const std::vector<T>& xedges, const std::vector<T>& yedges) {
   const int nbins = nbinsx * nbinsy;
   memset(count, 0, sizeof(T) * nbins);
-  memset(sumw2, 0 ,sizeof(T) * nbins);
+  memset(sumw2, 0, sizeof(T) * nbins);
   for (std::size_t i = 0; i < n; i++) {
-    pygram11::detail::fill(i, count, sumw2, x, y, weights,
-                           nbinsx, xedges, nbinsy, yedges);
+    pygram11::detail::fill(i, count, sumw2, x, y, weights, nbinsx, xedges, nbinsy, yedges);
   }
 }
 
-
 #ifdef PYGRAMUSEOMP
 template <typename T>
-void c_var2d_weighted_omp(const T* x, const T* y, const T* weights,
-                          T* count, T* sumw2,
+void c_var2d_weighted_omp(const T* x, const T* y, const T* weights, T* count, T* sumw2,
                           const std::size_t n, const int nbinsx, const int nbinsy,
                           const std::vector<T>& xedges, const std::vector<T>& yedges) {
   const int nbins = nbinsx * nbinsy;
   memset(count, 0, sizeof(T) * nbins);
-  memset(sumw2, 0 ,sizeof(T) * nbins);
+  memset(sumw2, 0, sizeof(T) * nbins);
 
 #pragma omp parallel
   {
@@ -204,8 +182,8 @@ void c_var2d_weighted_omp(const T* x, const T* y, const T* weights,
 
 #pragma omp for nowait
     for (std::size_t i = 0; i < n; i++) {
-      pygram11::detail::fill(i, count_priv.get(), sumw2_priv.get(), x, y, weights,
-                             nbinsx, xedges, nbinsy, yedges);
+      pygram11::detail::fill(i, count_priv.get(), sumw2_priv.get(), x, y, weights, nbinsx,
+                             xedges, nbinsy, yedges);
     }
 
 #pragma omp critical
@@ -214,8 +192,7 @@ void c_var2d_weighted_omp(const T* x, const T* y, const T* weights,
       sumw2[i] += sumw2_priv[i];
     }
   }
-
 }
-#endif // PYGRAMUSEOMP
+#endif  // PYGRAMUSEOMP
 
-#endif // include guard
+#endif  // include guard

@@ -3,20 +3,18 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-.. mdinclude:: ../README.md
+pygram11
+========
+
+pygram11 is a small Python library for creating simple histograms
+as fast as possible.
+
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
    :caption: Contents:
 
-   omp.rst
+   quick.rst
    purpose.rst
+   omp.rst
    api_reference.rst
-
-
-.. Indices and tables
-.. ==================
-
-.. * :ref:`genindex`
-.. * :ref:`modindex`
-.. * :ref:`search`

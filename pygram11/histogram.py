@@ -47,14 +47,14 @@ def fix1d(x, bins=10, range=None, weights=None, omp=False):
 
     Examples
     --------
-
     A histogram of ``x`` with 20 bins between 0 and 100, and weighted.
 
-    >>> h, w = fix1d(x, bins=20, range=(0, 100), weights=w)
+    >>> h = fix1d(x, bins=20, range=(0, 100))
 
-    The sample histogram, unweighted, and accelerated with OpenMP
+    The same data, now histogrammed weighted & accelerated with
+    OpenMP.
 
-    >>> h = fix1d(x, bins=20, range=(0, 100), omp=True)
+    >>> h, sw2 = fix1d(x, bins=20, range=(0, 100), omp=True)
 
     """
     x = np.asarray(x)
@@ -77,7 +77,7 @@ def fix1d(x, bins=10, range=None, weights=None, omp=False):
 
 
 def var1d(x, bins, weights=None, omp=False):
-    """histogram ``x`` with variabale (non-uniform) binning
+    """histogram ``x`` with variable (non-uniform) binning
 
     Parameters
     ----------
@@ -99,13 +99,12 @@ def var1d(x, bins, weights=None, omp=False):
 
     Examples
     --------
-
     A histogram of ``x`` where the edges are defined by the list
     ``[1, 5, 10, 12]``:
 
     >>> h, w = var1d(x, [1, 5, 10, 12])
 
-    The same histogram, now weighted and accelerated with OpenMP:
+    The same data, now weighted and accelerated with OpenMP:
 
     >>> h = var1d(x, [1, 5, 10, 12], weights=w, omp=True)
 
@@ -154,6 +153,21 @@ def fix2d(x, y, bins=10, range=None, weights=None, omp=False):
     :obj:`numpy.ndarray`:
         sum of weights squared (only if `weights` is not None)
 
+    Examples
+    --------
+
+    A histogram of (``x``, ``y``) with 20 bins between 0 and 100 in
+    the ``x`` dimention and 10 bins between 0 and 50 in the ``y``
+    dimension.
+
+    >>> h = fix2d(x, y, bins=(20, 10), range=((0, 100), (0, 50)))
+
+    The same data, now histogrammed weighted (via ``w``) & accelerated
+    with OpenMP.
+
+    >>> h, sw2 = fix2d(x, y, bins=(20, 10), range=((0, 100), (0, 50)),
+    ...                weights=w, omp=True)
+
     """
     x = np.asarray(x)
     y = np.asarray(y)
@@ -200,6 +214,23 @@ def var2d(x, y, xbins, ybins, weights=None, omp=False):
        weights for each :math:`(x_i, y_i)` pair.
     omp: bool
        use OpenMP if available
+
+    Returns
+    -------
+    :obj:`numpy.ndarray`:
+        bin counts (heights)
+    :obj:`numpy.ndarray`:
+        sum of weights squared (only if `weights` is not None)
+
+
+    Examples
+    --------
+    A histogram of (``x``, ``y``) where the edges are defined by a
+    :func:`numpy.logspace` in both dimensions, accelerated with
+    OpenMP.
+
+    >>> bins = numpy.logspace(0.1, 1.0, 10, endpoint=True)
+    >>> h = var2d(x, y, bins, bins, omp=True)
 
     """
     x = np.asarray(x)
