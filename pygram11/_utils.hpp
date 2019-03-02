@@ -53,7 +53,7 @@ namespace pygram11 {
     template <typename T>
     void fill(std::size_t i, std::int64_t* count, const T* x, const int nbins, const std::vector<T>& edges) {
       if (!(x[i] >= edges[0] && x[i] < edges[nbins])) return;
-      std::size_t binId = pygram11::detail::nonuniform_bin_find(std::begin(edges), std::end(edges), x[i]);
+      std::size_t binId = nonuniform_bin_find(std::begin(edges), std::end(edges), x[i]);
       count[binId]++;
     }
 
