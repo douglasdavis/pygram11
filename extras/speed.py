@@ -5,7 +5,7 @@ Script to run a _very_ rough benchmark, requires running via
 ipython and my branch if fast-histogram
 """
 
-from pygram11 import uniform1d, uniform2d
+from pygram11 import fix1d, fix2d
 import pygram11
 from fast_histogram import histogram1d, histogram2d
 import numpy as np
@@ -37,11 +37,11 @@ def run_fast_histogram():
 
 
 def run_pygram11():
-    return uniform1d(x, bins=nbins, range=(xmin, xmax), weights=w, omp=True)
+    return fix1d(x, bins=nbins, range=(xmin, xmax), weights=w, omp=True)
 
 
 def run_pygram112d():
-    return uniform2d(
+    return fix2d(
         x, y, bins=nbins, range=((xmin, xmax), (ymin, ymax)), weights=w, omp=True
     )
 
@@ -67,17 +67,17 @@ print("")
 
 print("numpy histogram2d:")
 ipython.magic("timeit run_numpy2d()")
-print(run_numpy())
+print(run_numpy2d())
 print("")
 
 print("fast_histogram2d:")
 ipython.magic("timeit run_fast_histogram2d()")
-print(run_fast_histogram())
+print(run_fast_histogram2d())
 print("")
 
 print("pygram112d:")
 ipython.magic("timeit run_pygram112d()")
-print(run_pygram11())
+print(run_pygram112d())
 print("")
 
 
@@ -92,5 +92,5 @@ print(histogram1d(x, bins=nbins, range=(xmin, xmax)))
 print("")
 
 print("pygram11:")
-ipython.magic("timeit uniform1d(x, bins=nbins, range=(xmin, xmax), omp=True)")
-print(uniform1d(x, bins=nbins, range=(xmin, xmax)))
+ipython.magic("timeit fix1d(x, bins=nbins, range=(xmin, xmax), omp=True)")
+print(fix1d(x, bins=nbins, range=(xmin, xmax)))

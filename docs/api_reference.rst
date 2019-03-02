@@ -3,8 +3,10 @@ API Reference
 
 .. currentmodule:: pygram11
 
-.. autofunction:: uniform1d
+.. autofunction:: fix1d
 
-.. autofunction:: nonuniform1d
+.. autofunction:: var1d
 
-.. autofunction:: uniform2d
+.. autofunction:: fix2d
+
+.. autofunction:: var2d

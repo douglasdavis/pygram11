@@ -37,12 +37,12 @@ $ pip install .
 and their statistical uncertainties. Fixed and variable width binned
 histograms in multiple dimensions will be supported.
 
-| Histogram type      | Available | API stable |
-| --------------------|:---------:|:----------:|
-| 1D, uniform bins    | Yes       | No         |
-| 1D, nonuniform bins | Yes       | No         |
-| 2D, uniform bins    | Yes       | No         |
-| 2D, nonuniform bins | No        | No         |
+| Histogram type   | Available | API stable |
+| -----------------|:---------:|:----------:|
+| 1D, fixed bins   | Yes       | No         |
+| 1D, varying bins | Yes       | No         |
+| 2D, fixed bins   | Yes       | No         |
+| 2D, varying bins | Yes       | No         |
 
 ## Alternatives
 
