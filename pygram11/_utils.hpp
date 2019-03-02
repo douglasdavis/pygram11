@@ -2,6 +2,7 @@
 #define PYGRAM11_UTILS_H
 
 #include <algorithm>
+#include <cstdint>
 
 namespace pygram11 {
   namespace detail {

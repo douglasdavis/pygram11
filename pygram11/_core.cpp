@@ -6,6 +6,7 @@
 #include <pybind11/numpy.h>
 // STL
 #include <vector>
+#include <cstdint>
 
 namespace py = pybind11;
 
