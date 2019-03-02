@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <cstdint>
+#include <vector>
 
 namespace pygram11 {
   namespace detail {
