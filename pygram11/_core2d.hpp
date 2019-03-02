@@ -12,6 +12,7 @@ namespace py = pybind11;
 #include <vector>
 #include <cstring>
 #include <cstdint>
+#include <memory>
 
 // omp
 #ifdef PYGRAMUSEOMP
@@ -33,19 +34,19 @@ void c_uniform2d_weighted_omp(const T* x, const T* y, const T* weights,
 
 #pragma omp parallel
   {
-    T* count_priv = new T[nbins];
-    T* sumw2_priv = new T[nbins];
-    memset(count_priv, 0, sizeof(T) * nbins);
-    memset(sumw2_priv, 0, sizeof(T) * nbins);
+    std::unique_ptr<T[]> count_priv(new T[nbins]);
+    std::unique_ptr<T[]> sumw2_priv(new T[nbins]);
+    memset(count_priv.get(), 0, sizeof(T) * nbins);
+    memset(sumw2_priv.get(), 0, sizeof(T) * nbins);
 
 #pragma omp for nowait
     for (int i = 0; i < n; i++) {
       if (!(x[i] >= xmin && x[i] < xmax)) continue;
       if (!(y[i] >= ymin && y[i] < ymax)) continue;
-      size_t xbin_id = (x[i] - xmin) * normx * nbinsx;
-      size_t ybin_id = (y[i] - ymin) * normy * nbinsy;
-      count_priv[ybin_id + nbinsy * xbin_id] += weights[i];
-      sumw2_priv[ybin_id + nbinsy * xbin_id] += weights[i] * weights[i];
+      size_t xbinId = (x[i] - xmin) * normx * nbinsx;
+      size_t ybinId = (y[i] - ymin) * normy * nbinsy;
+      count_priv[ybinId + nbinsy * xbinId] += weights[i];
+      sumw2_priv[ybinId + nbinsy * xbinId] += weights[i] * weights[i];
     }
 
 #pragma omp critical
@@ -53,9 +54,8 @@ void c_uniform2d_weighted_omp(const T* x, const T* y, const T* weights,
       count[i] += count_priv[i];
       sumw2[i] += sumw2_priv[i];
     }
-    delete[] count_priv;
-    delete[] sumw2_priv;
   }
+
 }
 #endif // PYGRAMUSEOMP
 
@@ -69,37 +69,16 @@ void c_uniform2d_weighted(const T* x, const T* y, const T* weights,
   const T normy = 1.0 / (ymax - ymin);
   memset(count, 0, sizeof(T) * nbins);
   memset(sumw2, 0, sizeof(T) * nbins);
-  size_t xbin_id;
-  size_t ybin_id;
+  size_t xbinId;
+  size_t ybinId;
 
   for (int i = 0; i < n; i++) {
     if (!(x[i] >= xmin && x[i] < xmax)) continue;
     if (!(y[i] >= ymin && y[i] < ymax)) continue;
-    xbin_id = (x[i] - xmin) * normx * nbinsx;
-    ybin_id = (y[i] - ymin) * normy * nbinsy;
-    count[ybin_id + nbinsy * xbin_id] += weights[i];
-    sumw2[ybin_id + nbinsy * xbin_id] += weights[i] * weights[i];
-  }
-}
-
-template <typename T>
-void c_uniform2d(const T* x, const T* y,
-                 std::int64_t* count, const int n,
-                 const int nbinsx, const T xmin, const T xmax,
-                 const int nbinsy, const T ymin, const T ymax) {
-  const int nbins = nbinsx * nbinsy;
-  const T normx = 1.0 / (xmax - xmin);
-  const T normy = 1.0 / (ymax - ymin);
-  memset(count, 0, sizeof(std::int64_t) * nbins);
-  size_t xbin_id;
-  size_t ybin_id;
-
-  for (int i = 0; i < n; i++) {
-    if (!(x[i] >= xmin && x[i] < xmax)) continue;
-    if (!(y[i] >= ymin && y[i] < ymax)) continue;
-    xbin_id = (x[i] - xmin) * normx * nbinsx;
-    ybin_id = (y[i] - ymin) * normy * nbinsy;
-    count[ybin_id + nbinsy * xbin_id]++;
+    xbinId = (x[i] - xmin) * normx * nbinsx;
+    ybinId = (y[i] - ymin) * normy * nbinsy;
+    count[ybinId + nbinsy * xbinId] += weights[i];
+    sumw2[ybinId + nbinsy * xbinId] += weights[i] * weights[i];
   }
 }
 
@@ -116,24 +95,93 @@ void c_uniform2d_omp(const T* x, const T* y,
 
 #pragma omp parallel
   {
-    std::int64_t* count_priv = new std::int64_t[nbins];
-    memset(count_priv, 0, sizeof(std::int64_t) * nbins);
+    std::unique_ptr<std::int64_t[]> count_priv(new std::int64_t[nbins]);
+    memset(count_priv.get(), 0, sizeof(std::int64_t) * nbins);
 
 #pragma omp for nowait
     for (int i = 0; i < n; i++) {
       if (!(x[i] >= xmin && x[i] < xmax)) continue;
       if (!(y[i] >= ymin && y[i] < ymax)) continue;
-      size_t xbin_id = (x[i] - xmin) * normx * nbinsx;
-      size_t ybin_id = (y[i] - ymin) * normy * nbinsy;
-      count_priv[ybin_id + nbinsy * xbin_id]++;
+      size_t xbinId = (x[i] - xmin) * normx * nbinsx;
+      size_t ybinId = (y[i] - ymin) * normy * nbinsy;
+      count_priv[ybinId + nbinsy * xbinId]++;
     }
 
 #pragma omp critical
     for (int i = 0; i < nbins; i++) {
       count[i] += count_priv[i];
     }
-    delete[] count_priv;
   }
+
+}
+#endif // PYGRAMUSEOMP
+
+template <typename T>
+void c_uniform2d(const T* x, const T* y,
+                 std::int64_t* count, const int n,
+                 const int nbinsx, const T xmin, const T xmax,
+                 const int nbinsy, const T ymin, const T ymax) {
+  const int nbins = nbinsx * nbinsy;
+  const T normx = 1.0 / (xmax - xmin);
+  const T normy = 1.0 / (ymax - ymin);
+  memset(count, 0, sizeof(std::int64_t) * nbins);
+  size_t xbinId;
+  size_t ybinId;
+
+  for (int i = 0; i < n; i++) {
+    if (!(x[i] >= xmin && x[i] < xmax)) continue;
+    if (!(y[i] >= ymin && y[i] < ymax)) continue;
+    xbinId = (x[i] - xmin) * normx * nbinsx;
+    ybinId = (y[i] - ymin) * normy * nbinsy;
+    count[ybinId + nbinsy * xbinId]++;
+  }
+}
+
+template<typename T>
+void c_nonuniform2d(const T* x, const T* y, std::int64_t* count, const int n,
+                    const int nbinsx, const int nbinsy,
+                    const std::vector<T>& xedges, const std::vector<T>& yedges) {
+  const int nbins = nbinsx * nbinsy;
+  memset(count, 0, sizeof(std::int64_t) * nbins);
+  size_t xbinId, ybinId;
+  for (int i = 0; i < n; i++) {
+    if (!(x[i] >= xedges[0] && x[i] < xedges[nbinsx])) continue;
+    if (!(y[i] >= yedges[0] && y[i] < yedges[nbinsy])) continue;
+    xbinId = pygram11::detail::nonuniform_bin_find(std::begin(xedges), std::end(xedges), x[i]);
+    ybinId = pygram11::detail::nonuniform_bin_find(std::begin(yedges), std::end(yedges), y[i]);
+    count[ybinId + nbinsy * xbinId]++;
+  }
+}
+
+
+#ifdef PYGRAMUSEOMP
+template<typename T>
+void c_nonuniform2d_omp(const T* x, const T* y, std::int64_t* count, const int n,
+                        const int nbinsx, const int nbinsy,
+                        const std::vector<T>& xedges, const std::vector<T>& yedges) {
+  const int nbins = nbinsx * nbinsy;
+  memset(count, 0, sizeof(std::int64_t) * nbins);
+
+#pragma omp parallel
+  {
+    std::unique_ptr<std::int64_t[]> count_priv(new std::int64_t[nbins]);
+    memset(count_priv.get(), 0, sizeof(std::int64_t) * nbins);
+
+#pragma omp for nowait
+    for (int i = 0; i < n; i++) {
+      if (!(x[i] >= xedges[0] && x[i] < xedges[nbinsx])) continue;
+      if (!(y[i] >= yedges[0] && y[i] < yedges[nbinsy])) continue;
+      size_t xbinId = pygram11::detail::nonuniform_bin_find(std::begin(xedges), std::end(xedges), x[i]);
+      size_t ybinId = pygram11::detail::nonuniform_bin_find(std::begin(yedges), std::end(yedges), y[i]);
+      count_priv[ybinId + nbinsy * xbinId]++;
+    }
+
+#pragma omp critical
+    for (int i = 0; i < nbins; i++) {
+      count[i] += count_priv[i];
+    }
+  }
+
 }
 #endif // PYGRAMUSEOMP
 
