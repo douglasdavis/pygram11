@@ -1,7 +1,7 @@
 # pygram11
 
 [![builds.sr.ht status](https://builds.sr.ht/~ddavis/pygram11.svg)](https://builds.sr.ht/~ddavis/pygram11?)
-[![Documentation Status](https://readthedocs.org/projects/pygram11/badge/?version=latest)](https://pygram11.readthedocs.io/en/latest/?badge=latest)
+[![Documentation Status](https://readthedocs.org/projects/pygram11/badge/?version=stable)](https://pygram11.readthedocs.io/en/stable/?badge=stable)
 ![](https://img.shields.io/pypi/pyversions/pygram11.svg?colorB=blue&style=flat)
 [![PyPI version](https://img.shields.io/pypi/v/pygram11.svg?colorB=486b87&style=flat)](https://pypi.org/project/pygram11/)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/ambv/black)
