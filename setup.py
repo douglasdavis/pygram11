@@ -10,6 +10,7 @@ from distutils import log
 from distutils.ccompiler import new_compiler
 from distutils.sysconfig import customize_compiler, get_config_var
 from distutils.errors import CompileError, LinkError
+import pybind11
 
 
 class get_pybind_include(object):
@@ -19,8 +20,6 @@ class get_pybind_include(object):
     The purpose of this class is to postpone importing pybind11
     until it is actually installed, so that the ``get_include()``
     method can be invoked. """
-
-    import pybind11
 
     def __init__(self, user=False):
         self.user = user
