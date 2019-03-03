@@ -1,6 +1,5 @@
 from setuptools import setup, Extension
 from setuptools.command.build_ext import build_ext
-import pybind11
 import glob
 import tempfile
 import os
@@ -20,6 +19,8 @@ class get_pybind_include(object):
     The purpose of this class is to postpone importing pybind11
     until it is actually installed, so that the ``get_include()``
     method can be invoked. """
+
+    import pybind11
 
     def __init__(self, user=False):
         self.user = user
@@ -195,6 +196,7 @@ setup(
     long_description_content_type="text/markdown",
     packages=["pygram11"],
     ext_modules=ext_modules,
+    setup_requires=["numpy>=1.12", "pybind11>=2.2"],
     install_requires=["numpy>=1.12", "pybind11>=2.2"],
     cmdclass={"build_ext": BuildExt},
     test_suite="tests",

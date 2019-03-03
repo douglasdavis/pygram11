@@ -18,11 +18,14 @@ documentation.
 ## Installing
 
 pygram11 requires only NumPy and pybind11 (and therefore a C++
-compiler with C++11 support).
+compiler with C++11 support). **Note**: `pybind11` must be installed
+explicitly before `pygram11` (because `setup.py` uses `pybind11` to
+determine include directories).
 
 ### From PyPI
 
 ```none
+$ pip install pybind11 ## or `conda install pybind11`
 $ pip install pygram11
 ```
 
