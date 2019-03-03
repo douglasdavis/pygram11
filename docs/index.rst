@@ -10,6 +10,21 @@ pygram11 is a small Python library for creating simple histograms as
 fast as possible. The backend is written in C++11 and (optionally)
 accelerated with OpenMP_.
 
+.. image:: https://builds.sr.ht/~ddavis/pygram11.svg
+   :target: https://builds.sr.ht/~ddavis/pygram11?
+   :alt: builds.sr.ht Status
+.. image:: https://readthedocs.org/projects/pygram11/badge/?version=stable
+   :target: https://pygram11.readthedocs.io/en/stable/?badge=stable
+   :alt: Documentation Status
+.. image:: https://img.shields.io/pypi/v/pygram11.svg?colorB=486b87&style=flat
+   :target: https://pypi.org/project/pygram11/
+   :alt: PyPI
+.. image:: https://img.shields.io/pypi/pyversions/pygram11.svg?colorB=blue&style=flat
+   :alt: Python Versions
+.. image:: https://img.shields.io/badge/code%20style-black-000000.svg
+   :target: https://github.com/ambv/black
+   :alt: Code style: black
+
 .. _OpenMP: https://www.openmp.org/
 
 Requirements

@@ -260,7 +260,7 @@ def var2d(x, y, xbins, ybins, weights=None, omp=False):
 def histogram(x, bins=10, range=None, weights=None, omp=False):
     """Compute the histogram for the data ``x``.
 
-    This API provides something very near close to
+    This functions provides an API very simiar to
     :func:`numpy.histogram`. Keep in mind that the returns are
     different.
 
@@ -303,7 +303,7 @@ def histogram(x, bins=10, range=None, weights=None, omp=False):
 def histogram2d(x, y, bins=10, range=None, weights=None, omp=False):
     """Compute the two-dimensional histogram for the data (``x``, ``y``).
 
-    This API provides something very near close to
+    This functions provides an API very simiar to
     :func:`numpy.histogram2d`. Keep in mind that the returns are
     different.
 
@@ -330,13 +330,15 @@ def histogram2d(x, y, bins=10, range=None, weights=None, omp=False):
        An array of weights associated to each element :math:`(x_i, y_i)` pair.
        Each pair of the the data will contribute its associated weight to the
        bin count.
+    omp: bool
+       Use OpenMP if available
 
     Returns
     -------
     :obj:`numpy.ndarray`:
         bin counts (heights)
     :obj:`numpy.ndarray`:
-        sum of weights squared (only if `weights` is not None)
+        sum of weights squared (only if ``weights`` is not None)
 
     """
     try:

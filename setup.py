@@ -180,6 +180,10 @@ def get_version():
     return g["__version__"]
 
 
+this_directory = os.path.abspath(os.path.dirname(__file__))
+with open(os.path.join(this_directory, "README.md"), encoding="utf-8") as f:
+    long_description = f.read()
+
 setup(
     name="pygram11",
     version=get_version(),
@@ -187,7 +191,7 @@ setup(
     author_email="ddavis@ddavis.io",
     url="https://github.com/drdavis/pygram11",
     description="Fast histogramming in python built on pybind11",
-    long_description="Fast histogramming in python built on pybind11",
+    long_description=long_description,
     packages=["pygram11"],
     ext_modules=ext_modules,
     install_requires=["numpy>=1.12", "pybind11>=2.2"],
