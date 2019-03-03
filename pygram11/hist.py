@@ -315,13 +315,14 @@ def histogram2d(x, y, bins=10, range=None, weights=None, omp=False):
        Array representing the ``y`` coordinate of the data to histogram.
     bins: int or array_like or [int, int] or [array, array], optional
        The bin specification:
-          * If int, the number of bins for the two dimensions (nx=ny=bins).
-          * If array_like, the bin edges for the two dimensions
-            (x_edges=y_edges=bins).
+          * If `int`, the number of bins for the two dimensions
+            (``nx = ny = bins``).
+          * If `array_like`, the bin edges for the two dimensions
+            (``x_edges = y_edges = bins``).
           * If [int, int], the number of bins in each dimension
-            (nx, ny = bins).
-          * If [array, array], the bin edges in each dimension
-            (x_edges, y_edges = bins).
+            (``nx, ny = bins``).
+          * If [`array_like`, `array_like`], the bin edges in each
+            dimension (``x_edges, y_edges = bins``).
     range: array_like, shape(2,2), optional
        The edges of this histogram along each dimension. If ``bins``
        is not integral, then this parameter is ignored. If None, the

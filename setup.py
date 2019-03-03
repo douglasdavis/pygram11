@@ -151,7 +151,7 @@ class BuildExt(build_ext):
     c_opts = []
 
     if sys.platform == "darwin":
-        c_opts += ["-stdlib=libc++"]
+        c_opts += ["-stdlib=libc++", "-mmacosx-version-min=10.7"]
 
     def build_extensions(self):
         use_omp = has_omp()
@@ -181,8 +181,8 @@ def get_version():
 
 
 this_directory = os.path.abspath(os.path.dirname(__file__))
-with open(os.path.join(this_directory, "README.md"), encoding="utf-8") as f:
-    long_description = f.read()
+with open(os.path.join(this_directory, "README.md"), "rb") as f:
+    long_description = f.read().decode("utf-8")
 
 setup(
     name="pygram11",
