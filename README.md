@@ -10,13 +10,15 @@ Simple and fast histogramming in python via
 [pybind11](https://github.com/pybind/pybind11) and (optionally)
 [OpenMP](https://www.openmp.org/)
 
-Your mileage may vary with OpenMP. The unit tests which are run by
-continuous integration do not test the OpenMP features (but I do run
-these tests locally).
+`pygram11` provides fast functions for generating histograms (and
+their sums-of-weights squared). Fixed and variable width binned
+histograms are supported. The API is very simple, check out the
+documentation.
 
 ## Installing
 
-pygram11 requires only NumPy and pybind11.
+pygram11 requires only NumPy and pybind11 (and therefore a C++
+compiler with C++11 support).
 
 ### From PyPI
 
@@ -32,25 +34,24 @@ $ cd pygram11
 $ pip install .
 ```
 
-## Feature Support
+## In Action
 
-`pygram11` plans to provide fast functions for generating histograms
-and their statistical uncertainties. Fixed and variable width binned
-histograms in multiple dimensions will be supported.
+A fixed bin width histogram of weighted data in one dimension,
+accelerated with OpenMP:
 
-| Histogram type   | Available | API stable |
-| -----------------|:---------:|:----------:|
-| 1D, fixed bins   | Yes       | No         |
-| 1D, varying bins | Yes       | No         |
-| 2D, fixed bins   | Yes       | No         |
-| 2D, varying bins | Yes       | No         |
+```python
+>>> x = np.random.randn(10000)
+>>> w = np.random.uniform(0.8, 1.2, 10000)
+>>> h, sw2 = pygram11.histogram(x, bins=40, range=(-4, 4), weights=w, omp=True)
+>>> stat_err = np.sqrt(sw2)
+```
 
-## Alternatives
+A variable bin width histogram in two dimensions:
 
-- [numpy.histogram](https://docs.scipy.org/doc/numpy/reference/generated/numpy.histogram.html):
-  versatile but slow; doesn't handle statistical uncertainty.
-- [fast-histogram](https://github.com/astrofrog/fast-histogram):
-  leverages NumPy's C API. Very fast (fixed bin only) histogramming
-  and easy to install; no OpenMP support or statistical uncertainty.
-- [physt](https://github.com/janpipek/physt): *way* more than just
-  sorting data into bins.
+```python
+>>> x = np.random.randn(10000)
+>>> y = np.random.randn(10000)
+>>> xbins = [-2.0, -1.0, -0.5, 1.5, 2.0]
+>>> ybins = [-3.0, -1.5, -0.1, 0.8, 2.0]
+>>> h = pygram11.histogram2d(x, y, bins=[xbins, ybins])
+```

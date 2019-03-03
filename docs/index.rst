@@ -6,9 +6,20 @@
 pygram11
 ========
 
-pygram11 is a small Python library for creating simple histograms
-as fast as possible.
+pygram11 is a small Python library for creating simple histograms as
+fast as possible. The backend is written in C++11 and (optionally)
+accelerated with OpenMP_.
 
+.. _OpenMP: https://www.openmp.org/
+
+Requirements
+------------
+
+- pybind11_ (and therefore a C++11 compiler)
+- NumPy_
+
+.. _pybind11: https://github.com/pybind/pybind11
+.. _NumPy: http://www.numpy.org/
 
 .. toctree::
    :maxdepth: 2

@@ -23,6 +23,7 @@ import numbers
 
 
 def fix1d(x, bins=10, range=None, weights=None, omp=False):
+
     """histogram ``x`` with fixed (uniform) binning
 
     Parameters
@@ -67,6 +68,7 @@ def fix1d(x, bins=10, range=None, weights=None, omp=False):
 
     if range is None:
         range = (x.min(), x.max())
+    assert range[0] < range[1], "range must go from low value to higher value"
 
     if weights is not None:
         weights = np.asarray(weights)
@@ -111,6 +113,7 @@ def var1d(x, bins, weights=None, omp=False):
     """
     x = np.asarray(x)
     bins = np.asarray(bins)
+    assert np.all(bins[1:] >= bins[:-1]), "bins sequence must monotonically increase"
 
     weighted_func = _var1d_weighted_f8
     unweight_func = _var1d_f8
@@ -222,7 +225,6 @@ def var2d(x, y, xbins, ybins, weights=None, omp=False):
     :obj:`numpy.ndarray`:
         sum of weights squared (only if `weights` is not None)
 
-
     Examples
     --------
     A histogram of (``x``, ``y``) where the edges are defined by a
@@ -238,6 +240,8 @@ def var2d(x, y, xbins, ybins, weights=None, omp=False):
     assert x.shape == y.shape, "x and y must be the same shape"
     xbins = np.asarray(xbins)
     ybins = np.asarray(ybins)
+    assert np.all(xbins[1:] >= xbins[:-1]), "xbins sequence must monotonically increase"
+    assert np.all(ybins[1:] >= ybins[:-1]), "ybins sequence must monotonically increase"
 
     weighted_func = _var2d_weighted_f8
     unweight_func = _var2d_f8
@@ -251,3 +255,105 @@ def var2d(x, y, xbins, ybins, weights=None, omp=False):
         return weighted_func(x, y, weights, xbins, ybins, omp)
     else:
         return unweight_func(x, y, xbins, ybins, omp)
+
+
+def histogram(x, bins=10, range=None, weights=None, omp=False):
+    """Compute the histogram for the data ``x``.
+
+    This API provides something very near close to
+    :func:`numpy.histogram`. Keep in mind that the returns are
+    different.
+
+
+    Parameters
+    ----------
+    x: array_like
+       Data to histogram.
+    bins: int or sequence of scalars, optional
+       If bins is an int, that many equal-width bins will be used to
+       construct the histogram in the given range. If bins is a
+       sequence, it must define a monotonically increasing array of
+       bin edges. This allows for nonuniform bin widths.
+    range: (float, float), optional
+       The range over which the histogram is constructed. If a range
+       is not provided then the default is (x.min(), x.max()). Values
+       outside of the range are ignored. If bins is a sequence, this
+       options is ignored.
+    weights: array_like, optional
+       An array of weights associated to each element of ``x``. Each
+       value of the ``x`` will contribute its associated weight to the
+       bin count.
+    omp: bool
+       Use OpenMP if available.
+
+    Returns
+    -------
+    :obj:`numpy.ndarray`
+        bin counts (heights)
+    :obj:`numpy.ndarray`
+        sum of weights squared (only if ``weights`` is not None)
+
+    """
+    if isinstance(bins, numbers.Integral):
+        return fix1d(x, bins=bins, range=range, weights=weights, omp=omp)
+    else:
+        return var1d(x, bins, weights=weights, omp=omp)
+
+
+def histogram2d(x, y, bins=10, range=None, weights=None, omp=False):
+    """Compute the two-dimensional histogram for the data (``x``, ``y``).
+
+    This API provides something very near close to
+    :func:`numpy.histogram2d`. Keep in mind that the returns are
+    different.
+
+    Parameters
+    ----------
+    x: array_like
+       Array representing the ``x`` coordinate of the data to histogram.
+    y: array_like
+       Array representing the ``y`` coordinate of the data to histogram.
+    bins: int or array_like or [int, int] or [array, array], optional
+       The bin specification:
+          * If int, the number of bins for the two dimensions (nx=ny=bins).
+          * If array_like, the bin edges for the two dimensions
+            (x_edges=y_edges=bins).
+          * If [int, int], the number of bins in each dimension
+            (nx, ny = bins).
+          * If [array, array], the bin edges in each dimension
+            (x_edges, y_edges = bins).
+    range: array_like, shape(2,2), optional
+       The edges of this histogram along each dimension. If ``bins``
+       is not integral, then this parameter is ignored. If None, the
+       default is ``[[x.min(), x.max()], [y.min(), y.max()]]``.
+    weights: array_like
+       An array of weights associated to each element :math:`(x_i, y_i)` pair.
+       Each pair of the the data will contribute its associated weight to the
+       bin count.
+
+    Returns
+    -------
+    :obj:`numpy.ndarray`:
+        bin counts (heights)
+    :obj:`numpy.ndarray`:
+        sum of weights squared (only if `weights` is not None)
+
+    """
+    try:
+        N = len(bins)
+    except TypeError:
+        N = 1
+
+    if N != 1 and N != 2:
+        return var2d(x, y, bins, bins, weights=weights, omp=omp)
+
+    if N == 1:
+        return fix2d(x, y, bins=bins, range=range, weights=weights, omp=omp)
+
+    if N == 2:
+        if isinstance(bins[0], numbers.Integral) and isinstance(
+            bins[1], numbers.Integral
+        ):
+            return fix2d(x, y, bins=bins, range=range, weights=weights, omp=omp)
+        else:
+            return var2d(x, y, bins[0], bins[1], weights=weights, omp=omp)
