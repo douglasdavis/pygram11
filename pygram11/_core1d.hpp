@@ -7,6 +7,7 @@
 // STL
 #include <cstdint>
 #include <cstring>
+#include <memory>
 #include <vector>
 
 // omp
