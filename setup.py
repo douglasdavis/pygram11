@@ -192,6 +192,7 @@ setup(
     url="https://github.com/drdavis/pygram11",
     description="Fast histogramming in python built on pybind11",
     long_description=long_description,
+    long_description_content_type="text/markdown",
     packages=["pygram11"],
     ext_modules=ext_modules,
     install_requires=["numpy>=1.12", "pybind11>=2.2"],
