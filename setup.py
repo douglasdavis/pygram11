@@ -14,7 +14,8 @@ from distutils.errors import CompileError, LinkError
 
 
 class get_pybind_include(object):
-    """Helper class to determine the pybind11 include path
+    """
+    Helper class to determine the pybind11 include path
 
     The purpose of this class is to postpone importing pybind11
     until it is actually installed, so that the ``get_include()``
@@ -31,16 +32,19 @@ ext_modules = [
     Extension(
         "pygram11._core",
         [os.path.join("pygram11", "_core.cpp")],
-        include_dirs=["/usr/local/include", get_pybind_include(), get_pybind_include(user=True)],
+        include_dirs=[
+            "/usr/local/include",
+            get_pybind_include(),
+            get_pybind_include(user=True),
+        ],
         language="c++",
     )
 ]
 
 
-# As of Python 3.6, CCompiler has a `has_flag` method.
-# cf http://bugs.python.org/issue26689
 def has_flag(compiler, flagname):
-    """Return a boolean indicating whether a flag name is supported on
+    """
+    Return a bool indicating whether a flag name is supported on
     the specified compiler.
     """
     with tempfile.NamedTemporaryFile("w", suffix=".cpp") as f:
@@ -65,10 +69,10 @@ int main(void) {
 
 def has_omp():
     """Check if omp available"""
-    haveit = False
+    has_omp = False
 
-    ccompiler = new_compiler()
-    customize_compiler(ccompiler)
+    c_compiler = new_compiler()
+    customize_compiler(c_compiler)
 
     if sys.platform == "darwin":
         compflags = ["-Xpreprocessor", "-fopenmp"]
@@ -86,46 +90,50 @@ def has_omp():
             f.write(CCODE)
 
         os.mkdir("objects")
-        ccompiler.compile(
-            ["test_openmp.c"], output_dir="objects",
-            extra_preargs=["-I/usr/local/include"] if sys.platform == "darwin" else None,
-            extra_postargs=compflags
+        c_compiler.compile(
+            ["test_openmp.c"],
+            output_dir="objects",
+            extra_preargs=["-I/usr/local/include"]
+            if sys.platform == "darwin"
+            else None,
+            extra_postargs=compflags,
         )
-        objects = glob.glob(os.path.join("objects", "*" + ccompiler.obj_extension))
-        ccompiler.link_executable(objects, "test_openmp", extra_postargs=linkflags)
+        objects = glob.glob(os.path.join("objects", "*" + c_compiler.obj_extension))
+        c_compiler.link_executable(objects, "test_openmp", extra_postargs=linkflags)
 
         output = subprocess.check_output("./test_openmp")
         output = output.decode(sys.stdout.encoding or "utf-8").splitlines()
         if "nthreads=" in output[0]:
             nthreads = int(output[0].strip().split("=")[1])
             if len(output) == nthreads:
-                haveit = True
+                has_omp = True
             else:
                 log.warn(
                     "Unexpected number of lines from output of test OpenMP "
                     "program (output was {0})".format(output)
                 )
-                haveit = False
+                has_omp = False
         else:
             log.warn(
                 "Unexpected output from test OpenMP "
                 "program (output was {0})".format(output)
             )
-            haveit = False
+            has_omp = False
 
-        haveit = True
+        has_omp = True
 
     except (CompileError, LinkError):
-        haveit = False
+        has_omp = False
 
     finally:
         os.chdir(start_dir)
 
-    return haveit
+    return has_omp
 
 
-def cpp_flag(compiler):
-    """Return the -std=c++[11/14] compiler flag.
+def cpp_std_flag(compiler):
+    """
+    Return the -std=c++[11/14] compiler flag.
 
     The c++14 is prefered over c++11 (when it is available).
     """
@@ -134,41 +142,34 @@ def cpp_flag(compiler):
     elif has_flag(compiler, "-std=c++11"):
         return "-std=c++11"
     else:
-        raise RuntimeError(
-            "Unsupported compiler -- at least C++11 support " "is needed!"
-        )
+        raise RuntimeError("C++11 supporting compiler required")
 
 
 class BuildExt(build_ext):
     """A custom build extension for adding compiler-specific options."""
 
-    c_opts = {"msvc": ["/EHsc"], "unix": []}
+    c_opts = []
 
     if sys.platform == "darwin":
-        c_opts["unix"] += ["-stdlib=libc++", "-mmacosx-version-min=10.10"]
+        c_opts += ["-stdlib=libc++"]
 
     def build_extensions(self):
         use_omp = has_omp()
 
         if use_omp:
             if sys.platform == "darwin":
-                self.c_opts["unix"].append("-Xpreprocessor")
-            self.c_opts["unix"].append("-fopenmp")
-            self.c_opts["unix"].append("-DPYGRAMUSEOMP")
+                self.c_opts.append("-Xpreprocessor")
+            self.c_opts.append("-fopenmp")
+            self.c_opts.append("-DPYGRAMUSEOMP")
 
-        ct = self.compiler.compiler_type
-        opts = self.c_opts.get(ct, [])
-        if ct == "unix":
-            opts.append(cpp_flag(self.compiler))
-            if has_flag(self.compiler, "-fvisibility=hidden"):
-                opts.append("-fvisibility=hidden")
-        elif ct == "msvc":
-            opts.append('/DVERSION_INFO=\\"%s\\"' % self.distribution.get_version())
+        self.c_opts.append(cpp_std_flag(self.compiler))
+        if has_flag(self.compiler, "-fvisibility=hidden"):
+            self.c_opts.append("-fvisibility=hidden")
         for ext in self.extensions:
-            ext.extra_compile_args = opts
+            ext.extra_compile_args = self.c_opts
             if use_omp:
-                if sys.platform == "darwin":
-                    ext.extra_link_args = ["-mmacosx-version-min=10.10"]
+                # if sys.platform == "darwin":
+                #    ext.extra_link_args = ["-mmacosx-version-min=10.10"]
                 ext.extra_link_args.append("-lomp")
         build_ext.build_extensions(self)
 
@@ -199,7 +200,8 @@ setup(
         "Programming Language :: Python :: 3.5",
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
-        "Development Status :: 2 - Pre-Alpha",
+        "Operating System :: Unix",
+        "Development Status :: 3 - Alpha",
         "License :: OSI Approved :: MIT License",
         "Intended Audience :: Science/Research",
     ],
