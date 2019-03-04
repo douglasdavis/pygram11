@@ -58,3 +58,8 @@ A variable bin width histogram in two dimensions:
 >>> ybins = [-3.0, -1.5, -0.1, 0.8, 2.0]
 >>> h = pygram11.histogram2d(x, y, bins=[xbins, ybins])
 ```
+
+---
+
+If there is something you'd like to see in pygram11, please open and
+Issue or PR.

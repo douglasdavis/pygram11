@@ -53,3 +53,7 @@ tasks:
       pip install twine
       python setup.py sdist
       python .ci-scripts/srht-pypi.py
+triggers:
+  - action: email
+    condition: failure
+    to: "<ddavis@ddavis.io>"
