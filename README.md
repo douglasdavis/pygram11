@@ -11,9 +11,9 @@ Simple and fast histogramming in python via
 [OpenMP](https://www.openmp.org/)
 
 `pygram11` provides fast functions for generating histograms (and
-their sums-of-weights squared). Fixed and variable width binned
-histograms are supported. The API is very simple, check out the
-documentation.
+their sums-of-weights squared). Some benchmarks are shown in the
+documentation. The API is very simple, check out the documentation
+(you'll also find some benchmarks there).
 
 ## Installing
 
