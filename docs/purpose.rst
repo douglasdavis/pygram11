@@ -38,8 +38,8 @@ Some Benchmarks
 
 Here are a couple of benchmarks testing ``pygram11`` (labeled `pg11`)
 against ``numpy.histogram`` (labeled `np`) and ``fast-histogram``
-(labeled `fh`). These were performed on a 2018 MacBook Pro with a
-2.6GHz Intel Core i7 12 core (6 hyperthreaded cores) processor.
+(labeled `fh`). These were performed on a MacBook Pro with a 2.6GHz 12
+Core Intel i7 (6 hyperthreaded cores) processor.
 
 The :math:`y`-axis is the ratio of the times to complete the
 calculation from two different packages; the higher the ratio, the
@@ -59,8 +59,9 @@ the second plot, we turn on OpenMP acceleration.
 Without OpenMP, fast-histogram outperforms pygram11 across the
 board. With OpenMP, pygram11 starts to outperform fast-histogram when
 the array size exceeds 10,000 entries. At 1,000,000 entries, pygram11
-appears to be up to 5x faster. For very small arrays, the overhead to
-spin up the parallel loops via OpenMP.
+appears to be up to 5x faster than fast-histogram, and 100x faster
+than numpy. For very small arrays, the overhead to spin up the
+parallel loops via OpenMP is observable.
 
 For variable width binning we just compare pygram11 to NumPy:
 
@@ -71,3 +72,7 @@ For variable width binning we just compare pygram11 to NumPy:
 .. image:: /_static/compare_var_omp.png
    :width: 70%
    :align: center
+
+Here we see pygram11 is always useful, and OpenMP becomes helpful for
+arrays exceeding about 1,000 entries. For large arrays we approach
+speeds 40x(10x) faster than NumPy in one(two)-dimension(s) with OpenMP enabled.

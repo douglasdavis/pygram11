@@ -1,3 +1,2 @@
 pybind11
-m2r
 sphinxcontrib-programoutput
