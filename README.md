@@ -12,7 +12,9 @@ Simple and fast histogramming in python via
 
 `pygram11` provides fast functions for generating histograms (and
 their sums-of-weights squared). The API is very simple, check out the
-documentation (you'll also find some benchmarks there) and my [blog
+documentation (you'll also find [some
+benchmarks](https://pygram11.readthedocs.io/en/stable/purpose.html#some-benchmarks)
+there) and my [blog
 post](https://ddavis.io/posts/introducing-pygram11/).
 
 ## Installing
