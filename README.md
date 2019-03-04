@@ -61,5 +61,5 @@ A variable bin width histogram in two dimensions:
 
 ---
 
-If there is something you'd like to see in pygram11, please open and
-Issue or PR.
+If there is something you'd like to see in pygram11, please open an
+issue or pull request.
