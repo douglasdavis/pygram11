@@ -11,9 +11,8 @@ Simple and fast histogramming in python via
 [OpenMP](https://www.openmp.org/)
 
 `pygram11` provides fast functions for generating histograms (and
-their sums-of-weights squared). Some benchmarks are shown in the
-documentation. The API is very simple, check out the documentation
-(you'll also find some benchmarks there).
+their sums-of-weights squared). The API is very simple, check out the
+documentation (you'll also find some benchmarks there).
 
 ## Installing
 
@@ -33,6 +32,7 @@ $ pip install pygram11
 
 ```none
 $ git clone https://github.com/drdavis/pygram11.git
+$ pip install pybind11
 $ cd pygram11
 $ pip install .
 ```
