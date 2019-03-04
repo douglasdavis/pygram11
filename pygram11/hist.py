@@ -24,7 +24,8 @@ import numbers
 
 def fix1d(x, bins=10, range=None, weights=None, omp=False):
 
-    """histogram ``x`` with fixed (uniform) binning
+    """histogram ``x`` with fixed (uniform) binning over a range
+    [xmin, xmax).
 
     Parameters
     ----------
@@ -79,7 +80,8 @@ def fix1d(x, bins=10, range=None, weights=None, omp=False):
 
 
 def var1d(x, bins, weights=None, omp=False):
-    """histogram ``x`` with variable (non-uniform) binning
+    """histogram ``x`` with variable (non-uniform) binning over a range
+    .[bins[0], bins[-1])
 
     Parameters
     ----------
@@ -131,7 +133,7 @@ def var1d(x, bins, weights=None, omp=False):
 
 def fix2d(x, y, bins=10, range=None, weights=None, omp=False):
     """histogram the ``x``, ``y`` data with fixed (uniform) binning in
-    two dimensions
+    two dimensions over the ranges [xmin, xmax), [ymin, ymax).
 
     Parameters
     ----------
@@ -201,7 +203,7 @@ def fix2d(x, y, bins=10, range=None, weights=None, omp=False):
 
 def var2d(x, y, xbins, ybins, weights=None, omp=False):
     """histogram the ``x`` and ``y`` data with variable width binning in
-    two dimensions
+    two dimensions over the range [xbins[0], xbins[-1]), [ybins[0], ybins[-1])
 
     Parameters
     ----------
@@ -260,7 +262,7 @@ def var2d(x, y, xbins, ybins, weights=None, omp=False):
 def histogram(x, bins=10, range=None, weights=None, omp=False):
     """Compute the histogram for the data ``x``.
 
-    This functions provides an API very simiar to
+    This function provides an API very simiar to
     :func:`numpy.histogram`. Keep in mind that the returns are
     different.
 
@@ -303,7 +305,7 @@ def histogram(x, bins=10, range=None, weights=None, omp=False):
 def histogram2d(x, y, bins=10, range=None, weights=None, omp=False):
     """Compute the two-dimensional histogram for the data (``x``, ``y``).
 
-    This functions provides an API very simiar to
+    This function provides an API very simiar to
     :func:`numpy.histogram2d`. Keep in mind that the returns are
     different.
 

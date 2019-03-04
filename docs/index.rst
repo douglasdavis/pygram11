@@ -6,10 +6,6 @@
 pygram11
 ========
 
-pygram11 is a small Python library for creating simple histograms as
-fast as possible. The backend is written in C++11 and (optionally)
-accelerated with OpenMP_.
-
 .. image:: https://builds.sr.ht/~ddavis/pygram11.svg
    :target: https://builds.sr.ht/~ddavis/pygram11?
    :alt: builds.sr.ht Status
@@ -25,21 +21,21 @@ accelerated with OpenMP_.
    :target: https://github.com/ambv/black
    :alt: Code style: black
 
+
+pygram11 is a small Python library for creating simple histograms
+quickly. The backend is written in C++11 (with help from pybind11_)
+and (optionally) accelerated with OpenMP_.
+
+
 .. _OpenMP: https://www.openmp.org/
-
-Requirements
-------------
-
-- pybind11_ (and therefore a C++11 compiler)
-- NumPy_
-
 .. _pybind11: https://github.com/pybind/pybind11
-.. _NumPy: http://www.numpy.org/
+
 
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
 
+   req.rst
    quick.rst
    purpose.rst
    omp.rst
