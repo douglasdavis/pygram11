@@ -16,9 +16,9 @@ into bins.
   calculation is a "first class citizen" in pygram11.
 - Finally, I thought it would be fun to learn how to write software
   with OpenMP and pybind11 because I had not used either piece of
-  software before. Hopefully having them in my tool belt will be useful
-  for a more complex future project. The idea came to me while I was
-  sitting waiting for :math:`\mathcal{O}(1000)` histograms to be
+  software before. Hopefully having them in my tool belt will be
+  useful for a more complex future project. The idea came to me while
+  I was sitting waiting for :math:`\mathcal{O}(1000)` histograms to be
   generated (one of many steps in the workflow for my thesis
   analysis).
 
