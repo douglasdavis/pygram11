@@ -33,7 +33,7 @@ void c_fix1d_weighted_omp(const T* data, const T* weights, T* count, T* sumw2,
 
 #pragma omp for nowait
     for (std::size_t i = 0; i < n; i++) {
-      pygram11::detail::fill(i, count_priv.get(), sumw2_priv.get(), data, weights, nbins,
+      pygram11::detail::fill(count_priv.get(), sumw2_priv.get(), data[i], weights[i], nbins,
                              norm, xmin, xmax);
     }
 
@@ -53,7 +53,7 @@ void c_fix1d_weighted(const T* data, const T* weights, T* count, T* sumw2,
   memset(count, 0, sizeof(T) * nbins);
   memset(sumw2, 0, sizeof(T) * nbins);
   for (std::size_t i = 0; i < n; i++) {
-    pygram11::detail::fill(i, count, sumw2, data, weights, nbins, norm, xmin, xmax);
+    pygram11::detail::fill(count, sumw2, data[i], weights[i], nbins, norm, xmin, xmax);
   }
 }
 
@@ -71,7 +71,7 @@ void c_fix1d_omp(const T* data, std::int64_t* count, const std::size_t n, const 
 
 #pragma omp for nowait
     for (std::size_t i = 0; i < n; i++) {
-      pygram11::detail::fill(i, count_priv.get(), data, nbins, norm, xmin, xmax);
+      pygram11::detail::fill(count_priv.get(), data[i], nbins, norm, xmin, xmax);
     }
 
 #pragma omp critical
@@ -88,7 +88,7 @@ void c_fix1d(const T* data, std::int64_t* count, const std::size_t n, const int 
   const T norm = 1.0 / (xmax - xmin);
   memset(count, 0, sizeof(std::int64_t) * nbins);
   for (std::size_t i = 0; i < n; i++) {
-    pygram11::detail::fill(i, count, data, nbins, norm, xmin, xmax);
+    pygram11::detail::fill(count, data[i], nbins, norm, xmin, xmax);
   }
 }
 
@@ -113,7 +113,7 @@ void c_var1d_weighted_omp(const T* data, const T* weights, T* count, T* sumw2,
 
 #pragma omp for nowait
     for (std::size_t i = 0; i < n; i++) {
-      pygram11::detail::fill(i, count_priv.get(), sumw2_priv.get(), data, weights, nbins,
+      pygram11::detail::fill(count_priv.get(), sumw2_priv.get(), data[i], weights[i], nbins,
                              edges);
     }
 
@@ -132,7 +132,7 @@ void c_var1d_weighted(const T* data, const T* weights, T* count, T* sumw2,
   memset(count, 0, sizeof(T) * nbins);
   memset(sumw2, 0, sizeof(T) * nbins);
   for (std::size_t i = 0; i < n; i++) {
-    pygram11::detail::fill(i, count, sumw2, data, weights, nbins, edges);
+    pygram11::detail::fill(count, sumw2, data[i], weights[i], nbins, edges);
   }
 }
 
@@ -148,7 +148,7 @@ void c_var1d_omp(const T* data, std::int64_t* count, const std::size_t n, const 
 
 #pragma omp for nowait
     for (std::size_t i = 0; i < n; i++) {
-      pygram11::detail::fill(i, count_priv.get(), data, nbins, edges);
+      pygram11::detail::fill(count_priv.get(), data[i], nbins, edges);
     }
 
 #pragma omp critical
@@ -164,7 +164,7 @@ void c_var1d(const T* data, std::int64_t* count, const std::size_t n, const int 
              const std::vector<T>& edges) {
   memset(count, 0, sizeof(std::int64_t) * nbins);
   for (std::size_t i = 0; i < n; i++) {
-    pygram11::detail::fill(i, count, data, nbins, edges);
+    pygram11::detail::fill(count, data[i], nbins, edges);
   }
 }
 
