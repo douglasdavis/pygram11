@@ -39,8 +39,8 @@ void c_fix2d_weighted_omp(const T* x, const T* y, const T* weights, T* count, T*
 
 #pragma omp for nowait
     for (std::size_t i = 0; i < n; i++) {
-      pygram11::detail::fill(count_priv.get(), sumw2_priv.get(), x[i], y[i], weights[i], normx,
-                             nbinsx, xmin, xmax, normy, nbinsy, ymin, ymax);
+      pygram11::detail::fill(count_priv.get(), sumw2_priv.get(), x[i], y[i], weights[i],
+                             normx, nbinsx, xmin, xmax, normy, nbinsy, ymin, ymax);
     }
 
 #pragma omp critical
@@ -62,8 +62,8 @@ void c_fix2d_weighted(const T* x, const T* y, const T* weights, T* count, T* sum
   memset(count, 0, sizeof(T) * nbins);
   memset(sumw2, 0, sizeof(T) * nbins);
   for (std::size_t i = 0; i < n; i++) {
-    pygram11::detail::fill(count, sumw2, x[i], y[i], weights[i], normx, nbinsx, xmin, xmax, normy,
-                           nbinsy, ymin, ymax);
+    pygram11::detail::fill(count, sumw2, x[i], y[i], weights[i], normx, nbinsx, xmin, xmax,
+                           normy, nbinsy, ymin, ymax);
   }
 }
 
@@ -106,8 +106,8 @@ void c_fix2d(const T* x, const T* y, std::int64_t* count, const std::size_t n,
   memset(count, 0, sizeof(std::int64_t) * nbins);
 
   for (std::size_t i = 0; i < n; i++) {
-    pygram11::detail::fill(count, x[i], y[i], normx, nbinsx, xmin, xmax, normy, nbinsy, ymin,
-                           ymax);
+    pygram11::detail::fill(count, x[i], y[i], normx, nbinsx, xmin, xmax, normy, nbinsy,
+                           ymin, ymax);
   }
 }
 
@@ -160,7 +160,8 @@ void c_var2d_weighted(const T* x, const T* y, const T* weights, T* count, T* sum
   memset(count, 0, sizeof(T) * nbins);
   memset(sumw2, 0, sizeof(T) * nbins);
   for (std::size_t i = 0; i < n; i++) {
-    pygram11::detail::fill(count, sumw2, x[i], y[i], weights[i], nbinsx, xedges, nbinsy, yedges);
+    pygram11::detail::fill(count, sumw2, x[i], y[i], weights[i], nbinsx, xedges, nbinsy,
+                           yedges);
   }
 }
 
@@ -182,8 +183,8 @@ void c_var2d_weighted_omp(const T* x, const T* y, const T* weights, T* count, T*
 
 #pragma omp for nowait
     for (std::size_t i = 0; i < n; i++) {
-      pygram11::detail::fill(count_priv.get(), sumw2_priv.get(), x[i], y[i], weights[i], nbinsx,
-                             xedges, nbinsy, yedges);
+      pygram11::detail::fill(count_priv.get(), sumw2_priv.get(), x[i], y[i], weights[i],
+                             nbinsx, xedges, nbinsy, yedges);
     }
 
 #pragma omp critical
