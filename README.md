@@ -9,7 +9,7 @@
 
 Simple and fast histogramming in python via
 [pybind11](https://github.com/pybind/pybind11) and (optionally)
-[OpenMP](https://www.openmp.org/)
+[OpenMP](https://www.openmp.org/).
 
 `pygram11` provides fast functions for generating histograms (and
 their sums-of-weights squared). The API is very simple, check out the
