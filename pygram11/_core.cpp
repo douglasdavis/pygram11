@@ -97,18 +97,16 @@ template <typename T>
 py::array py_fix1d(py::array_t<T, py::array::c_style | py::array::forcecast> x, int nbins,
                    T xmin, T xmax, bool use_omp) {
   auto result_count = py::array_t<std::int64_t>(nbins);
-  auto result_count_ptr = static_cast<std::int64_t*>(result_count.request().ptr);
-  std::size_t ndata = x.request().size;
+  std::int64_t* result_count_ptr = result_count.mutable_data();
+  std::size_t ndata = static_cast<std::size_t>(x.size());
 
 #ifdef PYGRAMUSEOMP
   if (use_omp) {
-    c_fix1d_omp<T>(static_cast<const T*>(x.request().ptr), result_count_ptr, ndata, nbins,
-                   xmin, xmax);
+    c_fix1d_omp<T>(x.data(), result_count_ptr, ndata, nbins, xmin, xmax);
     return result_count;
   }
 #endif
-  c_fix1d<T>(static_cast<const T*>(x.request().ptr), result_count_ptr, ndata, nbins, xmin,
-             xmax);
+  c_fix1d<T>(x.data(), result_count_ptr, ndata, nbins, xmin, xmax);
   return result_count;
 }
 
@@ -118,21 +116,19 @@ py::tuple py_fix1d_weighted(py::array_t<T, py::array::c_style | py::array::force
                             int nbins, T xmin, T xmax, bool use_omp) {
   auto result_count = py::array_t<T>(nbins);
   auto result_sumw2 = py::array_t<T>(nbins);
-  auto result_count_ptr = static_cast<T*>(result_count.request().ptr);
-  auto result_sumw2_ptr = static_cast<T*>(result_sumw2.request().ptr);
-  std::size_t ndata = x.request().size;
+  T* result_count_ptr = result_count.mutable_data();
+  T* result_sumw2_ptr = result_sumw2.mutable_data();
+  std::size_t ndata = static_cast<std::size_t>(x.size());
 
 #ifdef PYGRAMUSEOMP
   if (use_omp) {
-    c_fix1d_weighted_omp<T>(static_cast<const T*>(x.request().ptr),
-                            static_cast<const T*>(w.request().ptr), result_count_ptr,
-                            result_sumw2_ptr, ndata, nbins, xmin, xmax);
+    c_fix1d_weighted_omp<T>(x.data(), w.data(), result_count_ptr, result_sumw2_ptr, ndata,
+                            nbins, xmin, xmax);
     return py::make_tuple(result_count, result_sumw2);
   }
 #endif
-  c_fix1d_weighted<T>(static_cast<const T*>(x.request().ptr),
-                      static_cast<const T*>(w.request().ptr), result_count_ptr,
-                      result_sumw2_ptr, ndata, nbins, xmin, xmax);
+  c_fix1d_weighted<T>(x.data(), w.data(), result_count_ptr, result_sumw2_ptr, ndata, nbins,
+                      xmin, xmax);
   return py::make_tuple(result_count, result_sumw2);
 }
 
@@ -140,25 +136,23 @@ template <typename T>
 py::array py_var1d(py::array_t<T, py::array::c_style | py::array::forcecast> x,
                    py::array_t<T, py::array::c_style | py::array::forcecast> edges,
                    bool use_omp) {
-  size_t edges_len = edges.request().size;
-  auto edges_ptr = static_cast<const T*>(edges.request().ptr);
+  ssize_t edges_len = edges.size();
+  const T* edges_ptr = edges.data();
   std::vector<T> edges_vec(edges_ptr, edges_ptr + edges_len);
 
-  std::size_t ndata = x.request().size;
+  std::size_t ndata = static_cast<std::size_t>(x.size());
   int nbins = edges_len - 1;
 
   auto result_count = py::array_t<std::int64_t>(nbins);
-  auto result_count_ptr = static_cast<std::int64_t*>(result_count.request().ptr);
+  std::int64_t* result_count_ptr = result_count.mutable_data();
 
 #ifdef PYGRAMUSEOMP
   if (use_omp) {
-    c_var1d_omp<T>(static_cast<const T*>(x.request().ptr), result_count_ptr, ndata, nbins,
-                   edges_vec);
+    c_var1d_omp<T>(x.data(), result_count_ptr, ndata, nbins, edges_vec);
     return result_count;
   }
 #endif
-  c_var1d<T>(static_cast<const T*>(x.request().ptr), result_count_ptr, ndata, nbins,
-             edges_vec);
+  c_var1d<T>(x.data(), result_count_ptr, ndata, nbins, edges_vec);
   return result_count;
 }
 
@@ -167,29 +161,27 @@ py::tuple py_var1d_weighted(py::array_t<T, py::array::c_style | py::array::force
                             py::array_t<T, py::array::c_style | py::array::forcecast> w,
                             py::array_t<T, py::array::c_style | py::array::forcecast> edges,
                             bool use_omp) {
-  size_t edges_len = edges.request().size;
-  auto edges_ptr = static_cast<const T*>(edges.request().ptr);
+  ssize_t edges_len = edges.size();
+  auto edges_ptr = edges.data();
   std::vector<T> edges_vec(edges_ptr, edges_ptr + edges_len);
 
-  std::size_t ndata = x.request().size;
-  int nbins = edges_len - 1;
+  std::size_t ndata = static_cast<std::size_t>(x.size());
+  std::size_t nbins = edges_len - 1;
 
   auto result_count = py::array_t<T>(nbins);
   auto result_sumw2 = py::array_t<T>(nbins);
-  auto result_count_ptr = static_cast<T*>(result_count.request().ptr);
-  auto result_sumw2_ptr = static_cast<T*>(result_sumw2.request().ptr);
+  T* result_count_ptr = result_count.mutable_data();
+  T* result_sumw2_ptr = result_sumw2.mutable_data();
 
 #ifdef PYGRAMUSEOMP
   if (use_omp) {
-    c_var1d_weighted_omp<T>(static_cast<const T*>(x.request().ptr),
-                            static_cast<const T*>(w.request().ptr), result_count_ptr,
-                            result_sumw2_ptr, ndata, nbins, edges_vec);
+    c_var1d_weighted_omp<T>(x.data(), w.data(), result_count_ptr, result_sumw2_ptr, ndata,
+                            nbins, edges_vec);
     return py::make_tuple(result_count, result_sumw2);
   }
 #endif
-  c_var1d_weighted<T>(static_cast<const T*>(x.request().ptr),
-                      static_cast<const T*>(w.request().ptr), result_count_ptr,
-                      result_sumw2_ptr, ndata, nbins, edges_vec);
+  c_var1d_weighted<T>(x.data(), w.data(), result_count_ptr, result_sumw2_ptr, ndata, nbins,
+                      edges_vec);
   return py::make_tuple(result_count, result_sumw2);
 }
 
@@ -198,19 +190,18 @@ py::array py_fix2d(py::array_t<T, py::array::c_style | py::array::forcecast> x,
                    py::array_t<T, py::array::c_style | py::array::forcecast> y, int nbinsx,
                    T xmin, T xmax, int nbinsy, T ymin, T ymax, bool use_omp) {
   auto result_count = py::array_t<std::int64_t>({nbinsx, nbinsy});
-  auto result_count_ptr = static_cast<std::int64_t*>(result_count.request().ptr);
-  std::size_t ndata = x.request().size;
+  std::int64_t* result_count_ptr = result_count.mutable_data();
+  std::size_t ndata = static_cast<std::size_t>(x.size());
 
 #ifdef PYGRAMUSEOMP
   if (use_omp) {
-    c_fix2d_omp<T>(static_cast<const T*>(x.request().ptr),
-                   static_cast<const T*>(y.request().ptr), result_count_ptr, ndata, nbinsx,
-                   xmin, xmax, nbinsy, ymin, ymax);
+    c_fix2d_omp<T>(x.data(), y.data(), result_count_ptr, ndata, nbinsx, xmin, xmax, nbinsy,
+                   ymin, ymax);
     return result_count;
   }
 #endif
-  c_fix2d<T>(static_cast<const T*>(x.request().ptr), static_cast<const T*>(y.request().ptr),
-             result_count_ptr, ndata, nbinsx, xmin, xmax, nbinsy, ymin, ymax);
+  c_fix2d<T>(x.data(), y.data(), result_count_ptr, ndata, nbinsx, xmin, xmax, nbinsy, ymin,
+             ymax);
   return result_count;
 }
 
@@ -222,23 +213,20 @@ py::tuple py_fix2d_weighted(py::array_t<T, py::array::c_style | py::array::force
                             bool use_omp) {
   auto result_count = py::array_t<T>({nbinsx, nbinsy});
   auto result_sumw2 = py::array_t<T>({nbinsx, nbinsy});
-  auto result_count_ptr = static_cast<T*>(result_count.request().ptr);
-  auto result_sumw2_ptr = static_cast<T*>(result_sumw2.request().ptr);
-  std::size_t ndata = x.request().size;
+  T* result_count_ptr = result_count.mutable_data();
+  T* result_sumw2_ptr = result_sumw2.mutable_data();
+  std::size_t ndata = static_cast<std::size_t>(x.size());
 
 #ifdef PYGRAMUSEOMP
   if (use_omp) {
-    c_fix2d_weighted_omp<T>(
-        static_cast<const T*>(x.request().ptr), static_cast<const T*>(y.request().ptr),
-        static_cast<const T*>(w.request().ptr), result_count_ptr, result_sumw2_ptr, ndata,
-        nbinsx, xmin, xmax, nbinsy, ymin, ymax);
+    c_fix2d_weighted_omp<T>(x.data(), y.data(), w.data(), result_count_ptr,
+                            result_sumw2_ptr, ndata, nbinsx, xmin, xmax, nbinsy, ymin,
+                            ymax);
     return py::make_tuple(result_count, result_sumw2);
   }
 #endif
-  c_fix2d_weighted<T>(static_cast<const T*>(x.request().ptr),
-                      static_cast<const T*>(y.request().ptr),
-                      static_cast<const T*>(w.request().ptr), result_count_ptr,
-                      result_sumw2_ptr, ndata, nbinsx, xmin, xmax, nbinsy, ymin, ymax);
+  c_fix2d_weighted<T>(x.data(), y.data(), w.data(), result_count_ptr, result_sumw2_ptr,
+                      ndata, nbinsx, xmin, xmax, nbinsy, ymin, ymax);
   return py::make_tuple(result_count, result_sumw2);
 }
 
@@ -248,30 +236,29 @@ py::array py_var2d(py::array_t<T, py::array::c_style | py::array::forcecast> x,
                    py::array_t<T, py::array::c_style | py::array::forcecast> xedges,
                    py::array_t<T, py::array::c_style | py::array::forcecast> yedges,
                    bool use_omp) {
-  std::size_t xedges_len = xedges.request().size;
-  std::size_t yedges_len = yedges.request().size;
-  auto xedges_ptr = static_cast<const T*>(xedges.request().ptr);
-  auto yedges_ptr = static_cast<const T*>(yedges.request().ptr);
+  std::size_t xedges_len = static_cast<std::size_t>(xedges.size());
+  std::size_t yedges_len = static_cast<std::size_t>(yedges.size());
+  const T* xedges_ptr = xedges.data();
+  const T* yedges_ptr = yedges.data();
   std::vector<T> xedges_vec(xedges_ptr, xedges_ptr + xedges_len);
   std::vector<T> yedges_vec(yedges_ptr, yedges_ptr + yedges_len);
 
-  std::size_t ndata = x.request().size;
+  std::size_t ndata = static_cast<std::size_t>(x.size());
   int nbinsx = xedges_len - 1;
   int nbinsy = yedges_len - 1;
 
   auto result_count = py::array_t<std::int64_t>({nbinsx, nbinsy});
-  auto result_count_ptr = static_cast<std::int64_t*>(result_count.request().ptr);
+  std::int64_t* result_count_ptr = result_count.mutable_data();
 
 #ifdef PYGRAMUSEOMP
   if (use_omp) {
-    c_var2d_omp<T>(static_cast<const T*>(x.request().ptr),
-                   static_cast<const T*>(y.request().ptr), result_count_ptr, ndata, nbinsx,
-                   nbinsy, xedges_vec, yedges_vec);
+    c_var2d_omp<T>(x.data(), y.data(), result_count_ptr, ndata, nbinsx, nbinsy, xedges_vec,
+                   yedges_vec);
     return result_count;
   }
 #endif
-  c_var2d<T>(static_cast<const T*>(x.request().ptr), static_cast<const T*>(y.request().ptr),
-             result_count_ptr, ndata, nbinsx, nbinsy, xedges_vec, yedges_vec);
+  c_var2d<T>(x.data(), y.data(), result_count_ptr, ndata, nbinsx, nbinsy, xedges_vec,
+             yedges_vec);
   return result_count;
 }
 
@@ -282,34 +269,31 @@ py::tuple py_var2d_weighted(
     py::array_t<T, py::array::c_style | py::array::forcecast> w,
     py::array_t<T, py::array::c_style | py::array::forcecast> xedges,
     py::array_t<T, py::array::c_style | py::array::forcecast> yedges, bool use_omp) {
-  std::size_t xedges_len = xedges.request().size;
-  std::size_t yedges_len = yedges.request().size;
-  auto xedges_ptr = static_cast<const T*>(xedges.request().ptr);
-  auto yedges_ptr = static_cast<const T*>(yedges.request().ptr);
+  std::size_t xedges_len = static_cast<std::size_t>(xedges.size());
+  std::size_t yedges_len = static_cast<std::size_t>(yedges.size());
+  const T* xedges_ptr = xedges.data();
+  const T* yedges_ptr = yedges.data();
   std::vector<T> xedges_vec(xedges_ptr, xedges_ptr + xedges_len);
   std::vector<T> yedges_vec(yedges_ptr, yedges_ptr + yedges_len);
 
-  std::size_t ndata = x.request().size;
+  std::size_t ndata = static_cast<std::size_t>(x.size());
   int nbinsx = xedges_len - 1;
   int nbinsy = yedges_len - 1;
 
   auto result_count = py::array_t<T>({nbinsx, nbinsy});
   auto result_sumw2 = py::array_t<T>({nbinsx, nbinsy});
-  auto result_count_ptr = static_cast<T*>(result_count.request().ptr);
-  auto result_sumw2_ptr = static_cast<T*>(result_sumw2.request().ptr);
+  T* result_count_ptr = result_count.mutable_data();
+  T* result_sumw2_ptr = result_sumw2.mutable_data();
 
 #ifdef PYGRAMUSEOMP
   if (use_omp) {
-    c_var2d_weighted_omp<T>(
-        static_cast<const T*>(x.request().ptr), static_cast<const T*>(y.request().ptr),
-        static_cast<const T*>(w.request().ptr), result_count_ptr, result_sumw2_ptr, ndata,
-        nbinsx, nbinsy, xedges_vec, yedges_vec);
+    c_var2d_weighted_omp<T>(x.data(), y.data(), w.data(), result_count_ptr,
+                            result_sumw2_ptr, ndata, nbinsx, nbinsy, xedges_vec,
+                            yedges_vec);
     return py::make_tuple(result_count, result_sumw2);
   }
 #endif
-  c_var2d_weighted<T>(static_cast<const T*>(x.request().ptr),
-                      static_cast<const T*>(y.request().ptr),
-                      static_cast<const T*>(w.request().ptr), result_count_ptr,
-                      result_sumw2_ptr, ndata, nbinsx, nbinsy, xedges_vec, yedges_vec);
+  c_var2d_weighted<T>(x.data(), y.data(), w.data(), result_count_ptr, result_sumw2_ptr,
+                      ndata, nbinsx, nbinsy, xedges_vec, yedges_vec);
   return py::make_tuple(result_count, result_sumw2);
 }
