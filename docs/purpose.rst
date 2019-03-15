@@ -59,7 +59,7 @@ the second plot, we turn on OpenMP acceleration.
 Without OpenMP, fast-histogram outperforms pygram11 across the
 board. With OpenMP, pygram11 starts to outperform fast-histogram when
 the array size exceeds 10,000 entries. At 1,000,000 entries, pygram11
-appears to be up to 5x faster than fast-histogram, and 100x faster
+appears to be up to 3x faster than fast-histogram, and 100x faster
 than numpy. For very small arrays, the overhead to spin up the
 parallel loops via OpenMP is observable.
 
