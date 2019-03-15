@@ -9,18 +9,17 @@ the `build manifests and recent logs
 <https://builds.sr.ht/~ddavis/pygram11/>`_ for more detailed
 information about OpenMP being tested by CI.
 
-Three methods have been manually tested for OpenMP support:
+Three platforms have been manually tested for OpenMP support:
 
-- Arch Linux: system python (3.7.2) and GCC (8.2). *Arch Linux is a
-  rolling release and therefore these versions may be out-of-date.*
+- Arch Linux: system python (3.7.2) and GCC (8.2).
 - Debian Buster: system python3 (3.7.2) with GCC 8.3 and ``libgomp1``
   installed.
 - macOS 10.14: Homebrew python3 (3.7.2) with ``libomp`` installed from
-  Homebrew (Apple LLVM version 10.0.0).
-- macOS 10.14: Anaconda python3 (3.6.8 and 3.7.2) and python2 (2.7.15)
-  distributions with ``libomp`` installed from Homebrew (you'll likely
-  need to remove the extra ``libiomp5.dylib`` from the Anaconda
-  environment ``lib`` folder or ``conda install nomkl``, see `here
+  Homebrew (Apple LLVM version 10.0.0). Also Anaconda python3 (3.6.8
+  and 3.7.2) and python2 (2.7.15) distributions with ``libomp``
+  installed from Homebrew (you'll likely need to remove the extra
+  ``libiomp5.dylib`` from the Anaconda environment ``lib`` folder or
+  ``conda install nomkl``, see `here
   <https://github.com/dmlc/xgboost/issues/1715>`_).
 
 To check if OpenMP was detected and used while compiling the extension
