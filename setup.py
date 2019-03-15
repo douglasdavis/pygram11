@@ -79,7 +79,7 @@ def has_omp():
         linkflags = ["-Xpreprocessor", "-fopenmp", "-lomp"]
     else:
         compflags = ["-fopenmp"]
-        linkflags = ["-fopenmp", "-lomp"]
+        linkflags = ["-fopenmp", "-lgomp"]
 
     tmp_dir = tempfile.mkdtemp()
     start_dir = os.path.abspath(".")
@@ -168,9 +168,10 @@ class BuildExt(build_ext):
         for ext in self.extensions:
             ext.extra_compile_args = self.c_opts
             if use_omp:
-                # if sys.platform == "darwin":
-                #    ext.extra_link_args = ["-mmacosx-version-min=10.10"]
-                ext.extra_link_args.append("-lomp")
+                if sys.platform == "darwin":
+                    ext.extra_link_args.append("-lomp")
+                else:
+                    ext.extra_link_args.append("-lgomp")
         build_ext.build_extensions(self)
 
 
