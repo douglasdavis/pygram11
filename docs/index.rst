@@ -14,9 +14,6 @@ and (optionally) accelerated with OpenMP_.
 .. image:: https://builds.sr.ht/~ddavis/pygram11.svg
    :target: https://builds.sr.ht/~ddavis/pygram11?
    :alt: builds.sr.ht Status
-.. image:: https://readthedocs.org/projects/pygram11/badge/?version=stable
-   :target: https://pygram11.readthedocs.io/en/stable/?badge=stable
-   :alt: Documentation Status
 .. image:: https://img.shields.io/pypi/v/pygram11.svg?colorB=486b87&style=flat
    :target: https://pypi.org/project/pygram11/
    :alt: PyPI
