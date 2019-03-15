@@ -1,0 +1,24 @@
+image: archlinux
+packages:
+  - python-pip
+  - python-numpy
+  - python-pytest
+  - pybind11
+sources:
+  - https://github.com/drdavis/pygram11
+tasks:
+  - setup: |
+      echo "no setup"
+  - build: |
+      cd pygram11
+      sudo pip install .
+  - test: |
+      cd pygram11
+      pytest
+      mkdir play
+      cd play
+      python -c "import pygram11; print(pygram11.OPENMP)"
+triggers:
+  - action: email
+    condition: failure
+    to: "<ddavis@ddavis.io>"

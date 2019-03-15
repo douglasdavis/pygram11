@@ -2,24 +2,26 @@ OpenMP Support
 ==============
 
 The ``setup.py`` script tests to see of OpenMP is available during
-installation. Unit tests executed by continuous integration currently
-do not test OpenMP.
+installation. Unit tests executed by continuous integration (Linux
+only, no macOS) currently *do not enforce* successful OpenMP
+discovery, but if OpenMP is found, tests are executed.  You can check
+the `build manifests and recent logs
+<https://builds.sr.ht/~ddavis/pygram11/>`_ for more detailed
+information about OpenMP being tested by CI.
 
-Three methods are manually tested for OpenMP support before releases:
+Three methods have been manually tested for OpenMP support:
 
-- Arch Linux: system python (3.7.2) with ``extra/openmp`` installed (GCC
-  8.2).
+- Arch Linux: system python (3.7.2) and GCC (8.2). *Arch Linux is a
+  rolling release and therefore these versions may be out-of-date.*
+- Debian Buster: system python3 (3.7.2) with GCC 8.3 and ``libgomp1``
+  installed.
 - macOS 10.14: Homebrew python3 (3.7.2) with ``libomp`` installed from
   Homebrew (Apple LLVM version 10.0.0).
 - macOS 10.14: Anaconda python3 (3.6.8 and 3.7.2) and python2 (2.7.15)
   distributions with ``libomp`` installed from Homebrew (you'll likely
   need to remove the extra ``libiomp5.dylib`` from the Anaconda
-  environment ``lib`` folder or ``conda install nomkl``, see
-  `here <https://github.com/dmlc/xgboost/issues/1715>`_).
-
-Ubuntu 18.04 (with GCC 7.3 and system python 3.6.7) has also been
-reported to successfully build pygram11 with OpenMP, but this is not
-tested.
+  environment ``lib`` folder or ``conda install nomkl``, see `here
+  <https://github.com/dmlc/xgboost/issues/1715>`_).
 
 To check if OpenMP was detected and used while compiling the extension
 module ``pygram11._core``, try the following:
@@ -34,5 +36,5 @@ Needless to say, if you see ``False`` OpenMP acceleration isn't
 available.
 
 The histogramming functions use a named argument for requesting OpenMP
-usage. If ``pygram11.OPENMP`` is ``False`` then the argument is ignored by
-the C++ code.
+usage. If ``pygram11.OPENMP`` is ``False`` then the argument is
+ignored by the C++ code.
