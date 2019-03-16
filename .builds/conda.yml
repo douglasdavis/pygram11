@@ -44,15 +44,6 @@ tasks:
       pip install pip -U
       pip install .
       pytest
-  - deploy: |
-      cd pygram11
-      source $HOME/miniconda/etc/profile.d/conda.sh
-      conda activate py36
-      pip install pip -U
-      pip install .
-      pip install twine
-      python setup.py sdist
-      python .ci-scripts/srht-pypi.py
 triggers:
   - action: email
     condition: failure
