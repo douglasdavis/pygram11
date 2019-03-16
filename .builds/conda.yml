@@ -4,8 +4,6 @@ packages:
   - wget
 sources:
   - https://github.com/drdavis/pygram11
-secrets:
-  - a7bb07f9-3681-4e7e-8650-e49e3ca8c822
 tasks:
   - setup: |
       wget -nv http://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
