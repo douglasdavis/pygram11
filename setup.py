@@ -76,10 +76,10 @@ def has_omp():
 
     if sys.platform == "darwin":
         compflags = ["-Xpreprocessor", "-fopenmp"]
-        linkflags = ["-Xpreprocessor", "-fopenmp", "-lomp"]
+        linkflags = ["-lomp"]
     else:
         compflags = ["-fopenmp"]
-        linkflags = ["-fopenmp", "-lgomp"]
+        linkflags = ["-lgomp"]
 
     tmp_dir = tempfile.mkdtemp()
     start_dir = os.path.abspath(".")
