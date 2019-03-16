@@ -1,2 +1,3 @@
 include pygram11/*.hpp
+include tests/*.py
 include LICENSE
