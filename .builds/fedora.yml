@@ -1,0 +1,26 @@
+image: fedora/latest
+packages:
+  - gcc-c++
+  - python3-devel
+  - python3-pip
+  - python3-numpy
+  - pybind11-devel
+  - python3-pybind11
+sources:
+  - https://github.com/drdavis/pygram11
+tasks:
+  - setup: |
+      pip3 install pytest --user
+  - build: |
+      cd pygram11
+      pip3 install . --user
+  - test: |
+      cd pygram11
+      pytest
+      mkdir play
+      cd play
+      python3 -c "import pygram11; print(pygram11.OPENMP)"
+triggers:
+  - action: email
+    condition: failure
+    to: "<ddavis@ddavis.io>
