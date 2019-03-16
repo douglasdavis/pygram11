@@ -1,1 +1,2 @@
 include pygram11/*.hpp
+include LICENSE
