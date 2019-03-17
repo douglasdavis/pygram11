@@ -76,7 +76,7 @@ def has_omp():
 
     if sys.platform == "darwin":
         compflags = ["-Xpreprocessor", "-fopenmp"]
-        linkflags = ["-lomp"]
+        linkflags = [r"-Wl,-rpath,${PREFIX}/lib", "-lomp"]
     else:
         compflags = ["-fopenmp"]
         linkflags = ["-lgomp"]
@@ -169,6 +169,7 @@ class BuildExt(build_ext):
             ext.extra_compile_args = self.c_opts
             if use_omp:
                 if sys.platform == "darwin":
+                    ext.extra_link_args.append(r"-Wl,-rpath,${PREFIX}/lib")
                     ext.extra_link_args.append("-lomp")
                 else:
                     ext.extra_link_args.append("-lgomp")
