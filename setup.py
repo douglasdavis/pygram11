@@ -71,15 +71,21 @@ def has_omp():
     """Check if omp available"""
     has_omp = False
 
+    ## for conda-forge
+    prefixEnviron = os.getenv("PREFIX")
+
     c_compiler = new_compiler()
     customize_compiler(c_compiler)
 
+    linkflags, compflags = [], []
     if sys.platform == "darwin":
-        compflags = ["-Xpreprocessor", "-fopenmp"]
-        linkflags = [r"-Wl,-rpath,${PREFIX}/lib", "-lomp"]
+        if prefixEnviron is not None:
+            linkflags += ["-Wl,-rpath,{}/lib".format(prefixEnviron)]
+        compflags += ["-Xpreprocessor", "-fopenmp"]
+        linkflags += ["-lomp"]
     else:
-        compflags = ["-fopenmp"]
-        linkflags = ["-lgomp"]
+        compflags += ["-fopenmp"]
+        linkflags += ["-lgomp"]
 
     tmp_dir = tempfile.mkdtemp()
     start_dir = os.path.abspath(".")
@@ -155,6 +161,8 @@ class BuildExt(build_ext):
 
     def build_extensions(self):
         use_omp = has_omp()
+        ## for conda-forge
+        prefixEnviron = os.getenv("PREFIX")
 
         if use_omp:
             if sys.platform == "darwin":
@@ -169,7 +177,8 @@ class BuildExt(build_ext):
             ext.extra_compile_args = self.c_opts
             if use_omp:
                 if sys.platform == "darwin":
-                    ext.extra_link_args.append(r"-Wl,-rpath,${PREFIX}/lib")
+                    if prefixEnviron is not None:
+                        ext.extra_link_args.append("-Wl,-rpath,{}/lib".format(prefixEnviron))
                     ext.extra_link_args.append("-lomp")
                 else:
                     ext.extra_link_args.append("-lgomp")
