@@ -23,4 +23,4 @@ tasks:
 triggers:
   - action: email
     condition: failure
-    to: "<ddavis@ddavis.io>
+    to: "<ddavis@ddavis.io>"
