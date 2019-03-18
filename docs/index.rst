@@ -14,17 +14,15 @@ and (optionally) accelerated with OpenMP_.
 .. image:: https://builds.sr.ht/~ddavis/pygram11.svg
    :target: https://builds.sr.ht/~ddavis/pygram11?
    :alt: builds.sr.ht Status
+.. image:: https://img.shields.io/conda/vn/conda-forge/pygram11.svg?colorB=486b87&style=flat
+   :target: https://anaconda.org/conda-forge/pygram11
+   :alt: conda-forge
 .. image:: https://img.shields.io/pypi/v/pygram11.svg?colorB=486b87&style=flat
    :target: https://pypi.org/project/pygram11/
    :alt: PyPI
-.. image:: https://img.shields.io/pypi/pyversions/pygram11.svg?colorB=blue
-   :alt: Python Versions
 .. image:: https://zenodo.org/badge/168767581.svg
    :target: https://zenodo.org/badge/latestdoi/168767581
    :alt: DOI
-.. image:: https://img.shields.io/badge/code%20style-black-000000.svg
-   :target: https://github.com/ambv/black
-   :alt: Code style: black
 
 .. _OpenMP: https://www.openmp.org/
 .. _pybind11: https://github.com/pybind/pybind11

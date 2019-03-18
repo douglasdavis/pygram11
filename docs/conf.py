@@ -90,23 +90,8 @@ html_theme = "sphinx_rtd_theme"
 # documentation.
 #
 html_theme_options = {
-
+    'collapse_navigation': False,
 }
-
-# html_theme_options = {
-#     "page_width": "1000px",
-#     "sidebar_width": "250px",
-#     "github_user": "drdavis",
-#     "github_repo": "pygram11",
-#     "github_count": False,
-#     "github_type": "star",
-#     "fixed_sidebar": True,
-#     "show_powered_by": False,
-#     "code_font_size": "0.8em",
-#     #"head_font_family": '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"',
-#     #"font_family": '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"',
-#     "code_font_family": '"Fira Code", "Roboto Mono", monospace',
-# }
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,

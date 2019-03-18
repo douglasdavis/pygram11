@@ -4,7 +4,7 @@
 [![Documentation Status](https://readthedocs.org/projects/pygram11/badge/?version=stable)](https://pygram11.readthedocs.io/en/stable/?badge=stable)
 ![](https://img.shields.io/pypi/pyversions/pygram11.svg?colorB=blue&style=flat)
 [![PyPI version](https://img.shields.io/pypi/v/pygram11.svg?colorB=486b87&style=flat)](https://pypi.org/project/pygram11/)
-[![Conda Forge](https://img.shields.io/conda/vn/conda-forge/pygram11.svg?colorB=486b87%style=flat)](https://anaconda.org/conda-forge/pygram11)
+[![Conda Forge](https://img.shields.io/conda/vn/conda-forge/pygram11.svg?colorB=486b87&style=flat)](https://anaconda.org/conda-forge/pygram11)
 [![DOI](https://zenodo.org/badge/168767581.svg)](https://zenodo.org/badge/latestdoi/168767581)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/ambv/black)
 
@@ -22,11 +22,23 @@ post](https://ddavis.io/posts/introducing-pygram11/).
 ## Installing
 
 pygram11 requires only NumPy and pybind11 (and therefore a C++
-compiler with C++11 support). **Note**: `pybind11` must be installed
-explicitly before `pygram11` (because `setup.py` uses `pybind11` to
-determine include directories).
+compiler with C++11 support).
+
+### From conda-forge
+
+```none
+conda install pygram11 -c conda-forge
+```
+
+Builds on [conda-forge](https://conda-forge.org/) will have OpenMP
+available.
 
 ### From PyPI
+
+**Note**: When using PyPI (or source), `pybind11` must be installed
+explicitly before `pygram11` (because `setup.py` uses `pybind11` to
+determine include directories; not an issue if using the conda-forge
+build).
 
 ```none
 $ pip install pybind11 ## or `conda install pybind11`

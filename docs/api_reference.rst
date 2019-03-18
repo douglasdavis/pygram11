@@ -1,22 +1,9 @@
 API Reference
 =============
 
-.. currentmodule:: pygram11
+.. toctree::
+   :maxdepth: 2
+   :caption: Histogramming:
 
-pygram11 Specific
------------------
-
-.. autofunction:: fix1d
-
-.. autofunction:: var1d
-
-.. autofunction:: fix2d
-
-.. autofunction:: var2d
-
-NumPy-like
-----------
-
-.. autofunction:: histogram
-
-.. autofunction:: histogram2d
+   api/pygramspecific.rst
+   api/numpylike.rst
