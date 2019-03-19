@@ -30,6 +30,8 @@ Install Options
 conda-forge
 ^^^^^^^^^^^
 
+Installations from conda-forge will come with OpenMP.
+
 .. code-block:: none
 
    conda install -c conda-forge pygram11

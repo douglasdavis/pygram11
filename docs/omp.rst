@@ -1,7 +1,7 @@
 OpenMP Support
 ==============
 
-If installing pygram11 from conda-forge, OpenMP should work. If using
+If installing pygram11 from conda-forge, OpenMP is available. If using
 PyPI or a source release, the ``setup.py`` script tests to see of
 OpenMP is available during installation.
 
