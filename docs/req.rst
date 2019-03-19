@@ -30,7 +30,7 @@ Install Options
 conda-forge
 ^^^^^^^^^^^
 
-Installations from conda-forge will come with OpenMP.
+Installations from conda-forge provide a build that used OpenMP.
 
 .. code-block:: none
 
