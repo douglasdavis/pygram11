@@ -25,7 +25,7 @@ def densify1d(h, range, binw=None, sumw2=None):
     :obj:`numpy.ndarray`
         bin counts normalized
     :obj:`numpy.ndarray`
-        uncertainty on the bin heights (only if ``weights`` is not None)
+        uncertainty on the bin heights (only if ``sumw2`` is not None)
 
     """
     raw_integral = h.sum()
