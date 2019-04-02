@@ -193,3 +193,31 @@ if pygram11.OPENMP:
         pygram_h, _ = pygram11.var2d(x, y, xbins, ybins, weights=w, omp=True)
         numpy_h, _, _ = np.histogram2d(x, y, bins=[xbins, ybins], weights=w)
         npt.assert_almost_equal(pygram_h, numpy_h, 5)
+
+
+def test_density_fix1d():
+    x = np.random.randn(5000)
+    bins = 25
+    w = np.random.uniform(0.5, 1.0, 5000)
+
+    pygram_h = pygram11.fix1d(x, bins=25, range=(-3, 3), density=True)
+    numpy_h, _ = np.histogram(x, bins=np.linspace(-3, 3, 26), density=True)
+    npt.assert_almost_equal(pygram_h, numpy_h, 5)
+
+    pygram_h, _ = pygram11.fix1d(x, bins=25, range=(-3, 3), weights=w, density=True)
+    numpy_h, _ = np.histogram(x, bins=np.linspace(-3, 3, 26), weights=w, density=True)
+    npt.assert_almost_equal(pygram_h, numpy_h, 5)
+
+
+def test_density_var1d():
+    x = np.random.randn(5000)
+    bins = [-1.2, -1, -0.2, 0.7, 1.5, 2.1]
+    w = np.random.uniform(0.5, 1.9, 5000)
+
+    pygram_h = pygram11.var1d(x, bins=bins, density=True)
+    numpy_h, _ = np.histogram(x, bins=bins, density=True)
+    npt.assert_almost_equal(pygram_h, numpy_h, 5)
+
+    pygram_h, _ = pygram11.var1d(x, bins=bins, weights=w, density=True)
+    numpy_h, _ = np.histogram(x, bins=bins, weights=w, density=True)
+    npt.assert_almost_equal(pygram_h, numpy_h, 5)

@@ -18,11 +18,13 @@ from ._core import _var2d_f8
 from ._core import _var2d_weighted_f4
 from ._core import _var2d_weighted_f8
 
+from .utils import densify1d
+
 import numpy as np
 import numbers
 
 
-def fix1d(x, bins=10, range=None, weights=None, omp=False):
+def fix1d(x, bins=10, range=None, weights=None, density=False, omp=False):
 
     """histogram ``x`` with fixed (uniform) binning over a range
     [xmin, xmax).
@@ -37,6 +39,9 @@ def fix1d(x, bins=10, range=None, weights=None, omp=False):
         axis limits to histogram over
     weights: array_like, optional
         weight for each element of ``x``.
+    density: bool
+        normalize histogram bins as value of PDF such that the integral
+        over the range is 1.
     omp: bool
         use OpenMP if available
 
@@ -45,7 +50,8 @@ def fix1d(x, bins=10, range=None, weights=None, omp=False):
     :obj:`numpy.ndarray`
         bin counts (heights)
     :obj:`numpy.ndarray`
-        sum of weights squared (only if ``weights`` is not None)
+        square root of the sum of weights squared
+        (only if ``weights`` is not None)
 
     Examples
     --------
@@ -56,7 +62,7 @@ def fix1d(x, bins=10, range=None, weights=None, omp=False):
     The same data, now histogrammed weighted & accelerated with
     OpenMP.
 
-    >>> h, sw2 = fix1d(x, bins=20, range=(0, 100), omp=True)
+    >>> h, h_err = fix1d(x, bins=20, range=(0, 100), omp=True)
 
     """
     x = np.asarray(x)
@@ -74,14 +80,23 @@ def fix1d(x, bins=10, range=None, weights=None, omp=False):
     if weights is not None:
         weights = np.asarray(weights)
         assert weights.shape == x.shape, "weights must be the same shape as the data"
-        return weighted_func(x, weights, bins, range[0], range[1], omp)
+        result, sw2 = weighted_func(x, weights, bins, range[0], range[1], omp)
     else:
-        return unweight_func(x, bins, range[0], range[1], omp)
+        result = unweight_func(x, bins, range[0], range[1], omp)
+
+    if density:
+        if weights is None:
+            sw2 = None
+        return densify1d(result, range, sumw2=sw2)
+
+    if weights is None:
+        return result
+    return result, np.sqrt(sw2)
 
 
-def var1d(x, bins, weights=None, omp=False):
+def var1d(x, bins, weights=None, density=False, omp=False):
     """histogram ``x`` with variable (non-uniform) binning over a range
-    .[bins[0], bins[-1])
+    [bins[0], bins[-1]).
 
     Parameters
     ----------
@@ -91,6 +106,9 @@ def var1d(x, bins, weights=None, omp=False):
         bin edges
     weights: array_like, optional
         weight for each element of ``x``
+    density: bool
+        normalize histogram bins as value of PDF such that the integral
+        over the range is 1.
     omp: bool
         use OpenMP if available
 
@@ -126,9 +144,18 @@ def var1d(x, bins, weights=None, omp=False):
     if weights is not None:
         weights = np.asarray(weights)
         assert weights.shape == x.shape, "weights must be same shape as data"
-        return weighted_func(x, weights, bins, omp)
+        result, sw2 = weighted_func(x, weights, bins, omp)
     else:
-        return unweight_func(x, bins, omp)
+        result = unweight_func(x, bins, omp)
+
+    if density:
+        if weights is None:
+            sw2 = None
+        return densify1d(result, [bins[-1], bins[0]], binw=np.diff(bins), sumw2=sw2)
+
+    if weights is None:
+        return result
+    return result, np.sqrt(sw2)
 
 
 def fix2d(x, y, bins=10, range=None, weights=None, omp=False):
@@ -259,7 +286,7 @@ def var2d(x, y, xbins, ybins, weights=None, omp=False):
         return unweight_func(x, y, xbins, ybins, omp)
 
 
-def histogram(x, bins=10, range=None, weights=None, omp=False):
+def histogram(x, bins=10, range=None, weights=None, density=False, omp=False):
     """Compute the histogram for the data ``x``.
 
     This function provides an API very simiar to
@@ -285,6 +312,9 @@ def histogram(x, bins=10, range=None, weights=None, omp=False):
        An array of weights associated to each element of ``x``. Each
        value of the ``x`` will contribute its associated weight to the
        bin count.
+    density: bool
+        normalize histogram bins as value of PDF such that the integral
+        over the range is 1.
     omp: bool
        Use OpenMP if available.
 
@@ -297,9 +327,11 @@ def histogram(x, bins=10, range=None, weights=None, omp=False):
 
     """
     if isinstance(bins, numbers.Integral):
-        return fix1d(x, bins=bins, range=range, weights=weights, omp=omp)
+        return fix1d(
+            x, bins=bins, range=range, weights=weights, density=density, omp=omp
+        )
     else:
-        return var1d(x, bins, weights=weights, omp=omp)
+        return var1d(x, bins, weights=weights, density=density, omp=omp)
 
 
 def histogram2d(x, y, bins=10, range=None, weights=None, omp=False):
