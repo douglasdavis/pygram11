@@ -15,7 +15,8 @@ def densify1d(h, range, binw=None, sumw2=None):
     range: (float, float)
        histogram axis limits
     binw: array_like, optional
-       array of bin widths if variable width bins (assume fixed with if None)
+       array of bin widths if variable width bins (``None`` assumes
+       fixed width bins).
     sumw2: array_like
        array representing sum of weights squared in each bin
 
