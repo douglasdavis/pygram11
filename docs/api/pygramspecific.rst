@@ -1,5 +1,5 @@
-pygram11 Specific
------------------
+pygram11 Specific Histogramming
+-------------------------------
 
 .. currentmodule:: pygram11
 
