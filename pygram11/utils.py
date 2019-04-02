@@ -2,7 +2,11 @@ import numpy as np
 
 
 def densify1d(h, range, binw=None, sumw2=None):
-    """normalize histogram as a PDF such thtat the integral over the range is 1.
+    """normalize histogram as a PDF such thtat the integral over
+    the range is 1.
+
+    This function is used by the histogramming functions if the
+    ``density`` argument is true.
 
     Parameters
     ----------
@@ -14,6 +18,14 @@ def densify1d(h, range, binw=None, sumw2=None):
        array of bin widths if variable width bins (assume fixed with if None)
     sumw2: array_like
        array representing sum of weights squared in each bin
+
+    Returns
+    -------
+    :obj:`numpy.ndarray`
+        bin counts normalized
+    :obj:`numpy.ndarray`
+        uncertainty on the bin heights (only if ``weights`` is not None)
+
     """
     raw_integral = h.sum()
 

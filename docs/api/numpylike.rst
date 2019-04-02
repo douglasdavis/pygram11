@@ -1,5 +1,5 @@
-NumPy-like Histogramming
-------------------------
+Histogramming: NumPy-like
+-------------------------
 
 .. currentmodule:: pygram11
 
