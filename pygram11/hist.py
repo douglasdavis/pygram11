@@ -24,8 +24,7 @@ import numpy as np
 import numbers
 
 
-def fix1d(x, bins=10, range=None, weights=None, density=False, omp=False):
-
+def fix1d(x, bins=10, range=None, weights=None, density=False, omp="auto"):
     """histogram ``x`` with fixed (uniform) binning over a range
     [xmin, xmax).
 
@@ -42,8 +41,9 @@ def fix1d(x, bins=10, range=None, weights=None, density=False, omp=False):
     density: bool
         normalize histogram bins as value of PDF such that the integral
         over the range is 1.
-    omp: bool
-        use OpenMP if available
+    omp: bool or str
+        if ``True``, use OpenMP if available; if "auto" (and OpenMP is available),
+        enables OpenMP if len(x) > 10^4
 
     Returns
     -------
@@ -67,6 +67,13 @@ def fix1d(x, bins=10, range=None, weights=None, density=False, omp=False):
     """
     x = np.asarray(x)
 
+    if omp == "auto":
+        use_omp = len(x) > 1e4
+    elif type(omp) == bool:
+        use_omp = omp
+    else:
+        raise TypeError("omp should be 'auto' or a boolean value")
+
     weighted_func = _fix1d_weighted_f8
     unweight_func = _fix1d_f8
     if x.dtype == np.float32:
@@ -80,9 +87,9 @@ def fix1d(x, bins=10, range=None, weights=None, density=False, omp=False):
     if weights is not None:
         weights = np.asarray(weights)
         assert weights.shape == x.shape, "weights must be the same shape as the data"
-        result, sw2 = weighted_func(x, weights, bins, range[0], range[1], omp)
+        result, sw2 = weighted_func(x, weights, bins, range[0], range[1], use_omp)
     else:
-        result = unweight_func(x, bins, range[0], range[1], omp)
+        result = unweight_func(x, bins, range[0], range[1], use_omp)
 
     if density:
         if weights is None:
@@ -94,7 +101,7 @@ def fix1d(x, bins=10, range=None, weights=None, density=False, omp=False):
     return result, np.sqrt(sw2)
 
 
-def var1d(x, bins, weights=None, density=False, omp=False):
+def var1d(x, bins, weights=None, density=False, omp="auto"):
     """histogram ``x`` with variable (non-uniform) binning over a range
     [bins[0], bins[-1]).
 
@@ -109,8 +116,9 @@ def var1d(x, bins, weights=None, density=False, omp=False):
     density: bool
         normalize histogram bins as value of PDF such that the integral
         over the range is 1.
-    omp: bool
-        use OpenMP if available
+    omp: bool or str
+        if ``True``, use OpenMP if available; if "auto" (and OpenMP is available),
+        enables OpenMP if len(x) > 10^3
 
     Returns
     -------
@@ -132,6 +140,14 @@ def var1d(x, bins, weights=None, density=False, omp=False):
 
     """
     x = np.asarray(x)
+
+    if omp == "auto":
+        use_omp = len(x) > 1e3
+    elif type(omp) == bool:
+        use_omp = omp
+    else:
+        raise TypeError("omp should be 'auto' or a boolean value")
+
     bins = np.asarray(bins)
     assert np.all(bins[1:] >= bins[:-1]), "bins sequence must monotonically increase"
 
@@ -144,9 +160,9 @@ def var1d(x, bins, weights=None, density=False, omp=False):
     if weights is not None:
         weights = np.asarray(weights)
         assert weights.shape == x.shape, "weights must be same shape as data"
-        result, sw2 = weighted_func(x, weights, bins, omp)
+        result, sw2 = weighted_func(x, weights, bins, use_omp)
     else:
-        result = unweight_func(x, bins, omp)
+        result = unweight_func(x, bins, use_omp)
 
     if density:
         if weights is None:
@@ -286,7 +302,7 @@ def var2d(x, y, xbins, ybins, weights=None, omp=False):
         return unweight_func(x, y, xbins, ybins, omp)
 
 
-def histogram(x, bins=10, range=None, weights=None, density=False, omp=False):
+def histogram(x, bins=10, range=None, weights=None, density=False, omp="auto"):
     """Compute the histogram for the data ``x``.
 
     This function provides an API very simiar to
@@ -315,8 +331,10 @@ def histogram(x, bins=10, range=None, weights=None, density=False, omp=False):
     density: bool
         normalize histogram bins as value of PDF such that the integral
         over the range is 1.
-    omp: bool
-       Use OpenMP if available.
+    omp: bool or str
+        if ``True``, use OpenMP if available; if "auto" (and OpenMP is available),
+        enables OpenMP if len(x) > 10^4 for fixed width and > 10^3 for variable
+        width bins.
 
     Returns
     -------

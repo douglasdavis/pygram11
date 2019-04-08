@@ -103,11 +103,11 @@ py::array py_fix1d(py::array_t<T, py::array::c_style | py::array::forcecast> x, 
 #ifdef PYGRAMUSEOMP
   if (use_omp) {
     c_fix1d_omp<T>(x.data(), result_count_ptr, ndata, nbins, xmin, xmax);
-    return result_count;
+    return std::move(result_count);
   }
 #endif
   c_fix1d<T>(x.data(), result_count_ptr, ndata, nbins, xmin, xmax);
-  return result_count;
+  return std::move(result_count);
 }
 
 template <typename T>
@@ -149,11 +149,11 @@ py::array py_var1d(py::array_t<T, py::array::c_style | py::array::forcecast> x,
 #ifdef PYGRAMUSEOMP
   if (use_omp) {
     c_var1d_omp<T>(x.data(), result_count_ptr, ndata, nbins, edges_vec);
-    return result_count;
+    return std::move(result_count);
   }
 #endif
   c_var1d<T>(x.data(), result_count_ptr, ndata, nbins, edges_vec);
-  return result_count;
+  return std::move(result_count);
 }
 
 template <typename T>
@@ -197,12 +197,12 @@ py::array py_fix2d(py::array_t<T, py::array::c_style | py::array::forcecast> x,
   if (use_omp) {
     c_fix2d_omp<T>(x.data(), y.data(), result_count_ptr, ndata, nbinsx, xmin, xmax, nbinsy,
                    ymin, ymax);
-    return result_count;
+    return std::move(result_count);
   }
 #endif
   c_fix2d<T>(x.data(), y.data(), result_count_ptr, ndata, nbinsx, xmin, xmax, nbinsy, ymin,
              ymax);
-  return result_count;
+  return std::move(result_count);
 }
 
 template <typename T>
@@ -254,12 +254,12 @@ py::array py_var2d(py::array_t<T, py::array::c_style | py::array::forcecast> x,
   if (use_omp) {
     c_var2d_omp<T>(x.data(), y.data(), result_count_ptr, ndata, nbinsx, nbinsy, xedges_vec,
                    yedges_vec);
-    return result_count;
+    return std::move(result_count);
   }
 #endif
   c_var2d<T>(x.data(), y.data(), result_count_ptr, ndata, nbinsx, nbinsy, xedges_vec,
              yedges_vec);
-  return result_count;
+  return std::move(result_count);
 }
 
 template <typename T>

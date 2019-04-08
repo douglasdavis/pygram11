@@ -39,17 +39,26 @@ Installations from conda-forge provide a build that used OpenMP.
 PyPI
 ^^^^
 
-pybind11 must be installed explicitly before pygram11
+pybind11 must be installed explicitly before pygram11.
 
 .. code-block:: none
 
    pip install pybind11 numpy
    pip install pygram11
 
+.. note::
+   If installing on macOS 10.14, you must specify the deployment
+   target
+
+.. code-block:: none
+
+   $ MACOSX_DEPLOYMENT_TARGET=10.14 pip install pygram11
+
+
 Source
 ^^^^^^
 
-pybind11 must be installed explicitly before pygram11
+pybind11 must be installed explicitly before pygram11.
 
 .. code-block:: none
 
@@ -57,6 +66,9 @@ pybind11 must be installed explicitly before pygram11
    pip install pybind11 numpy
    cd pygram11
    pip install .
+
+When installing from source on macOS 10.14 the deployment target must
+be specified (see PyPI instructions above).
 
 
 .. _pybind11: https://github.com/pybind/pybind11
