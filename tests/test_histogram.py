@@ -221,3 +221,32 @@ def test_density_var1d():
     pygram_h, _ = pygram11.var1d(x, bins=bins, weights=w, density=True)
     numpy_h, _ = np.histogram(x, bins=bins, weights=w, density=True)
     npt.assert_almost_equal(pygram_h, numpy_h, 5)
+
+
+def test_fixed_flow1d():
+    x = np.random.randn(5000)
+    xcopy = np.copy(x)
+    bins = 25
+    w = np.random.uniform(0.5, 1.0, 5000)
+    wcopy = np.copy(w)
+
+    pygram_h = pygram11.fix1d(x, bins=25, range=(-2, 2), flow=True)
+    numpy_h, _ = np.histogram(xcopy, bins=np.linspace(-2, 2, 26))
+
+    numpy_h[0] += np.sum(x < -2)
+    numpy_h[-1] += np.sum(x >= 2)
+    npt.assert_almost_equal(pygram_h, numpy_h, 5)
+
+    x = np.random.randn(5000)
+    xcopy = np.copy(x)
+    bins = 25
+    w = np.random.uniform(0.5, 1.0, 5000)
+    wcopy = np.copy(w)
+
+    pygram_h, w = pygram11.fix1d(x, bins=25, range=(-2, 2), weights=w, flow=True)
+    numpy_h, _ = np.histogram(xcopy, bins=np.linspace(-2, 2, 26), weights=wcopy)
+
+    numpy_h[0] += np.sum(wcopy[x < -2])
+    numpy_h[-1] += np.sum(wcopy[x >= 2])
+
+    npt.assert_almost_equal(pygram_h, numpy_h, 5)
