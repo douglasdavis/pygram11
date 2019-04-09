@@ -24,7 +24,7 @@ import numpy as np
 import numbers
 
 
-def fix1d(x, bins=10, range=None, weights=None, density=False, flow=False, omp="auto"):
+def fix1d(x, bins=10, range=None, weights=None, density=False, omp="auto"):
     """histogram ``x`` with fixed (uniform) binning over a range
     [xmin, xmax).
 
@@ -41,8 +41,6 @@ def fix1d(x, bins=10, range=None, weights=None, density=False, flow=False, omp="
     density: bool
         normalize histogram bins as value of PDF such that the integral
         over the range is 1.
-    flow: bool
-        Shift under and overflow to first and last bins, respectively.
     omp: bool or str
         if ``True``, use OpenMP if available; if "auto" (and OpenMP is available),
         enables OpenMP if len(x) > 10^4
@@ -89,28 +87,10 @@ def fix1d(x, bins=10, range=None, weights=None, density=False, flow=False, omp="
         range = (x.min(), x.max())
     assert range[0] < range[1], "range must go from low value to higher value"
 
-    under_mask = x < range[0]
-    over_mask = x >= range[1]
-    in_range = (under_mask == False) & (over_mask == False)
-    if weights is not None:
-        if flow:
-            under_weights = weights[under_mask]
-            over_weights = weights[over_mask]
-        weights = weights[in_range]
-    x = x[in_range]
-
     if weights is not None:
         result, sw2 = weighted_func(x, weights, bins, range[0], range[1], use_omp)
-        if flow:
-            result[0] += np.sum(under_weights)
-            result[-1] += np.sum(over_weights)
-            sw2[0] += np.sum(under_weights * under_weights)
-            sw2[-1] += np.sum(over_weights * over_weights)
     else:
         result = unweight_func(x, bins, range[0], range[1], use_omp)
-        if flow:
-            result[0] += np.sum(under_mask)
-            result[-1] += np.sum(over_mask)
 
     if density:
         if weights is None:
@@ -122,7 +102,7 @@ def fix1d(x, bins=10, range=None, weights=None, density=False, flow=False, omp="
     return result, np.sqrt(sw2)
 
 
-def var1d(x, bins, weights=None, density=False, flow=False, omp="auto"):
+def var1d(x, bins, weights=None, density=False, omp="auto"):
     """histogram ``x`` with variable (non-uniform) binning over a range
     [bins[0], bins[-1]).
 
@@ -137,8 +117,6 @@ def var1d(x, bins, weights=None, density=False, flow=False, omp="auto"):
     density: bool
         normalize histogram bins as value of PDF such that the integral
         over the range is 1.
-    flow: bool
-        Shift under and overflow to first and last bins, respectively.
     omp: bool or str
         if ``True``, use OpenMP if available; if "auto" (and OpenMP is available),
         enables OpenMP if len(x) > 10^3
@@ -177,16 +155,6 @@ def var1d(x, bins, weights=None, density=False, flow=False, omp="auto"):
     bins = np.asarray(bins)
     assert np.all(bins[1:] >= bins[:-1]), "bins sequence must monotonically increase"
 
-    under_mask = x < bins[0]
-    over_mask = x >= bins[-1]
-    in_range = (under_mask == False) & (over_mask == False)
-    if weights is not None:
-        if flow:
-            under_weights = weights[under_mask]
-            over_weights = weights[over_mask]
-        weights = weights[in_range]
-    x = x[in_range]
-
     weighted_func = _var1d_weighted_f8
     unweight_func = _var1d_f8
     if x.dtype == np.float32:
@@ -195,16 +163,8 @@ def var1d(x, bins, weights=None, density=False, flow=False, omp="auto"):
 
     if weights is not None:
         result, sw2 = weighted_func(x, weights, bins, use_omp)
-        if flow:
-            result[0] += np.sum(under_weights)
-            result[-1] += np.sum(over_weights)
-            sw2[0] += np.sum(under_weights * under_weights)
-            sw2[-1] += np.sum(over_weights * over_weights)
     else:
         result = unweight_func(x, bins, use_omp)
-        if flow:
-            result[0] += np.sum(under_mask)
-            result[-1] += np.sum(over_mask)
 
     if density:
         if weights is None:
@@ -344,9 +304,7 @@ def var2d(x, y, xbins, ybins, weights=None, omp=False):
         return unweight_func(x, y, xbins, ybins, omp)
 
 
-def histogram(
-    x, bins=10, range=None, weights=None, density=False, flow=False, omp="auto"
-):
+def histogram(x, bins=10, range=None, weights=None, density=False, omp="auto"):
     """Compute the histogram for the data ``x``.
 
     This function provides an API very simiar to
@@ -375,8 +333,6 @@ def histogram(
     density: bool
         normalize histogram bins as value of PDF such that the integral
         over the range is 1.
-    flow: bool
-        Shift under and overflow to first and last bins, respectively.
     omp: bool or str
         if ``True``, use OpenMP if available; if "auto" (and OpenMP is available),
         enables OpenMP if len(x) > 10^4 for fixed width and > 10^3 for variable
@@ -392,13 +348,7 @@ def histogram(
     """
     if isinstance(bins, numbers.Integral):
         return fix1d(
-            x,
-            bins=bins,
-            range=range,
-            weights=weights,
-            density=density,
-            flow=flow,
-            omp=omp,
+            x, bins=bins, range=range, weights=weights, density=density, omp=omp
         )
     else:
         return var1d(x, bins, weights=weights, density=density, omp=omp)
