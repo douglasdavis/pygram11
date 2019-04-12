@@ -1,5 +1,5 @@
 import subprocess
-import pygram11.version
+import pygram11
 import sys
 
 def main():
