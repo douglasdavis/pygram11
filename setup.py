@@ -178,7 +178,9 @@ class BuildExt(build_ext):
             if use_omp:
                 if sys.platform == "darwin":
                     if prefixEnviron is not None:
-                        ext.extra_link_args.append("-Wl,-rpath,{}/lib".format(prefixEnviron))
+                        ext.extra_link_args.append(
+                            "-Wl,-rpath,{}/lib".format(prefixEnviron)
+                        )
                     ext.extra_link_args.append("-lomp")
                 else:
                     ext.extra_link_args.append("-lgomp")
@@ -186,9 +188,10 @@ class BuildExt(build_ext):
 
 
 def get_version():
-    g = {}
-    exec(open(os.path.join("pygram11", "version.py")).read(), g)
-    return g["__version__"]
+    with open(os.path.join("pygram11", "__init__.py"), "r") as f:
+        for line in f.readlines():
+            if "__version__ = " in line:
+                return line.strip().split(" = ")[-1]
 
 
 this_directory = os.path.abspath(os.path.dirname(__file__))
