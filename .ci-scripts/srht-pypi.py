@@ -8,7 +8,7 @@ def main():
     print(describe_out)
     if len(describe_out) > 1:
         return 0
-    elif pygram11.version.version == describe_out[0].strip():
+    elif pygram11.__version__ == describe_out[0].strip():
         res = subprocess.run('twine upload dist/*', shell=True)
         return res.returncode
     else:
