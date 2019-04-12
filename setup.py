@@ -191,7 +191,7 @@ def get_version():
     with open(os.path.join("pygram11", "__init__.py"), "r") as f:
         for line in f.readlines():
             if "__version__ = " in line:
-                return line.strip().split(" = ")[-1]
+                return line.strip().split(" = ")[-1][1:-1]
 
 
 this_directory = os.path.abspath(os.path.dirname(__file__))
