@@ -17,7 +17,6 @@
 # sys.path.insert(0, os.path.abspath(".."))
 
 import pygram11
-import pygram11.version
 
 # -- Project information -----------------------------------------------------
 
@@ -26,10 +25,10 @@ copyright = "2019, Doug Davis"
 author = "Doug Davis"
 
 # The short X.Y version
-version = ".".join(pygram11.version.version.split(".")[:3])
+version = ".".join(pygram11.__version__.split(".")[:3])
 
 # The full version, including alpha/beta/rc tags
-release = pygram11.version.version
+release = pygram11.__version__
 
 # -- General configuration ---------------------------------------------------
 
