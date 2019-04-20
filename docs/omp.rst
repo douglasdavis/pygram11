@@ -31,6 +31,6 @@ module ``pygram11._core``, try the following:
 Needless to say, if you see ``False`` OpenMP acceleration isn't
 available.
 
-The histogramming functions use a named argument for requesting OpenMP
-usage. If ``pygram11.OPENMP`` is ``False`` then the argument is
-ignored by the C++ code.
+The histogramming functions use a named argument (``omp``) for
+requesting OpenMP usage. If ``pygram11.OPENMP`` is ``False`` the
+``omp`` argument is ignored by the C++ library.
