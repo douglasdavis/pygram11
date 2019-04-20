@@ -11,8 +11,8 @@
 namespace py = pybind11;
 
 template <typename T>
-py::array py_fix1d(py::array_t<T, py::array::c_style | py::array::forcecast> x, int nbins,
-                   T xmin, T xmax, bool use_omp);
+py::array_t<T> py_fix1d(py::array_t<T, py::array::c_style | py::array::forcecast> x, int nbins,
+                        T xmin, T xmax, bool use_omp);
 
 template <typename T>
 py::tuple py_fix1d_weighted(py::array_t<T, py::array::c_style | py::array::forcecast> x,
@@ -20,9 +20,9 @@ py::tuple py_fix1d_weighted(py::array_t<T, py::array::c_style | py::array::force
                             int nbins, T xmin, T xmax, bool use_omp);
 
 template <typename T>
-py::array py_var1d(py::array_t<T, py::array::c_style | py::array::forcecast> x,
-                   py::array_t<T, py::array::c_style | py::array::forcecast> edges,
-                   bool use_omp);
+py::array_t<T> py_var1d(py::array_t<T, py::array::c_style | py::array::forcecast> x,
+                        py::array_t<T, py::array::c_style | py::array::forcecast> edges,
+                        bool use_omp);
 
 template <typename T>
 py::tuple py_var1d_weighted(py::array_t<T, py::array::c_style | py::array::forcecast> x,
@@ -31,9 +31,9 @@ py::tuple py_var1d_weighted(py::array_t<T, py::array::c_style | py::array::force
                             bool use_omp);
 
 template <typename T>
-py::array py_fix2d(py::array_t<T, py::array::c_style | py::array::forcecast> x,
-                   py::array_t<T, py::array::c_style | py::array::forcecast> y, int nbinsx,
-                   T xmin, T xmax, int nbinsy, T ymin, T ymax, bool use_omp);
+py::array_t<T> py_fix2d(py::array_t<T, py::array::c_style | py::array::forcecast> x,
+                        py::array_t<T, py::array::c_style | py::array::forcecast> y, int nbinsx,
+                        T xmin, T xmax, int nbinsy, T ymin, T ymax, bool use_omp);
 
 template <typename T>
 py::tuple py_fix2d_weighted(py::array_t<T, py::array::c_style | py::array::forcecast> x,
@@ -43,11 +43,11 @@ py::tuple py_fix2d_weighted(py::array_t<T, py::array::c_style | py::array::force
                             bool use_omp);
 
 template <typename T>
-py::array py_var2d(py::array_t<T, py::array::c_style | py::array::forcecast> x,
-                   py::array_t<T, py::array::c_style | py::array::forcecast> y,
-                   py::array_t<T, py::array::c_style | py::array::forcecast> xedges,
-                   py::array_t<T, py::array::c_style | py::array::forcecast> yedges,
-                   bool use_omp);
+py::array_t<T> py_var2d(py::array_t<T, py::array::c_style | py::array::forcecast> x,
+                        py::array_t<T, py::array::c_style | py::array::forcecast> y,
+                        py::array_t<T, py::array::c_style | py::array::forcecast> xedges,
+                        py::array_t<T, py::array::c_style | py::array::forcecast> yedges,
+                        bool use_omp);
 
 template <typename T>
 py::tuple py_var2d_weighted(
@@ -64,25 +64,25 @@ PYBIND11_MODULE(_core, m) {
 
   m.def("_HAS_OPENMP", &has_OpenMP);
 
-  m.def("_fix1d_f8", &py_fix1d<double>, py::return_value_policy::move);
-  m.def("_fix1d_f4", &py_fix1d<float>, py::return_value_policy::move);
-  m.def("_fix1d_weighted_f8", &py_fix1d_weighted<double>, py::return_value_policy::move);
-  m.def("_fix1d_weighted_f4", &py_fix1d_weighted<float>, py::return_value_policy::move);
+  m.def("_fix1d_f8", &py_fix1d<double>);
+  m.def("_fix1d_f4", &py_fix1d<float>);
+  m.def("_fix1d_weighted_f8", &py_fix1d_weighted<double>);
+  m.def("_fix1d_weighted_f4", &py_fix1d_weighted<float>);
 
-  m.def("_var1d_f8", &py_var1d<double>, py::return_value_policy::move);
-  m.def("_var1d_f4", &py_var1d<float>, py::return_value_policy::move);
-  m.def("_var1d_weighted_f8", &py_var1d_weighted<double>, py::return_value_policy::move);
-  m.def("_var1d_weighted_f4", &py_var1d_weighted<float>, py::return_value_policy::move);
+  m.def("_var1d_f8", &py_var1d<double>);
+  m.def("_var1d_f4", &py_var1d<float>);
+  m.def("_var1d_weighted_f8", &py_var1d_weighted<double>);
+  m.def("_var1d_weighted_f4", &py_var1d_weighted<float>);
 
-  m.def("_fix2d_f8", &py_fix2d<double>, py::return_value_policy::move);
-  m.def("_fix2d_f4", &py_fix2d<float>, py::return_value_policy::move);
-  m.def("_fix2d_weighted_f8", &py_fix2d_weighted<double>, py::return_value_policy::move);
-  m.def("_fix2d_weighted_f4", &py_fix2d_weighted<float>, py::return_value_policy::move);
+  m.def("_fix2d_f8", &py_fix2d<double>);
+  m.def("_fix2d_f4", &py_fix2d<float>);
+  m.def("_fix2d_weighted_f8", &py_fix2d_weighted<double>);
+  m.def("_fix2d_weighted_f4", &py_fix2d_weighted<float>);
 
-  m.def("_var2d_f8", &py_var2d<double>, py::return_value_policy::move);
-  m.def("_var2d_f4", &py_var2d<float>, py::return_value_policy::move);
-  m.def("_var2d_weighted_f8", &py_var2d_weighted<double>, py::return_value_policy::move);
-  m.def("_var2d_weighted_f4", &py_var2d_weighted<float>, py::return_value_policy::move);
+  m.def("_var2d_f8", &py_var2d<double>);
+  m.def("_var2d_f4", &py_var2d<float>);
+  m.def("_var2d_weighted_f8", &py_var2d_weighted<double>);
+  m.def("_var2d_weighted_f4", &py_var2d_weighted<float>);
 }
 
 bool has_OpenMP() {
@@ -94,8 +94,8 @@ bool has_OpenMP() {
 }
 
 template <typename T>
-py::array py_fix1d(py::array_t<T, py::array::c_style | py::array::forcecast> x, int nbins,
-                   T xmin, T xmax, bool use_omp) {
+py::array_t<T> py_fix1d(py::array_t<T, py::array::c_style | py::array::forcecast> x, int nbins,
+                        T xmin, T xmax, bool use_omp) {
   auto result_count = py::array_t<std::int64_t>(nbins);
   std::int64_t* result_count_ptr = result_count.mutable_data();
   std::size_t ndata = static_cast<std::size_t>(x.size());
@@ -133,9 +133,9 @@ py::tuple py_fix1d_weighted(py::array_t<T, py::array::c_style | py::array::force
 }
 
 template <typename T>
-py::array py_var1d(py::array_t<T, py::array::c_style | py::array::forcecast> x,
-                   py::array_t<T, py::array::c_style | py::array::forcecast> edges,
-                   bool use_omp) {
+py::array_t<T> py_var1d(py::array_t<T, py::array::c_style | py::array::forcecast> x,
+                        py::array_t<T, py::array::c_style | py::array::forcecast> edges,
+                        bool use_omp) {
   ssize_t edges_len = edges.size();
   const T* edges_ptr = edges.data();
   std::vector<T> edges_vec(edges_ptr, edges_ptr + edges_len);
@@ -186,9 +186,9 @@ py::tuple py_var1d_weighted(py::array_t<T, py::array::c_style | py::array::force
 }
 
 template <typename T>
-py::array py_fix2d(py::array_t<T, py::array::c_style | py::array::forcecast> x,
-                   py::array_t<T, py::array::c_style | py::array::forcecast> y, int nbinsx,
-                   T xmin, T xmax, int nbinsy, T ymin, T ymax, bool use_omp) {
+py::array_t<T> py_fix2d(py::array_t<T, py::array::c_style | py::array::forcecast> x,
+                        py::array_t<T, py::array::c_style | py::array::forcecast> y, int nbinsx,
+                        T xmin, T xmax, int nbinsy, T ymin, T ymax, bool use_omp) {
   auto result_count = py::array_t<std::int64_t>({nbinsx, nbinsy});
   std::int64_t* result_count_ptr = result_count.mutable_data();
   std::size_t ndata = static_cast<std::size_t>(x.size());
@@ -231,11 +231,11 @@ py::tuple py_fix2d_weighted(py::array_t<T, py::array::c_style | py::array::force
 }
 
 template <typename T>
-py::array py_var2d(py::array_t<T, py::array::c_style | py::array::forcecast> x,
-                   py::array_t<T, py::array::c_style | py::array::forcecast> y,
-                   py::array_t<T, py::array::c_style | py::array::forcecast> xedges,
-                   py::array_t<T, py::array::c_style | py::array::forcecast> yedges,
-                   bool use_omp) {
+py::array_t<T> py_var2d(py::array_t<T, py::array::c_style | py::array::forcecast> x,
+                        py::array_t<T, py::array::c_style | py::array::forcecast> y,
+                        py::array_t<T, py::array::c_style | py::array::forcecast> xedges,
+                        py::array_t<T, py::array::c_style | py::array::forcecast> yedges,
+                        bool use_omp) {
   std::size_t xedges_len = static_cast<std::size_t>(xedges.size());
   std::size_t yedges_len = static_cast<std::size_t>(yedges.size());
   const T* xedges_ptr = xedges.data();
