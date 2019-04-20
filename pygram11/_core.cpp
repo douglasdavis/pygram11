@@ -11,8 +11,8 @@
 namespace py = pybind11;
 
 template <typename T>
-py::array_t<T> py_fix1d(py::array_t<T, py::array::c_style | py::array::forcecast> x, int nbins,
-                        T xmin, T xmax, bool use_omp);
+py::array_t<T> py_fix1d(py::array_t<T, py::array::c_style | py::array::forcecast> x,
+                        int nbins, T xmin, T xmax, bool use_omp);
 
 template <typename T>
 py::tuple py_fix1d_weighted(py::array_t<T, py::array::c_style | py::array::forcecast> x,
@@ -32,8 +32,9 @@ py::tuple py_var1d_weighted(py::array_t<T, py::array::c_style | py::array::force
 
 template <typename T>
 py::array_t<T> py_fix2d(py::array_t<T, py::array::c_style | py::array::forcecast> x,
-                        py::array_t<T, py::array::c_style | py::array::forcecast> y, int nbinsx,
-                        T xmin, T xmax, int nbinsy, T ymin, T ymax, bool use_omp);
+                        py::array_t<T, py::array::c_style | py::array::forcecast> y,
+                        int nbinsx, T xmin, T xmax, int nbinsy, T ymin, T ymax,
+                        bool use_omp);
 
 template <typename T>
 py::tuple py_fix2d_weighted(py::array_t<T, py::array::c_style | py::array::forcecast> x,
@@ -94,8 +95,8 @@ bool has_OpenMP() {
 }
 
 template <typename T>
-py::array_t<T> py_fix1d(py::array_t<T, py::array::c_style | py::array::forcecast> x, int nbins,
-                        T xmin, T xmax, bool use_omp) {
+py::array_t<T> py_fix1d(py::array_t<T, py::array::c_style | py::array::forcecast> x,
+                        int nbins, T xmin, T xmax, bool use_omp) {
   auto result_count = py::array_t<std::int64_t>(nbins);
   std::int64_t* result_count_ptr = result_count.mutable_data();
   std::size_t ndata = static_cast<std::size_t>(x.size());
@@ -119,17 +120,22 @@ py::tuple py_fix1d_weighted(py::array_t<T, py::array::c_style | py::array::force
   T* result_count_ptr = result_count.mutable_data();
   T* result_sumw2_ptr = result_sumw2.mutable_data();
   std::size_t ndata = static_cast<std::size_t>(x.size());
+  py::list listing;
 
 #ifdef PYGRAMUSEOMP
   if (use_omp) {
     c_fix1d_weighted_omp<T>(x.data(), w.data(), result_count_ptr, result_sumw2_ptr, ndata,
                             nbins, xmin, xmax);
-    return py::make_tuple(result_count, result_sumw2);
+    listing.append(result_count);
+    listing.append(result_sumw2);
+    return py::cast<py::tuple>(listing);
   }
 #endif
   c_fix1d_weighted<T>(x.data(), w.data(), result_count_ptr, result_sumw2_ptr, ndata, nbins,
                       xmin, xmax);
-  return py::make_tuple(result_count, result_sumw2);
+  listing.append(result_count);
+  listing.append(result_sumw2);
+  return py::cast<py::tuple>(listing);
 }
 
 template <typename T>
@@ -172,23 +178,29 @@ py::tuple py_var1d_weighted(py::array_t<T, py::array::c_style | py::array::force
   auto result_sumw2 = py::array_t<T>(nbins);
   T* result_count_ptr = result_count.mutable_data();
   T* result_sumw2_ptr = result_sumw2.mutable_data();
+  py::list listing;
 
 #ifdef PYGRAMUSEOMP
   if (use_omp) {
     c_var1d_weighted_omp<T>(x.data(), w.data(), result_count_ptr, result_sumw2_ptr, ndata,
                             nbins, edges_vec);
-    return py::make_tuple(result_count, result_sumw2);
+    listing.append(result_count);
+    listing.append(result_sumw2);
+    return py::cast<py::tuple>(listing);
   }
 #endif
   c_var1d_weighted<T>(x.data(), w.data(), result_count_ptr, result_sumw2_ptr, ndata, nbins,
                       edges_vec);
-  return py::make_tuple(result_count, result_sumw2);
+  listing.append(result_count);
+  listing.append(result_sumw2);
+  return py::cast<py::tuple>(listing);
 }
 
 template <typename T>
 py::array_t<T> py_fix2d(py::array_t<T, py::array::c_style | py::array::forcecast> x,
-                        py::array_t<T, py::array::c_style | py::array::forcecast> y, int nbinsx,
-                        T xmin, T xmax, int nbinsy, T ymin, T ymax, bool use_omp) {
+                        py::array_t<T, py::array::c_style | py::array::forcecast> y,
+                        int nbinsx, T xmin, T xmax, int nbinsy, T ymin, T ymax,
+                        bool use_omp) {
   auto result_count = py::array_t<std::int64_t>({nbinsx, nbinsy});
   std::int64_t* result_count_ptr = result_count.mutable_data();
   std::size_t ndata = static_cast<std::size_t>(x.size());
@@ -216,18 +228,23 @@ py::tuple py_fix2d_weighted(py::array_t<T, py::array::c_style | py::array::force
   T* result_count_ptr = result_count.mutable_data();
   T* result_sumw2_ptr = result_sumw2.mutable_data();
   std::size_t ndata = static_cast<std::size_t>(x.size());
+  py::list listing;
 
 #ifdef PYGRAMUSEOMP
   if (use_omp) {
     c_fix2d_weighted_omp<T>(x.data(), y.data(), w.data(), result_count_ptr,
                             result_sumw2_ptr, ndata, nbinsx, xmin, xmax, nbinsy, ymin,
                             ymax);
-    return py::make_tuple(result_count, result_sumw2);
+    listing.append(result_count);
+    listing.append(result_sumw2);
+    return py::cast<py::tuple>(listing);
   }
 #endif
   c_fix2d_weighted<T>(x.data(), y.data(), w.data(), result_count_ptr, result_sumw2_ptr,
                       ndata, nbinsx, xmin, xmax, nbinsy, ymin, ymax);
-  return py::make_tuple(result_count, result_sumw2);
+  listing.append(result_count);
+  listing.append(result_sumw2);
+  return py::cast<py::tuple>(listing);
 }
 
 template <typename T>
@@ -284,16 +301,21 @@ py::tuple py_var2d_weighted(
   auto result_sumw2 = py::array_t<T>({nbinsx, nbinsy});
   T* result_count_ptr = result_count.mutable_data();
   T* result_sumw2_ptr = result_sumw2.mutable_data();
+  py::list listing;
 
 #ifdef PYGRAMUSEOMP
   if (use_omp) {
     c_var2d_weighted_omp<T>(x.data(), y.data(), w.data(), result_count_ptr,
                             result_sumw2_ptr, ndata, nbinsx, nbinsy, xedges_vec,
                             yedges_vec);
-    return py::make_tuple(result_count, result_sumw2);
+    listing.append(result_count);
+    listing.append(result_sumw2);
+    return py::cast<py::tuple>(listing);
   }
 #endif
   c_var2d_weighted<T>(x.data(), y.data(), w.data(), result_count_ptr, result_sumw2_ptr,
                       ndata, nbinsx, nbinsy, xedges_vec, yedges_vec);
-  return py::make_tuple(result_count, result_sumw2);
+  listing.append(result_count);
+  listing.append(result_sumw2);
+  return py::cast<py::tuple>(listing);
 }
