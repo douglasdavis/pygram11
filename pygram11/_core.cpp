@@ -103,11 +103,11 @@ py::array_t<T> py_fix1d(py::array_t<T, py::array::c_style | py::array::forcecast
 #ifdef PYGRAMUSEOMP
   if (use_omp) {
     c_fix1d_omp<T>(x.data(), result_count_ptr, ndata, nbins, xmin, xmax);
-    return std::move(result_count);
+    return result_count;
   }
 #endif
   c_fix1d<T>(x.data(), result_count_ptr, ndata, nbins, xmin, xmax);
-  return std::move(result_count);
+  return result_count;
 }
 
 template <typename T>
@@ -124,12 +124,12 @@ py::tuple py_fix1d_weighted(py::array_t<T, py::array::c_style | py::array::force
   if (use_omp) {
     c_fix1d_weighted_omp<T>(x.data(), w.data(), result_count_ptr, result_sumw2_ptr, ndata,
                             nbins, xmin, xmax);
-    return py::make_tuple(std::move(result_count), std::move(result_sumw2));
+    return py::make_tuple(result_count, result_sumw2);
   }
 #endif
   c_fix1d_weighted<T>(x.data(), w.data(), result_count_ptr, result_sumw2_ptr, ndata, nbins,
                       xmin, xmax);
-  return py::make_tuple(std::move(result_count), std::move(result_sumw2));
+  return py::make_tuple(result_count, result_sumw2);
 }
 
 template <typename T>
@@ -149,11 +149,11 @@ py::array_t<T> py_var1d(py::array_t<T, py::array::c_style | py::array::forcecast
 #ifdef PYGRAMUSEOMP
   if (use_omp) {
     c_var1d_omp<T>(x.data(), result_count_ptr, ndata, nbins, edges_vec);
-    return std::move(result_count);
+    return result_count;
   }
 #endif
   c_var1d<T>(x.data(), result_count_ptr, ndata, nbins, edges_vec);
-  return std::move(result_count);
+  return result_count;
 }
 
 template <typename T>
@@ -177,12 +177,12 @@ py::tuple py_var1d_weighted(py::array_t<T, py::array::c_style | py::array::force
   if (use_omp) {
     c_var1d_weighted_omp<T>(x.data(), w.data(), result_count_ptr, result_sumw2_ptr, ndata,
                             nbins, edges_vec);
-    return py::make_tuple(std::move(result_count), std::move(result_sumw2));
+    return py::make_tuple(result_count, result_sumw2);
   }
 #endif
   c_var1d_weighted<T>(x.data(), w.data(), result_count_ptr, result_sumw2_ptr, ndata, nbins,
                       edges_vec);
-  return py::make_tuple(std::move(result_count), std::move(result_sumw2));
+  return py::make_tuple(result_count, result_sumw2);
 }
 
 template <typename T>
@@ -197,12 +197,12 @@ py::array_t<T> py_fix2d(py::array_t<T, py::array::c_style | py::array::forcecast
   if (use_omp) {
     c_fix2d_omp<T>(x.data(), y.data(), result_count_ptr, ndata, nbinsx, xmin, xmax, nbinsy,
                    ymin, ymax);
-    return std::move(result_count);
+    return result_count;
   }
 #endif
   c_fix2d<T>(x.data(), y.data(), result_count_ptr, ndata, nbinsx, xmin, xmax, nbinsy, ymin,
              ymax);
-  return std::move(result_count);
+  return result_count;
 }
 
 template <typename T>
@@ -222,12 +222,12 @@ py::tuple py_fix2d_weighted(py::array_t<T, py::array::c_style | py::array::force
     c_fix2d_weighted_omp<T>(x.data(), y.data(), w.data(), result_count_ptr,
                             result_sumw2_ptr, ndata, nbinsx, xmin, xmax, nbinsy, ymin,
                             ymax);
-    return py::make_tuple(std::move(result_count), std::move(result_sumw2));
+    return py::make_tuple(result_count, result_sumw2);
   }
 #endif
   c_fix2d_weighted<T>(x.data(), y.data(), w.data(), result_count_ptr, result_sumw2_ptr,
                       ndata, nbinsx, xmin, xmax, nbinsy, ymin, ymax);
-  return py::make_tuple(std::move(result_count), std::move(result_sumw2));
+  return py::make_tuple(result_count, result_sumw2);
 }
 
 template <typename T>
@@ -254,12 +254,12 @@ py::array_t<T> py_var2d(py::array_t<T, py::array::c_style | py::array::forcecast
   if (use_omp) {
     c_var2d_omp<T>(x.data(), y.data(), result_count_ptr, ndata, nbinsx, nbinsy, xedges_vec,
                    yedges_vec);
-    return std::move(result_count);
+    return result_count;
   }
 #endif
   c_var2d<T>(x.data(), y.data(), result_count_ptr, ndata, nbinsx, nbinsy, xedges_vec,
              yedges_vec);
-  return std::move(result_count);
+  return result_count;
 }
 
 template <typename T>
@@ -290,10 +290,10 @@ py::tuple py_var2d_weighted(
     c_var2d_weighted_omp<T>(x.data(), y.data(), w.data(), result_count_ptr,
                             result_sumw2_ptr, ndata, nbinsx, nbinsy, xedges_vec,
                             yedges_vec);
-    return py::make_tuple(std::move(result_count), std::move(result_sumw2));
+    return py::make_tuple(result_count, result_sumw2);
   }
 #endif
   c_var2d_weighted<T>(x.data(), y.data(), w.data(), result_count_ptr, result_sumw2_ptr,
                       ndata, nbinsx, nbinsy, xedges_vec, yedges_vec);
-  return py::make_tuple(std::move(result_count), std::move(result_sumw2));
+  return py::make_tuple(result_count, result_sumw2);
 }
