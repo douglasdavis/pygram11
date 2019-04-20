@@ -17,10 +17,10 @@ into bins.
 - Finally, I thought it would be fun to learn how to write software
   with OpenMP and pybind11 because I had not used either piece of
   software before. Hopefully having them in my tool belt will be
-  useful for a more complex future project. The idea came to me while
-  I was sitting waiting for :math:`\mathcal{O}(1000)` histograms to be
-  generated (one of many steps in the workflow for my thesis
-  analysis).
+  useful for a more complex future project. I thought about trying
+  this out while I was sitting waiting for :math:`\mathcal{O}(1000)`
+  histograms to be generated (one of many steps in the workflow for my
+  thesis analysis).
 
 Some of the other options that you might find useful:
 
