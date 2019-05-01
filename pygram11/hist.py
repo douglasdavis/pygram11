@@ -24,7 +24,7 @@ import numpy as np
 import numbers
 
 
-def fix1d(x, bins=10, range=None, weights=None, density=False, omp="auto"):
+def fix1d(x, bins=10, range=None, weights=None, density=False, flow=False, omp="auto"):
     """histogram ``x`` with fixed (uniform) binning over a range
     [xmin, xmax).
 
@@ -92,6 +92,11 @@ def fix1d(x, bins=10, range=None, weights=None, density=False, omp="auto"):
     else:
         result = unweight_func(x, bins, range[0], range[1], use_omp)
 
+    if not flow:
+        result = result[1:-1]
+        if weights is not None:
+            sw2 = sw2[1:-1]
+
     if density:
         if weights is None:
             sw2 = None
@@ -99,10 +104,11 @@ def fix1d(x, bins=10, range=None, weights=None, density=False, omp="auto"):
 
     if weights is None:
         return result
+
     return result, np.sqrt(sw2)
 
 
-def var1d(x, bins, weights=None, density=False, omp="auto"):
+def var1d(x, bins, weights=None, density=False, flow=False, omp="auto"):
     """histogram ``x`` with variable (non-uniform) binning over a range
     [bins[0], bins[-1]).
 
@@ -165,6 +171,12 @@ def var1d(x, bins, weights=None, density=False, omp="auto"):
         result, sw2 = weighted_func(x, weights, bins, use_omp)
     else:
         result = unweight_func(x, bins, use_omp)
+
+
+    if not flow:
+        result = result[1:-1]
+        if weights is not None:
+            sw2 = sw2[1:-1]
 
     if density:
         if weights is None:
@@ -304,7 +316,7 @@ def var2d(x, y, xbins, ybins, weights=None, omp=False):
         return unweight_func(x, y, xbins, ybins, omp)
 
 
-def histogram(x, bins=10, range=None, weights=None, density=False, omp="auto"):
+def histogram(x, bins=10, range=None, weights=None, density=False, flow=False, omp="auto"):
     """Compute the histogram for the data ``x``.
 
     This function provides an API very simiar to
@@ -348,10 +360,10 @@ def histogram(x, bins=10, range=None, weights=None, density=False, omp="auto"):
     """
     if isinstance(bins, numbers.Integral):
         return fix1d(
-            x, bins=bins, range=range, weights=weights, density=density, omp=omp
+            x, bins=bins, range=range, weights=weights, density=density, flow=flow, omp=omp
         )
     else:
-        return var1d(x, bins, weights=weights, density=density, omp=omp)
+        return var1d(x, bins, weights=weights, density=density, flow=flow, omp=omp)
 
 
 def histogram2d(x, y, bins=10, range=None, weights=None, omp=False):

@@ -24,37 +24,69 @@ typename FItr::difference_type nonuniform_bin_find(FItr first, FItr last, const 
 template <typename T>
 void fill(T* count, T* sumw2, const T x, const T weight, const int nbins, const T norm,
           const T xmin, const T xmax) {
-  if (!(x >= xmin && x < xmax)) return;
-  std::size_t binId = (x - xmin) * norm * nbins;
-  count[binId] += weight;
-  sumw2[binId] += weight * weight;
+  if (x < xmin) {
+    count[0] += weight;
+    sumw2[0] += weight * weight;
+  }
+  else if (x > xmax) {
+    count[nbins + 1] += weight;
+    sumw2[nbins + 1] += weight * weight;
+  }
+  else {
+    std::size_t binId = (x - xmin) * norm * nbins;
+    count[binId + 1] += weight;
+    sumw2[binId + 1] += weight * weight;
+  }
 }
 
 /// fill a fixed bin width unweighted 1d histogram
 template <typename T>
 void fill(std::int64_t* count, const T x, const int nbins, const T norm, const T xmin,
           const T xmax) {
-  if (!(x >= xmin && x < xmax)) return;
-  std::size_t binId = (x - xmin) * norm * nbins;
-  count[binId]++;
+  if (x < xmin) {
+    ++count[0];
+  }
+  else if (x > xmax) {
+    ++count[nbins + 1];
+  }
+  else {
+    std::size_t binId = (x - xmin) * norm * nbins;
+    ++count[binId + 1];
+  }
 }
 
 /// fill a variable bin width weighted 1d histogram
 template <typename T>
 void fill(T* count, T* sumw2, const T x, const T weight, const int nbins,
           const std::vector<T>& edges) {
-  if (!(x >= edges[0] && x < edges[nbins])) return;
-  std::size_t binId = nonuniform_bin_find(std::begin(edges), std::end(edges), x);
-  count[binId] += weight;
-  sumw2[binId] += weight * weight;
+  if (x < edges[0]) {
+    count[0] += weight;
+    sumw2[0] += weight * weight;
+  }
+  else if (x > edges.back()) {
+    count[nbins + 1] += weight;
+    sumw2[nbins + 1] += weight * weight;
+  }
+  else {
+    std::size_t binId = nonuniform_bin_find(std::begin(edges), std::end(edges), x);
+    count[binId + 1] += weight;
+    sumw2[binId + 1] += weight * weight;
+  }
 }
 
 /// fill a variable bin width unweighted 1d histogram
 template <typename T>
 void fill(std::int64_t* count, const T x, const int nbins, const std::vector<T>& edges) {
-  if (!(x >= edges[0] && x < edges[nbins])) return;
-  std::size_t binId = nonuniform_bin_find(std::begin(edges), std::end(edges), x);
-  count[binId]++;
+  if (x < edges[0]) {
+    ++count[0];
+  }
+  else if (x > edges.back()) {
+    ++count[nbins + 1];
+  }
+  else {
+    std::size_t binId = nonuniform_bin_find(std::begin(edges), std::end(edges), x);
+    ++count[binId + 1];
+  }
 }
 
 /// fill a fixed bin width weighted 2d histogram
