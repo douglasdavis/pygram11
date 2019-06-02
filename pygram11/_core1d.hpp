@@ -75,7 +75,7 @@ void c_fix1d_omp(const T* data, std::int64_t* count, const std::size_t n, const 
     }
 
 #pragma omp critical
-    for (int i = 0; i < nbins; i++) {
+    for (int i = 0; i < (nbins + 2); i++) {
       count[i] += count_priv[i];
     }
   }
@@ -101,8 +101,8 @@ template <typename T>
 void c_var1d_weighted_omp(const T* data, const T* weights, T* count, T* sumw2,
                           const std::size_t n, const int nbins,
                           const std::vector<T>& edges) {
-  memset(count, 0, sizeof(T) * nbins);
-  memset(sumw2, 0, sizeof(T) * nbins);
+  memset(count, 0, sizeof(T) * (nbins + 2));
+  memset(sumw2, 0, sizeof(T) * (nbins + 2));
 
 #pragma omp parallel
   {
@@ -118,7 +118,7 @@ void c_var1d_weighted_omp(const T* data, const T* weights, T* count, T* sumw2,
     }
 
 #pragma omp critical
-    for (int i = 0; i < nbins; i++) {
+    for (int i = 0; i < (nbins + 2); i++) {
       count[i] += count_priv[i];
       sumw2[i] += sumw2_priv[i];
     }
@@ -140,7 +140,7 @@ void c_var1d_weighted(const T* data, const T* weights, T* count, T* sumw2,
 template <typename T>
 void c_var1d_omp(const T* data, std::int64_t* count, const std::size_t n, const int nbins,
                  const std::vector<T>& edges) {
-  memset(count, 0, sizeof(std::int64_t) * nbins);
+  memset(count, 0, sizeof(std::int64_t) * (nbins + 2));
 #pragma omp parallel
   {
     std::unique_ptr<std::int64_t[]> count_priv(new std::int64_t[nbins + 2]);
@@ -152,7 +152,7 @@ void c_var1d_omp(const T* data, std::int64_t* count, const std::size_t n, const 
     }
 
 #pragma omp critical
-    for (int i = 0; i < nbins; i++) {
+    for (int i = 0; i < (nbins + 2); i++) {
       count[i] += count_priv[i];
     }
   }
