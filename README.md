@@ -75,6 +75,14 @@ A variable bin width histogram in two dimensions:
 >>> h = pygram11.histogram2d(x, y, bins=[xbins, ybins])
 ```
 
+## Other Libraries
+
+- There is an effort to develop an object oriented histogramming
+  library for python called
+  [boost-histogram](https://indico.cern.ch/event/803122/contributions/3339214/attachments/1830213/2997039/bhandhist.pdf)
+- Simple and fast histogramming in Python using the NumPy C API:
+  [fast-histogram](https://github.com/astrofrog/fast-histogram)
+
 ---
 
 If there is something you'd like to see in pygram11, please open an
