@@ -5,7 +5,6 @@
 ![](https://img.shields.io/pypi/pyversions/pygram11.svg?colorB=blue&style=flat)
 [![PyPI version](https://img.shields.io/pypi/v/pygram11.svg?colorB=486b87&style=flat)](https://pypi.org/project/pygram11/)
 [![Conda Forge](https://img.shields.io/conda/vn/conda-forge/pygram11.svg?colorB=486b87&style=flat)](https://anaconda.org/conda-forge/pygram11)
-[![DOI](https://zenodo.org/badge/168767581.svg)](https://zenodo.org/badge/latestdoi/168767581)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/ambv/black)
 
 Simple and fast histogramming in python via
