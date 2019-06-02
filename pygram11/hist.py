@@ -92,10 +92,16 @@ def fix1d(x, bins=10, range=None, weights=None, density=False, flow=False, omp="
     else:
         result = unweight_func(x, bins, range[0], range[1], use_omp)
 
-    if not flow:
-        result = result[1:-1]
+    if flow:
+        result[1] += result[0]
+        result[-2] += result[-1]
         if weights is not None:
-            sw2 = sw2[1:-1]
+            sw2[1] += sw2[0]
+            sw2[-1] += sw2[-2]
+
+    result = result[1:-1]
+    if weights is not None:
+        sw2 = sw2[1:-1]
 
     if density:
         if weights is None:
@@ -172,11 +178,16 @@ def var1d(x, bins, weights=None, density=False, flow=False, omp="auto"):
     else:
         result = unweight_func(x, bins, use_omp)
 
-
-    if not flow:
-        result = result[1:-1]
+    if flow:
+        result[1] += result[0]
+        result[-2] += result[-1]
         if weights is not None:
-            sw2 = sw2[1:-1]
+            sw2[1] += sw2[0]
+            sw2[-1] += sw2[-2]
+
+    result = result[1:-1]
+    if weights is not None:
+        sw2 = sw2[1:-1]
 
     if density:
         if weights is None:
