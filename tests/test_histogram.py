@@ -253,7 +253,7 @@ def test_flow_var():
     numpy_h[-1] += sum(x > bins[-1])
     assert np.all(pygram_h == numpy_h)
 
-def test_flow_weights_omp_var():
+def test_flow_weights_var():
     x = np.random.randn(100000)
     w = np.random.uniform(0.5, 0.8, x.shape[0])
     bins = [-2, -1.7, -0.5, 0.2, 2.2]
