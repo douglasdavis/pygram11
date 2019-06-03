@@ -61,8 +61,15 @@ accelerated with OpenMP:
 ```python
 >>> x = np.random.randn(10000)
 >>> w = np.random.uniform(0.8, 1.2, 10000)
->>> h, sw2 = pygram11.histogram(x, bins=40, range=(-4, 4), weights=w, omp=True)
->>> stat_err = np.sqrt(sw2)
+>>> h, staterr = pygram11.histogram(x, bins=40, range=(-4, 4), weights=w, omp=True)
+```
+
+A fixed with width histogram which saves the under and overflow in the
+first and last bins:
+
+```python
+>>> x = np.random.randn(1e6)
+>>> h = pygram11.histogram(x, bins=20, range=(-3, 3), flow=True, omp=True)
 ```
 
 A variable bin width histogram in two dimensions:
