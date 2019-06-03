@@ -11,16 +11,8 @@ tasks:
       source $HOME/miniconda/etc/profile.d/conda.sh
       conda config --set always_yes yes --set changeps1 no
       conda create -q -n py27 python=2.7 numpy pybind11 pytest
-      conda create -q -n py35 python=3.5 numpy pybind11 pytest
       conda create -q -n py36 python=3.6 numpy pybind11 pytest
       conda create -q -n py37 python=3.7 numpy pybind11 pytest
-  - test_python35: |
-      cd pygram11
-      source $HOME/miniconda/etc/profile.d/conda.sh
-      conda activate py35
-      pip install pip -U
-      pip install .
-      pytest
   - test_python36: |
       cd pygram11
       source $HOME/miniconda/etc/profile.d/conda.sh
