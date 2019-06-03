@@ -230,24 +230,39 @@ def test_flow_weights():
     rg = (-3, 3)
     pygram_h, _ = pygram11.histogram(x, bins=nbins, range=rg, weights=w, omp=False, flow=True)
     numpy_h, _ = np.histogram(x, bins=nbins, range=rg, weights=w)
-
     numpy_h[0] += sum(w[x < rg[0]])
     numpy_h[-1] += sum(w[x > rg[1]])
-
     assert np.allclose(pygram_h, numpy_h)
 
 def test_flow():
     x = np.random.randn(100000)
-
     nbins = 50
     rg = (-3, 3)
     pygram_h = pygram11.histogram(x, bins=nbins, range=rg, omp=False, flow=True)
     numpy_h, _ = np.histogram(x, bins=nbins, range=rg)
-
     numpy_h[0] += sum(x < rg[0])
     numpy_h[-1] += sum(x > rg[1])
-
     assert np.all(pygram_h == numpy_h)
+
+def test_flow_var():
+    x = np.random.randn(100000)
+    bins = [-2, -1.7, -0.5, 0.2, 2.2]
+    pygram_h = pygram11.histogram(x, bins=bins, omp=False, flow=True)
+    numpy_h, _ = np.histogram(x, bins=bins)
+    numpy_h[0] += sum(x < bins[0])
+    numpy_h[-1] += sum(x > bins[-1])
+    assert np.all(pygram_h == numpy_h)
+
+def test_flow_weights_omp_var():
+    x = np.random.randn(100000)
+    w = np.random.uniform(0.5, 0.8, x.shape[0])
+    bins = [-2, -1.7, -0.5, 0.2, 2.2]
+    pygram_h, _ = pygram11.histogram(x, bins=bins, weights=w, omp=False, flow=True)
+    numpy_h, _ = np.histogram(x, bins=bins, weights=w)
+    numpy_h[0] += sum(w[x < bins[0]])
+    numpy_h[-1] += sum(w[x > bins[-1]])
+    assert np.allclose(pygram_h, numpy_h)
+
 
 if pygram11.OPENMP:
     def test_flow_weights_omp():
@@ -257,10 +272,18 @@ if pygram11.OPENMP:
         rg = (-3, 3)
         pygram_h, _ = pygram11.histogram(x, bins=nbins, range=rg, weights=w, omp=True, flow=True)
         numpy_h, _ = np.histogram(x, bins=nbins, range=rg, weights=w)
-
         numpy_h[0] += sum(w[x < rg[0]])
         numpy_h[-1] += sum(w[x > rg[1]])
+        assert np.allclose(pygram_h, numpy_h)
 
+    def test_flow_weights_omp_var():
+        x = np.random.randn(100000)
+        w = np.random.uniform(0.5, 0.8, x.shape[0])
+        bins = [-2, -1.7, -0.5, 0.2, 2.2]
+        pygram_h, _ = pygram11.histogram(x, bins=bins, weights=w, omp=True, flow=True)
+        numpy_h, _ = np.histogram(x, bins=bins, weights=w)
+        numpy_h[0] += sum(w[x < bins[0]])
+        numpy_h[-1] += sum(w[x > bins[-1]])
         assert np.allclose(pygram_h, numpy_h)
 
     def test_flow_omp():
@@ -269,8 +292,15 @@ if pygram11.OPENMP:
         rg = (-3, 3)
         pygram_h = pygram11.histogram(x, bins=nbins, range=rg, omp=True, flow=True)
         numpy_h, _ = np.histogram(x, bins=nbins, range=rg)
-
         numpy_h[0] += sum(x < rg[0])
         numpy_h[-1] += sum(x > rg[1])
+        assert np.all(pygram_h == numpy_h)
 
+    def test_flow_omp_var():
+        x = np.random.randn(100000)
+        bins = [-2, -1.7, -0.5, 0.2, 2.2]
+        pygram_h = pygram11.histogram(x, bins=bins, omp=True, flow=True)
+        numpy_h, _ = np.histogram(x, bins=bins)
+        numpy_h[0] += sum(x < bins[0])
+        numpy_h[-1] += sum(x > bins[-1])
         assert np.all(pygram_h == numpy_h)
