@@ -41,6 +41,9 @@ def fix1d(x, bins=10, range=None, weights=None, density=False, flow=False, omp="
     density: bool
         normalize histogram bins as value of PDF such that the integral
         over the range is 1.
+    flow: bool
+        if ``True`` the under and overflow bin contents are added to the first
+        and last bins, respectively
     omp: bool or str
         if ``True``, use OpenMP if available; if "auto" (and OpenMP is available),
         enables OpenMP if len(x) > 10^4
@@ -129,6 +132,9 @@ def var1d(x, bins, weights=None, density=False, flow=False, omp="auto"):
     density: bool
         normalize histogram bins as value of PDF such that the integral
         over the range is 1.
+    flow: bool
+        if ``True`` the under and overflow bin contents are added to the first
+        and last bins, respectively
     omp: bool or str
         if ``True``, use OpenMP if available; if "auto" (and OpenMP is available),
         enables OpenMP if len(x) > 10^3
@@ -356,6 +362,9 @@ def histogram(x, bins=10, range=None, weights=None, density=False, flow=False, o
     density: bool
         normalize histogram bins as value of PDF such that the integral
         over the range is 1.
+    flow: bool
+        if ``True`` the under and overflow bin contents are added to the first
+        and last bins, respectively
     omp: bool or str
         if ``True``, use OpenMP if available; if "auto" (and OpenMP is available),
         enables OpenMP if len(x) > 10^4 for fixed width and > 10^3 for variable
