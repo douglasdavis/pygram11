@@ -64,7 +64,7 @@ accelerated with OpenMP:
 >>> h, staterr = pygram11.histogram(x, bins=40, range=(-4, 4), weights=w, omp=True)
 ```
 
-A fixed with width histogram which saves the under and overflow in the
+A fixed bin width histogram which saves the under and overflow in the
 first and last bins:
 
 ```python
