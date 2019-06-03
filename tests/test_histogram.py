@@ -221,3 +221,56 @@ def test_density_var1d():
     pygram_h, _ = pygram11.var1d(x, bins=bins, weights=w, density=True)
     numpy_h, _ = np.histogram(x, bins=bins, weights=w, density=True)
     npt.assert_almost_equal(pygram_h, numpy_h, 5)
+
+
+def test_flow_weights():
+    x = np.random.randn(100000)
+    w = np.random.uniform(0.5, 0.8, x.shape[0])
+    nbins = 50
+    rg = (-3, 3)
+    pygram_h, _ = pygram11.histogram(x, bins=nbins, range=rg, weights=w, omp=False, flow=True)
+    numpy_h, _ = np.histogram(x, bins=nbins, range=rg, weights=w)
+
+    numpy_h[0] += sum(w[x < rg[0]])
+    numpy_h[-1] += sum(w[x > rg[1]])
+
+    assert np.allclose(pygram_h, numpy_h)
+
+def test_flow():
+    x = np.random.randn(100000)
+
+    nbins = 50
+    rg = (-3, 3)
+    pygram_h = pygram11.histogram(x, bins=nbins, range=rg, omp=False, flow=True)
+    numpy_h, _ = np.histogram(x, bins=nbins, range=rg)
+
+    numpy_h[0] += sum(x < rg[0])
+    numpy_h[-1] += sum(x > rg[1])
+
+    assert np.all(pygram_h == numpy_h)
+
+if pygram11.OPENMP:
+    def test_flow_weights_omp():
+        x = np.random.randn(100000)
+        w = np.random.uniform(0.5, 0.8, x.shape[0])
+        nbins = 50
+        rg = (-3, 3)
+        pygram_h, _ = pygram11.histogram(x, bins=nbins, range=rg, weights=w, omp=True, flow=True)
+        numpy_h, _ = np.histogram(x, bins=nbins, range=rg, weights=w)
+
+        numpy_h[0] += sum(w[x < rg[0]])
+        numpy_h[-1] += sum(w[x > rg[1]])
+
+        assert np.allclose(pygram_h, numpy_h)
+
+    def test_flow_omp():
+        x = np.random.randn(100000)
+        nbins = 50
+        rg = (-3, 3)
+        pygram_h = pygram11.histogram(x, bins=nbins, range=rg, omp=True, flow=True)
+        numpy_h, _ = np.histogram(x, bins=nbins, range=rg)
+
+        numpy_h[0] += sum(x < rg[0])
+        numpy_h[-1] += sum(x > rg[1])
+
+        assert np.all(pygram_h == numpy_h)

@@ -80,7 +80,7 @@ bool has_OpenMP() {
 
 template <typename T>
 py::array_t<T> py_fix1d(pgarray<T> x, int nbins, T xmin, T xmax, bool use_omp) {
-  auto result_count = py::array_t<std::int64_t>(nbins);
+  auto result_count = py::array_t<std::int64_t>(nbins + 2);
   std::int64_t* result_count_ptr = result_count.mutable_data();
   std::size_t ndata = static_cast<std::size_t>(x.size());
 
@@ -97,8 +97,9 @@ py::array_t<T> py_fix1d(pgarray<T> x, int nbins, T xmin, T xmax, bool use_omp) {
 template <typename T>
 py::tuple py_fix1d_weighted(pgarray<T> x, pgarray<T> w, int nbins, T xmin, T xmax,
                             bool use_omp) {
-  auto result_count = py::array_t<T>(nbins);
-  auto result_sumw2 = py::array_t<T>(nbins);
+  auto result_count = py::array_t<T>(nbins + 2);
+  auto result_sumw2 = py::array_t<T>(nbins + 2);
+
   T* result_count_ptr = result_count.mutable_data();
   T* result_sumw2_ptr = result_sumw2.mutable_data();
   std::size_t ndata = static_cast<std::size_t>(x.size());
@@ -129,7 +130,7 @@ py::array_t<T> py_var1d(pgarray<T> x, pgarray<T> edges, bool use_omp) {
   std::size_t ndata = static_cast<std::size_t>(x.size());
   int nbins = edges_len - 1;
 
-  auto result_count = py::array_t<std::int64_t>(nbins);
+  auto result_count = py::array_t<std::int64_t>(nbins + 2);
   std::int64_t* result_count_ptr = result_count.mutable_data();
 
 #ifdef PYGRAMUSEOMP
@@ -151,8 +152,8 @@ py::tuple py_var1d_weighted(pgarray<T> x, pgarray<T> w, pgarray<T> edges, bool u
   std::size_t ndata = static_cast<std::size_t>(x.size());
   std::size_t nbins = edges_len - 1;
 
-  auto result_count = py::array_t<T>(nbins);
-  auto result_sumw2 = py::array_t<T>(nbins);
+  auto result_count = py::array_t<T>(nbins + 2);
+  auto result_sumw2 = py::array_t<T>(nbins + 2);
   T* result_count_ptr = result_count.mutable_data();
   T* result_sumw2_ptr = result_sumw2.mutable_data();
   py::list listing;
