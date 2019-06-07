@@ -68,7 +68,7 @@ A fixed bin width histogram which saves the under and overflow in the
 first and last bins:
 
 ```python
->>> x = np.random.randn(1e6)
+>>> x = np.random.randn(1000000)
 >>> h = pygram11.histogram(x, bins=20, range=(-3, 3), flow=True, omp=True)
 ```
 
