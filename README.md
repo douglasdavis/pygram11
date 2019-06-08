@@ -8,7 +8,7 @@
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/ambv/black)
 
 Simple and fast histogramming in Python via
-[pybind11](https://github.com/pybind/pybind11) and (optionally)
+[pybind11](https://github.com/pybind/pybind11) and accelerated with
 [OpenMP](https://www.openmp.org/).
 
 `pygram11` provides fast functions for calculating histograms (and
