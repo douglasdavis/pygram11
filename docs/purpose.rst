@@ -4,7 +4,7 @@ Purpose
 Motivation
 ----------
 
-There are more than enough histogramming packages for python out in
+There are more than enough histogramming packages for Python out in
 the wild, and some have *a lot* of functionality beyond dropping data
 into bins.
 
