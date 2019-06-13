@@ -112,9 +112,9 @@ def fix1d(x, bins=10, range=None, weights=None, density=False, flow=False, omp="
         return densify1d(result, range, sumw2=sw2)
 
     if weights is None:
-        return result
+        return (result, None)
 
-    return result, np.sqrt(sw2)
+    return (result, np.sqrt(sw2))
 
 
 def var1d(x, bins, weights=None, density=False, flow=False, omp="auto"):
@@ -201,8 +201,8 @@ def var1d(x, bins, weights=None, density=False, flow=False, omp="auto"):
         return densify1d(result, [bins[-1], bins[0]], binw=np.diff(bins), sumw2=sw2)
 
     if weights is None:
-        return result
-    return result, np.sqrt(sw2)
+        return (result, None)
+    return (result, np.sqrt(sw2))
 
 
 def fix2d(x, y, bins=10, range=None, weights=None, omp=False):
@@ -272,7 +272,7 @@ def fix2d(x, y, bins=10, range=None, weights=None, omp=False):
         assert weights.shape == x.shape, "weights must be the same shape as the data"
         return weighted_func(x, y, weights, nx, xmin, xmax, ny, ymin, ymax, omp)
     else:
-        return unweight_func(x, y, nx, xmin, xmax, ny, ymin, ymax, omp)
+        return (unweight_func(x, y, nx, xmin, xmax, ny, ymin, ymax, omp), None)
 
 
 def var2d(x, y, xbins, ybins, weights=None, omp=False):
@@ -330,7 +330,7 @@ def var2d(x, y, xbins, ybins, weights=None, omp=False):
         assert weights.shape == x.shape, "weights must be the same shape as data"
         return weighted_func(x, y, weights, xbins, ybins, omp)
     else:
-        return unweight_func(x, y, xbins, ybins, omp)
+        return (unweight_func(x, y, xbins, ybins, omp), None)
 
 
 def histogram(x, bins=10, range=None, weights=None, density=False, flow=False, omp="auto"):

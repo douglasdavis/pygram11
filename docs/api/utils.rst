@@ -1,5 +1,5 @@
-Utilities
----------
+Miscellaneous Utilities
+-----------------------
 
 .. currentmodule:: pygram11.utils
 

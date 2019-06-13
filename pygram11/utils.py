@@ -2,8 +2,8 @@ import numpy as np
 
 
 def densify1d(h, range, binw=None, sumw2=None):
-    """normalize histogram as a PDF such thtat the integral over
-    the range is 1.
+    """normalize histogram as a PDF such that the integral over the range
+    is equal to 1.
 
     This function is used by the histogramming functions if the
     ``density`` argument is true.
@@ -41,6 +41,6 @@ def densify1d(h, range, binw=None, sumw2=None):
         result_normed_unc = np.sqrt(
             sumw2 + np.power(h / raw_integral, 2) * np.sum(sumw2)
         ) / (binwidth * raw_integral)
-        return result_normed, result_normed_unc
+        return (result_normed, result_normed_unc)
 
-    return result_normed
+    return (result_normed, None)
