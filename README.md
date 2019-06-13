@@ -94,7 +94,7 @@ A histogram in two dimensions with variable width bins:
 - Simple and fast histogramming in Python using the NumPy C API:
   [fast-histogram](https://github.com/astrofrog/fast-histogram). No
   weights or overflow).
-- If you want to calculate histograms on a GPU in Python, cqheck out
+- If you want to calculate histograms on a GPU in Python, check out
   [cupy.histogram](https://docs-cupy.chainer.org/en/stable/reference/generated/cupy.histogram.html#cupy.histogram). They
   only have 1D histograms (no weights over overflow).
 
