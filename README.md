@@ -66,11 +66,12 @@ accelerated with OpenMP:
 ```
 
 A histogram with fixed bin width which saves the under and overflow in
-the first and last bins:
+the first and last bins (using `__` to catch the `None` returned due
+to the absence of weights):
 
 ```python
 >>> x = np.random.randn(1000000)
->>> h = pygram11.histogram(x, bins=20, range=(-3, 3), flow=True, omp=True)
+>>> h, __ = pygram11.histogram(x, bins=20, range=(-3, 3), flow=True, omp=True)
 ```
 
 A histogram in two dimensions with variable width bins:
@@ -80,7 +81,7 @@ A histogram in two dimensions with variable width bins:
 >>> y = np.random.randn(10000)
 >>> xbins = [-2.0, -1.0, -0.5, 1.5, 2.0]
 >>> ybins = [-3.0, -1.5, -0.1, 0.8, 2.0]
->>> h = pygram11.histogram2d(x, y, bins=[xbins, ybins])
+>>> h, __ = pygram11.histogram2d(x, y, bins=[xbins, ybins])
 ```
 
 ## Other Libraries
