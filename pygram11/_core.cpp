@@ -3,6 +3,7 @@
 #include "_core2d.hpp"
 // pybind11
 #include <pybind11/numpy.h>
+#include <pybind11/stl.h>
 #include <pybind11/pybind11.h>
 // STL
 #include <cstdint>
@@ -42,6 +43,10 @@ template <typename T>
 py::tuple py_var2d_weighted(pgarray<T> x, pgarray<T> y, pgarray<T> w, pgarray<T> xedges,
                             pgarray<T> yedges, bool use_omp);
 
+template <typename T>
+py::tuple py_fix1d_multiple_weights(pgarray<T> x, std::vector<pgarray<T>>& ws,
+                                    int nbins, T xmin, T xmax, bool use_omp);
+
 bool has_OpenMP();
 
 PYBIND11_MODULE(_core, m) {
@@ -68,6 +73,9 @@ PYBIND11_MODULE(_core, m) {
   m.def("_var2d_f4", &py_var2d<float>);
   m.def("_var2d_weighted_f8", &py_var2d_weighted<double>);
   m.def("_var2d_weighted_f4", &py_var2d_weighted<float>);
+
+  m.def("_fix1d_multiple_weights_f4", &py_fix1d_multiple_weights<float>);
+  m.def("_fix1d_multiple_weights_f8", &py_fix1d_multiple_weights<double>);
 }
 
 bool has_OpenMP() {
@@ -284,4 +292,45 @@ py::tuple py_var2d_weighted(pgarray<T> x, pgarray<T> y, pgarray<T> w, pgarray<T>
   listing.append(result_count);
   listing.append(result_sumw2);
   return py::cast<py::tuple>(listing);
+}
+
+template <typename T>
+py::tuple py_fix1d_multiple_weights(pgarray<T> x, std::vector<pgarray<T>>& ws,
+                                    int nbins, T xmin, T xmax, bool use_omp) {
+  auto result_count = py::array_t<T>(nbins + 2);
+  auto result_sumw2 = py::array_t<T>(nbins + 2);
+
+  std::vector<py::array_t<T>> results_count;
+  std::vector<py::array_t<T>> results_sumw2;
+
+  std::vector<T*> results_count_ptrs;
+  std::vector<T*> results_sumw2_ptrs;
+
+  py::list listing_counts;
+  py::list listing_sumw2s;
+
+  std::vector<const T*> weightsvec;
+
+  for (std::size_t i = 0; i < ws.size(); ++i) {
+    weightsvec.push_back(ws[i].data());
+    results_count.emplace_back(nbins + 2);
+    results_sumw2.emplace_back(nbins + 2);
+    results_count_ptrs.push_back(results_count[i].mutable_data());
+    results_sumw2_ptrs.push_back(results_sumw2[i].mutable_data());
+    listing_counts.append(results_count[i]);
+    listing_sumw2s.append(results_sumw2[i]);
+  }
+
+  std::size_t ndata = static_cast<std::size_t>(x.size());
+
+#ifdef PYGRAMUSEOMP
+  if (use_omp) {
+    c_fix1d_multiple_weights_omp(x.data(), weightsvec, results_count_ptrs, results_sumw2_ptrs,
+                                 ndata, nbins, xmin, xmax);
+    return py::make_tuple(listing_counts, listing_sumw2s);
+  }
+#endif
+  c_fix1d_multiple_weights_omp(x.data(), weightsvec, results_count_ptrs, results_sumw2_ptrs,
+                               ndata, nbins, xmin, xmax);
+  return py::make_tuple(listing_counts, listing_sumw2s);
 }
