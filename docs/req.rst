@@ -64,7 +64,7 @@ pybind11 must be installed explicitly before pygram11.
 
 .. code-block:: none
 
-   $ git clone https://github.com/drdavis/pygram11
+   $ git clone https://github.com/douglasdavis/pygram11
    $ pip install pybind11 numpy
    $ cd pygram11
    $ pip install .

@@ -203,7 +203,7 @@ setup(
     version=get_version(),
     author="Doug Davis",
     author_email="ddavis@ddavis.io",
-    url="https://github.com/drdavis/pygram11",
+    url="https://github.com/douglasdavis/pygram11",
     description="Fast histogramming in python built on pybind11 and OpenMP.",
     long_description=long_description,
     long_description_content_type="text/markdown",

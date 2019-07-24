@@ -7,10 +7,10 @@ tests to see of OpenMP is available during installation. If you don't
 want to use conda-forge, keep reading.
 
 You can look at the `continuous integration configuration files
-<https://github.com/drdavis/pygram11/tree/master/.builds>`_ to see how
-builds are defined (Linux only) to ensure OpenMP acceleration is
-available. For macOS 10.14, manual tests have shown these setups are
-OpenMP accelerated:
+<https://github.com/douglasdavis/pygram11/tree/master/.builds>`_ to
+see how builds are defined (Linux only) to ensure OpenMP acceleration
+is available. For macOS 10.14, manual tests have shown these setups
+are OpenMP accelerated:
 
 - Homebrew or `pyenv <https://github.com/pyenv/pyenv>`_ Python3
   (3.7.*) with ``libomp`` installed from Homebrew (Apple LLVM version

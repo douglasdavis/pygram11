@@ -51,7 +51,7 @@ $ pip install pygram11
 
 ```none
 $ pip install pybind11
-$ pip install git+https://github.com/drdavis/pygram11.git@master
+$ pip install git+https://github.com/douglasdavis/pygram11.git@master
 ```
 
 ## In Action
