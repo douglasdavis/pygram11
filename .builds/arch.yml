@@ -17,7 +17,7 @@ tasks:
       sudo pip install .
   - test: |
       cd pygram11
-      pytest
+      pytest --ignore=extern
       mkdir play
       cd play
       python -c "import pygram11; print(pygram11.OPENMP)"

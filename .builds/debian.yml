@@ -7,13 +7,13 @@ sources:
   - https://github.com/drdavis/pygram11.git
 tasks:
   - setup: |
-      sudo pip3 install pybind11 numpy pytest
+      sudo pip3 install numpy pytest
   - build: |
       cd pygram11
       sudo pip3 install .
   - test: |
       cd pygram11
-      pytest
+      pytest --ignore=extern
       mkdir play
       cd play
       python3 -c "import pygram11; print(pygram11.OPENMP)"

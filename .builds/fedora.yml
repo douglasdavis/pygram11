@@ -4,8 +4,6 @@ packages:
   - python3-devel
   - python3-pip
   - python3-numpy
-  - pybind11-devel
-  - python3-pybind11
 sources:
   - https://github.com/drdavis/pygram11
 tasks:
@@ -16,7 +14,7 @@ tasks:
       pip3 install . --user
   - test: |
       cd pygram11
-      pytest
+      pytest --ignore=extern
       mkdir play
       cd play
       python3 -c "import pygram11; print(pygram11.OPENMP)"
