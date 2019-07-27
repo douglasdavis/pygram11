@@ -1,6 +1,6 @@
 ## multiweight test
 
-from pygram11._core import _fix1d_multiple_weights_f8 as hist
+from pygram11._core import _f1dmw_f8 as hist
 
 import numpy as np
 

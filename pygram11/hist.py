@@ -1,12 +1,12 @@
-from ._core import _fix1d_f4
-from ._core import _fix1d_f8
-from ._core import _fix1d_weighted_f4
-from ._core import _fix1d_weighted_f8
+from ._core import _f1d_f4
+from ._core import _f1d_f8
+from ._core import _f1dw_f4
+from ._core import _f1dw_f8
 
-from ._core import _var1d_f4
-from ._core import _var1d_f8
-from ._core import _var1d_weighted_f4
-from ._core import _var1d_weighted_f8
+from ._core import _v1d_f4
+from ._core import _v1d_f8
+from ._core import _v1dw_f4
+from ._core import _v1dw_f8
 
 from ._core import _fix2d_f4
 from ._core import _fix2d_f8
@@ -80,11 +80,11 @@ def fix1d(x, bins=10, range=None, weights=None, density=False, flow=False, omp="
     else:
         raise TypeError("omp should be 'auto' or a boolean value")
 
-    weighted_func = _fix1d_weighted_f8
-    unweight_func = _fix1d_f8
+    weighted_func = _f1dw_f8
+    unweight_func = _f1d_f8
     if x.dtype == np.float32:
-        weighted_func = _fix1d_weighted_f4
-        unweight_func = _fix1d_f4
+        weighted_func = _f1dw_f4
+        unweight_func = _f1d_f4
 
     if range is None:
         range = (x.min(), x.max())
@@ -173,11 +173,11 @@ def var1d(x, bins, weights=None, density=False, flow=False, omp="auto"):
     bins = np.asarray(bins)
     assert np.all(bins[1:] >= bins[:-1]), "bins sequence must monotonically increase"
 
-    weighted_func = _var1d_weighted_f8
-    unweight_func = _var1d_f8
+    weighted_func = _v1dw_f8
+    unweight_func = _v1d_f8
     if x.dtype == np.float32:
-        weighted_func = _var1d_weighted_f4
-        unweight_func = _var1d_f4
+        weighted_func = _v1dw_f4
+        unweight_func = _v1d_f4
 
     if weights is not None:
         result, sw2 = weighted_func(x, weights, bins, use_omp)
@@ -440,9 +440,7 @@ def histogram2d(x, y, bins=10, range=None, weights=None, omp=False):
         return fix2d(x, y, bins=bins, range=range, weights=weights, omp=omp)
 
     if N == 2:
-        if isinstance(bins[0], numbers.Integral) and isinstance(
-            bins[1], numbers.Integral
-        ):
+        if isinstance(bins[0], numbers.Integral) and isinstance(bins[1], numbers.Integral):
             return fix2d(x, y, bins=bins, range=range, weights=weights, omp=omp)
         else:
             return var2d(x, y, bins[0], bins[1], weights=weights, omp=omp)
