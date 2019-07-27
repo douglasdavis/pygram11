@@ -15,7 +15,6 @@
 #include <omp.h>
 #endif
 
-
 #ifdef PYGRAMUSEOMP
 template <typename T>
 void c_fix1d_weighted_omp(const T* data, const T* weights, T* count, T* sumw2,
@@ -34,8 +33,8 @@ void c_fix1d_weighted_omp(const T* data, const T* weights, T* count, T* sumw2,
 
 #pragma omp for nowait
     for (std::size_t i = 0; i < n; i++) {
-      pygram11::detail::fill(count_priv.get(), sumw2_priv.get(), data[i], weights[i], nbins,
-                             norm, xmin, xmax);
+      pygram11::detail::fill(count_priv.get(), sumw2_priv.get(), data[i], weights[i],
+                             nbins, norm, xmin, xmax);
     }
 
 #pragma omp critical
@@ -49,7 +48,8 @@ void c_fix1d_weighted_omp(const T* data, const T* weights, T* count, T* sumw2,
 
 template <typename T>
 void c_fix1d_weighted(const T* data, const T* weights, T* count, T* sumw2,
-                      const std::size_t n, const int nbins, const T xmin, const T xmax) {
+                      const std::size_t n, const int nbins, const T xmin,
+                      const T xmax) {
   const T norm = 1.0 / (xmax - xmin);
   memset(count, 0, sizeof(T) * (nbins + 2));
   memset(sumw2, 0, sizeof(T) * (nbins + 2));
@@ -60,8 +60,8 @@ void c_fix1d_weighted(const T* data, const T* weights, T* count, T* sumw2,
 
 #ifdef PYGRAMUSEOMP
 template <typename T>
-void c_fix1d_omp(const T* data, std::int64_t* count, const std::size_t n, const int nbins,
-                 const T xmin, const T xmax) {
+void c_fix1d_omp(const T* data, std::int64_t* count, const std::size_t n,
+                 const int nbins, const T xmin, const T xmax) {
   const T norm = 1.0 / (xmax - xmin);
   memset(count, 0, sizeof(std::int64_t) * (nbins + 2));
 
@@ -114,8 +114,8 @@ void c_var1d_weighted_omp(const T* data, const T* weights, T* count, T* sumw2,
 
 #pragma omp for nowait
     for (std::size_t i = 0; i < n; i++) {
-      pygram11::detail::fill(count_priv.get(), sumw2_priv.get(), data[i], weights[i], nbins,
-                             edges);
+      pygram11::detail::fill(count_priv.get(), sumw2_priv.get(), data[i], weights[i],
+                             nbins, edges);
     }
 
 #pragma omp critical
@@ -129,7 +129,8 @@ void c_var1d_weighted_omp(const T* data, const T* weights, T* count, T* sumw2,
 
 template <typename T>
 void c_var1d_weighted(const T* data, const T* weights, T* count, T* sumw2,
-                      const std::size_t n, const int nbins, const std::vector<T>& edges) {
+                      const std::size_t n, const int nbins,
+                      const std::vector<T>& edges) {
   memset(count, 0, sizeof(T) * (nbins + 2));
   memset(sumw2, 0, sizeof(T) * (nbins + 2));
   for (std::size_t i = 0; i < n; i++) {
@@ -139,8 +140,8 @@ void c_var1d_weighted(const T* data, const T* weights, T* count, T* sumw2,
 
 #ifdef PYGRAMUSEOMP
 template <typename T>
-void c_var1d_omp(const T* data, std::int64_t* count, const std::size_t n, const int nbins,
-                 const std::vector<T>& edges) {
+void c_var1d_omp(const T* data, std::int64_t* count, const std::size_t n,
+                 const int nbins, const std::vector<T>& edges) {
   memset(count, 0, sizeof(std::int64_t) * (nbins + 2));
 #pragma omp parallel
   {
@@ -173,10 +174,9 @@ void c_var1d(const T* data, std::int64_t* count, const std::size_t n, const int 
 
 template <typename T>
 void c_fix1d_multiple_weights_omp(const py::array_t<T>& data,
-                                  const py::array_t<T>& weights,
-                                  py::array_t<T>& count,
-                                  py::array_t<T>& sumw2,
-                                  const std::size_t nbins, const T xmin, const T xmax) {
+                                  const py::array_t<T>& weights, py::array_t<T>& count,
+                                  py::array_t<T>& sumw2, const std::size_t nbins,
+                                  const T xmin, const T xmax) {
   const T norm = 1.0 / (xmax - xmin);
   const std::size_t nweights = static_cast<std::size_t>(weights.shape(1));
   const std::size_t ndata = static_cast<std::size_t>(data.shape(0));

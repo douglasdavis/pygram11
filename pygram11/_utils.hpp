@@ -3,15 +3,13 @@
 
 // pybind11
 #include <pybind11/numpy.h>
-#include <pybind11/stl.h>
 #include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
 namespace py = pybind11;
-
 
 #include <algorithm>
 #include <cstdint>
 #include <vector>
-
 
 namespace pygram11 {
 namespace detail {
@@ -83,7 +81,8 @@ void fill(T* count, T* sumw2, const T x, const T weight, const int nbins,
 
 /// fill a variable bin width unweighted 1d histogram
 template <typename T>
-void fill(std::int64_t* count, const T x, const int nbins, const std::vector<T>& edges) {
+void fill(std::int64_t* count, const T x, const int nbins,
+          const std::vector<T>& edges) {
   std::size_t binId;
   if (x < edges[0]) {
     binId = 0;
@@ -125,7 +124,8 @@ void fill(std::int64_t* count, const T x, const T y, const T normx, const int nb
 /// fill a variable bin width weighted 2d histogram
 template <typename T>
 void fill(T* count, T* sumw2, const T x, const T y, const T weight, const int nbinsx,
-          const std::vector<T>& xedges, const int nbinsy, const std::vector<T>& yedges) {
+          const std::vector<T>& xedges, const int nbinsy,
+          const std::vector<T>& yedges) {
   if (!(x >= xedges[0] && x < xedges[nbinsx])) return;
   if (!(y >= yedges[0] && y < yedges[nbinsy])) return;
   std::size_t xbinId = nonuniform_bin_find(std::begin(xedges), std::end(xedges), x);
@@ -137,7 +137,8 @@ void fill(T* count, T* sumw2, const T x, const T y, const T weight, const int nb
 /// fill a variable bin width unweighted 2d histogram
 template <typename T>
 void fill(std::int64_t* count, const T x, const T y, const int nbinsx,
-          const std::vector<T>& xedges, const int nbinsy, const std::vector<T>& yedges) {
+          const std::vector<T>& xedges, const int nbinsy,
+          const std::vector<T>& yedges) {
   if (!(x >= xedges[0] && x < xedges[nbinsx])) return;
   if (!(y >= yedges[0] && y < yedges[nbinsy])) return;
   std::size_t xbinId = nonuniform_bin_find(std::begin(xedges), std::end(xedges), x);
