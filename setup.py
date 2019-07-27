@@ -10,7 +10,6 @@ from distutils import log
 from distutils.ccompiler import new_compiler
 from distutils.sysconfig import customize_compiler, get_config_var
 from distutils.errors import CompileError, LinkError
-import pybind11
 
 
 class get_pybind_include(object):
@@ -34,8 +33,7 @@ ext_modules = [
         [os.path.join("pygram11", "_core.cpp")],
         include_dirs=[
             "/usr/local/include",
-            get_pybind_include(),
-            get_pybind_include(user=True),
+            "extern/pybind11/include",
         ],
         language="c++",
     )
@@ -62,7 +60,7 @@ CCODE = """
 int main(void) {
   #pragma omp parallel
   printf("nthreads=%d\\n", omp_get_num_threads());
- return 0;
+  return 0;
 }
 """
 
@@ -209,8 +207,8 @@ setup(
     long_description_content_type="text/markdown",
     packages=["pygram11"],
     ext_modules=ext_modules,
-    setup_requires=["numpy>=1.12", "pybind11>=2.2"],
-    install_requires=["numpy>=1.12", "pybind11>=2.2"],
+    setup_requires=["numpy>=1.12"],
+    install_requires=["numpy>=1.12"],
     cmdclass={"build_ext": BuildExt},
     test_suite="tests",
     tests_require=["pytest>=3.0"],

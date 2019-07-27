@@ -4,4 +4,4 @@ BasedOnStyle: Google
 BreakBeforeBraces: Custom
 BraceWrapping:
   BeforeElse: true
-ColumnLimit: 92
+ColumnLimit: 88

@@ -6,7 +6,7 @@ packages:
   - pybind11
   - twine
 sources:
-  - https://github.com/drdavis/pygram11
+  - https://github.com/douglasdavis/pygram11
 secrets:
   - a7bb07f9-3681-4e7e-8650-e49e3ca8c822
 tasks:
@@ -17,7 +17,7 @@ tasks:
       sudo pip install .
   - test: |
       cd pygram11
-      pytest
+      pytest --ignore=extern
       mkdir play
       cd play
       python -c "import pygram11; print(pygram11.OPENMP)"

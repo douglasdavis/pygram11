@@ -3,37 +3,37 @@ packages:
   - git
   - wget
 sources:
-  - https://github.com/drdavis/pygram11
+  - https://github.com/douglasdavis/pygram11
 tasks:
   - setup: |
       wget -nv http://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
       bash miniconda.sh -b -p $HOME/miniconda
       source $HOME/miniconda/etc/profile.d/conda.sh
       conda config --set always_yes yes --set changeps1 no
-      conda create -q -n py27 python=2.7 numpy pybind11 pytest
-      conda create -q -n py36 python=3.6 numpy pybind11 pytest
-      conda create -q -n py37 python=3.7 numpy pybind11 pytest
+      conda create -q -n py27 python=2.7 numpy pytest
+      conda create -q -n py36 python=3.6 numpy pytest
+      conda create -q -n py37 python=3.7 numpy pytest
   - test_python36: |
       cd pygram11
       source $HOME/miniconda/etc/profile.d/conda.sh
       conda activate py36
       pip install pip -U
       pip install .
-      pytest
+      pytest --ignore=extern
   - test_python37: |
       cd pygram11
       source $HOME/miniconda/etc/profile.d/conda.sh
       conda activate py37
       pip install pip -U
       pip install .
-      pytest
+      pytest --ignore=extern
   - test_python27: |
       cd pygram11
       source $HOME/miniconda/etc/profile.d/conda.sh
       conda activate py27
       pip install pip -U
       pip install .
-      pytest
+      pytest --ignore=extern
 triggers:
   - action: email
     condition: failure
