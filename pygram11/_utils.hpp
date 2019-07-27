@@ -1,9 +1,17 @@
 #ifndef PYGRAM11_UTILS_H
 #define PYGRAM11_UTILS_H
 
+// pybind11
+#include <pybind11/numpy.h>
+#include <pybind11/stl.h>
+#include <pybind11/pybind11.h>
+namespace py = pybind11;
+
+
 #include <algorithm>
 #include <cstdint>
 #include <vector>
+
 
 namespace pygram11 {
 namespace detail {

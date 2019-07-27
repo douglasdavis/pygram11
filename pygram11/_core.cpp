@@ -1,51 +1,36 @@
 // pygram11
 #include "_core1d.hpp"
 #include "_core2d.hpp"
-// pybind11
-#include <pybind11/numpy.h>
-#include <pybind11/stl.h>
-#include <pybind11/pybind11.h>
 // STL
 #include <cstdint>
 #include <vector>
 
-namespace py = pybind11;
+template <typename T>
+py::array_t<T> fix1d(py::array_t<T> x, int nbins, T xmin, T xmax, bool use_omp);
 
 template <typename T>
-using pgarray = py::array_t<T, py::array::c_style | py::array::forcecast>;
+py::tuple fix1d_weighted(py::array_t<T> x, py::array_t<T> w, int nbins, T xmin, T xmax, bool use_omp);
 
 template <typename T>
-py::array_t<T> py_fix1d(pgarray<T> x, int nbins, T xmin, T xmax, bool use_omp);
+py::array_t<T> var1d(py::array_t<T> x, py::array_t<T> edges, bool use_omp);
 
 template <typename T>
-py::tuple py_fix1d_weighted(pgarray<T> x, pgarray<T> w, int nbins, T xmin, T xmax,
-                            bool use_omp);
+py::tuple var1d_weighted(py::array_t<T> x, py::array_t<T> w, py::array_t<T> edges, bool use_omp);
 
 template <typename T>
-py::array_t<T> py_var1d(pgarray<T> x, pgarray<T> edges, bool use_omp);
+py::array_t<T> fix2d(py::array_t<T> x, py::array_t<T> y, int nbinsx, T xmin, T xmax, int nbinsy, T ymin, T ymax, bool use_omp);
 
 template <typename T>
-py::tuple py_var1d_weighted(pgarray<T> x, pgarray<T> w, pgarray<T> edges, bool use_omp);
+py::tuple fix2d_weighted(py::array_t<T> x, py::array_t<T> y, py::array_t<T> w, int nbinsx, T xmin, T xmax, int nbinsy, T ymin, T ymax, bool use_omp);
 
 template <typename T>
-py::array_t<T> py_fix2d(pgarray<T> x, pgarray<T> y, int nbinsx, T xmin, T xmax, int nbinsy,
-                        T ymin, T ymax, bool use_omp);
+py::array_t<T> var2d(py::array_t<T> x, py::array_t<T> y, py::array_t<T> xedges, py::array_t<T> yedges, bool use_omp);
 
 template <typename T>
-py::tuple py_fix2d_weighted(pgarray<T> x, pgarray<T> y, pgarray<T> w, int nbinsx, T xmin,
-                            T xmax, int nbinsy, T ymin, T ymax, bool use_omp);
+py::tuple var2d_weighted(py::array_t<T> x, py::array_t<T> y, py::array_t<T> w, py::array_t<T> xedges, py::array_t<T> yedges, bool use_omp);
 
 template <typename T>
-py::array_t<T> py_var2d(pgarray<T> x, pgarray<T> y, pgarray<T> xedges, pgarray<T> yedges,
-                        bool use_omp);
-
-template <typename T>
-py::tuple py_var2d_weighted(pgarray<T> x, pgarray<T> y, pgarray<T> w, pgarray<T> xedges,
-                            pgarray<T> yedges, bool use_omp);
-
-template <typename T>
-py::tuple py_fix1d_multiple_weights(pgarray<T> x, std::vector<pgarray<T>>& ws,
-                                    int nbins, T xmin, T xmax, bool use_omp);
+py::tuple fix1d_multiple_weights(py::array_t<T> x, py::array_t<T> ws, int nbins, T xmin, T xmax, bool use_omp);
 
 bool has_OpenMP();
 
@@ -54,28 +39,28 @@ PYBIND11_MODULE(_core, m) {
 
   m.def("_HAS_OPENMP", &has_OpenMP);
 
-  m.def("_fix1d_f8", &py_fix1d<double>);
-  m.def("_fix1d_f4", &py_fix1d<float>);
-  m.def("_fix1d_weighted_f8", &py_fix1d_weighted<double>);
-  m.def("_fix1d_weighted_f4", &py_fix1d_weighted<float>);
+  m.def("_fix1d_f8", &fix1d<double>);
+  m.def("_fix1d_f4", &fix1d<float>);
+  m.def("_fix1d_weighted_f8", &fix1d_weighted<double>);
+  m.def("_fix1d_weighted_f4", &fix1d_weighted<float>);
 
-  m.def("_var1d_f8", &py_var1d<double>);
-  m.def("_var1d_f4", &py_var1d<float>);
-  m.def("_var1d_weighted_f8", &py_var1d_weighted<double>);
-  m.def("_var1d_weighted_f4", &py_var1d_weighted<float>);
+  m.def("_var1d_f8", &var1d<double>);
+  m.def("_var1d_f4", &var1d<float>);
+  m.def("_var1d_weighted_f8", &var1d_weighted<double>);
+  m.def("_var1d_weighted_f4", &var1d_weighted<float>);
 
-  m.def("_fix2d_f8", &py_fix2d<double>);
-  m.def("_fix2d_f4", &py_fix2d<float>);
-  m.def("_fix2d_weighted_f8", &py_fix2d_weighted<double>);
-  m.def("_fix2d_weighted_f4", &py_fix2d_weighted<float>);
+  m.def("_fix2d_f8", &fix2d<double>);
+  m.def("_fix2d_f4", &fix2d<float>);
+  m.def("_fix2d_weighted_f8", &fix2d_weighted<double>);
+  m.def("_fix2d_weighted_f4", &fix2d_weighted<float>);
 
-  m.def("_var2d_f8", &py_var2d<double>);
-  m.def("_var2d_f4", &py_var2d<float>);
-  m.def("_var2d_weighted_f8", &py_var2d_weighted<double>);
-  m.def("_var2d_weighted_f4", &py_var2d_weighted<float>);
+  m.def("_var2d_f8", &var2d<double>);
+  m.def("_var2d_f4", &var2d<float>);
+  m.def("_var2d_weighted_f8", &var2d_weighted<double>);
+  m.def("_var2d_weighted_f4", &var2d_weighted<float>);
 
-  m.def("_fix1d_multiple_weights_f4", &py_fix1d_multiple_weights<float>);
-  m.def("_fix1d_multiple_weights_f8", &py_fix1d_multiple_weights<double>);
+  m.def("_fix1d_multiple_weights_f4", &fix1d_multiple_weights<float>);
+  m.def("_fix1d_multiple_weights_f8", &fix1d_multiple_weights<double>);
 }
 
 bool has_OpenMP() {
@@ -87,7 +72,7 @@ bool has_OpenMP() {
 }
 
 template <typename T>
-py::array_t<T> py_fix1d(pgarray<T> x, int nbins, T xmin, T xmax, bool use_omp) {
+py::array_t<T> fix1d(py::array_t<T> x, int nbins, T xmin, T xmax, bool use_omp) {
   auto result_count = py::array_t<std::int64_t>(nbins + 2);
   std::int64_t* result_count_ptr = result_count.mutable_data();
   std::size_t ndata = static_cast<std::size_t>(x.size());
@@ -103,8 +88,8 @@ py::array_t<T> py_fix1d(pgarray<T> x, int nbins, T xmin, T xmax, bool use_omp) {
 }
 
 template <typename T>
-py::tuple py_fix1d_weighted(pgarray<T> x, pgarray<T> w, int nbins, T xmin, T xmax,
-                            bool use_omp) {
+py::tuple fix1d_weighted(py::array_t<T> x, py::array_t<T> w, int nbins, T xmin, T xmax,
+                         bool use_omp) {
   auto result_count = py::array_t<T>(nbins + 2);
   auto result_sumw2 = py::array_t<T>(nbins + 2);
 
@@ -130,7 +115,7 @@ py::tuple py_fix1d_weighted(pgarray<T> x, pgarray<T> w, int nbins, T xmin, T xma
 }
 
 template <typename T>
-py::array_t<T> py_var1d(pgarray<T> x, pgarray<T> edges, bool use_omp) {
+py::array_t<T> var1d(py::array_t<T> x, py::array_t<T> edges, bool use_omp) {
   ssize_t edges_len = edges.size();
   const T* edges_ptr = edges.data();
   std::vector<T> edges_vec(edges_ptr, edges_ptr + edges_len);
@@ -152,7 +137,7 @@ py::array_t<T> py_var1d(pgarray<T> x, pgarray<T> edges, bool use_omp) {
 }
 
 template <typename T>
-py::tuple py_var1d_weighted(pgarray<T> x, pgarray<T> w, pgarray<T> edges, bool use_omp) {
+py::tuple var1d_weighted(py::array_t<T> x, py::array_t<T> w, py::array_t<T> edges, bool use_omp) {
   ssize_t edges_len = edges.size();
   auto edges_ptr = edges.data();
   std::vector<T> edges_vec(edges_ptr, edges_ptr + edges_len);
@@ -183,8 +168,8 @@ py::tuple py_var1d_weighted(pgarray<T> x, pgarray<T> w, pgarray<T> edges, bool u
 }
 
 template <typename T>
-py::array_t<T> py_fix2d(pgarray<T> x, pgarray<T> y, int nbinsx, T xmin, T xmax, int nbinsy,
-                        T ymin, T ymax, bool use_omp) {
+py::array_t<T> fix2d(py::array_t<T> x, py::array_t<T> y, int nbinsx, T xmin, T xmax, int nbinsy,
+                     T ymin, T ymax, bool use_omp) {
   auto result_count = py::array_t<std::int64_t>({nbinsx, nbinsy});
   std::int64_t* result_count_ptr = result_count.mutable_data();
   std::size_t ndata = static_cast<std::size_t>(x.size());
@@ -202,8 +187,8 @@ py::array_t<T> py_fix2d(pgarray<T> x, pgarray<T> y, int nbinsx, T xmin, T xmax, 
 }
 
 template <typename T>
-py::tuple py_fix2d_weighted(pgarray<T> x, pgarray<T> y, pgarray<T> w, int nbinsx, T xmin,
-                            T xmax, int nbinsy, T ymin, T ymax, bool use_omp) {
+py::tuple fix2d_weighted(py::array_t<T> x, py::array_t<T> y, py::array_t<T> w, int nbinsx, T xmin,
+                         T xmax, int nbinsy, T ymin, T ymax, bool use_omp) {
   auto result_count = py::array_t<T>({nbinsx, nbinsy});
   auto result_sumw2 = py::array_t<T>({nbinsx, nbinsy});
   T* result_count_ptr = result_count.mutable_data();
@@ -229,8 +214,8 @@ py::tuple py_fix2d_weighted(pgarray<T> x, pgarray<T> y, pgarray<T> w, int nbinsx
 }
 
 template <typename T>
-py::array_t<T> py_var2d(pgarray<T> x, pgarray<T> y, pgarray<T> xedges, pgarray<T> yedges,
-                        bool use_omp) {
+py::array_t<T> var2d(py::array_t<T> x, py::array_t<T> y, py::array_t<T> xedges, py::array_t<T> yedges,
+                     bool use_omp) {
   std::size_t xedges_len = static_cast<std::size_t>(xedges.size());
   std::size_t yedges_len = static_cast<std::size_t>(yedges.size());
   const T* xedges_ptr = xedges.data();
@@ -258,8 +243,8 @@ py::array_t<T> py_var2d(pgarray<T> x, pgarray<T> y, pgarray<T> xedges, pgarray<T
 }
 
 template <typename T>
-py::tuple py_var2d_weighted(pgarray<T> x, pgarray<T> y, pgarray<T> w, pgarray<T> xedges,
-                            pgarray<T> yedges, bool use_omp) {
+py::tuple var2d_weighted(py::array_t<T> x, py::array_t<T> y, py::array_t<T> w, py::array_t<T> xedges,
+                         py::array_t<T> yedges, bool use_omp) {
   std::size_t xedges_len = static_cast<std::size_t>(xedges.size());
   std::size_t yedges_len = static_cast<std::size_t>(yedges.size());
   const T* xedges_ptr = xedges.data();
@@ -295,42 +280,25 @@ py::tuple py_var2d_weighted(pgarray<T> x, pgarray<T> y, pgarray<T> w, pgarray<T>
 }
 
 template <typename T>
-py::tuple py_fix1d_multiple_weights(pgarray<T> x, std::vector<pgarray<T>>& ws,
-                                    int nbins, T xmin, T xmax, bool use_omp) {
-  auto result_count = py::array_t<T>(nbins + 2);
-  auto result_sumw2 = py::array_t<T>(nbins + 2);
-
-  std::vector<py::array_t<T>> results_count;
-  std::vector<py::array_t<T>> results_sumw2;
-
-  std::vector<T*> results_count_ptrs;
-  std::vector<T*> results_sumw2_ptrs;
-
-  py::list listing_counts;
-  py::list listing_sumw2s;
-
-  std::vector<const T*> weightsvec;
-
-  for (std::size_t i = 0; i < ws.size(); ++i) {
-    weightsvec.push_back(ws[i].data());
-    results_count.emplace_back(nbins + 2);
-    results_sumw2.emplace_back(nbins + 2);
-    results_count_ptrs.push_back(results_count[i].mutable_data());
-    results_sumw2_ptrs.push_back(results_sumw2[i].mutable_data());
-    listing_counts.append(results_count[i]);
-    listing_sumw2s.append(results_sumw2[i]);
-  }
-
-  std::size_t ndata = static_cast<std::size_t>(x.size());
+py::tuple fix1d_multiple_weights(py::array_t<T> x, py::array_t<T> weights,
+                                 int nbins, T xmin, T xmax, bool use_omp) {
+  auto count = py::array_t<T>({
+      static_cast<ssize_t>(nbins + 2),
+      static_cast<ssize_t>(weights.shape(1))
+    });
+  auto sumw2 = py::array_t<T>({
+      static_cast<ssize_t>(nbins + 2),
+      static_cast<ssize_t>(weights.shape(1))
+    });
 
 #ifdef PYGRAMUSEOMP
   if (use_omp) {
-    c_fix1d_multiple_weights_omp(x.data(), weightsvec, results_count_ptrs, results_sumw2_ptrs,
-                                 ndata, nbins, xmin, xmax);
-    return py::make_tuple(listing_counts, listing_sumw2s);
+    c_fix1d_multiple_weights_omp(x, weights, count, sumw2,
+                                 nbins, xmin, xmax);
+    return py::make_tuple(count, sumw2);
   }
 #endif
-  c_fix1d_multiple_weights_omp(x.data(), weightsvec, results_count_ptrs, results_sumw2_ptrs,
-                               ndata, nbins, xmin, xmax);
-  return py::make_tuple(listing_counts, listing_sumw2s);
+  c_fix1d_multiple_weights_omp(x, weights, count, sumw2,
+                               nbins, xmin, xmax);
+  return py::make_tuple(count, sumw2);
 }

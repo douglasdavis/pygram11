@@ -15,6 +15,7 @@
 #include <omp.h>
 #endif
 
+
 #ifdef PYGRAMUSEOMP
 template <typename T>
 void c_fix1d_weighted_omp(const T* data, const T* weights, T* count, T* sumw2,
@@ -171,16 +172,21 @@ void c_var1d(const T* data, std::int64_t* count, const std::size_t n, const int 
 #endif
 
 template <typename T>
-void c_fix1d_multiple_weights_omp(const T* data, const std::vector<const T*>& weightsvec,
-                                  std::vector<T*>& countvec, std::vector<T*>& sumw2vec,
-                                  const std::size_t n, const int nbins,
-                                  const T xmin, const T xmax) {
+void c_fix1d_multiple_weights_omp(const py::array_t<T>& data,
+                                  const py::array_t<T>& weights,
+                                  py::array_t<T>& count,
+                                  py::array_t<T>& sumw2,
+                                  const std::size_t nbins, const T xmin, const T xmax) {
   const T norm = 1.0 / (xmax - xmin);
-  std::size_t nweights = weightsvec.size();
-  for (std::size_t i = 0; i < nweights; ++i) {
-    memset(countvec[i], 0, sizeof(T) * (nbins + 2));
-    memset(sumw2vec[i], 0, sizeof(T) * (nbins + 2));
-  }
+  const std::size_t nweights = static_cast<std::size_t>(weights.shape(1));
+  const std::size_t ndata = static_cast<std::size_t>(data.shape(0));
+  memset(count.mutable_data(), 0, sizeof(T) * (nbins + 2) * nweights);
+  memset(count.mutable_data(), 0, sizeof(T) * (nbins + 2) * nweights);
+
+  auto count_proxy = count.template mutable_unchecked<2>();
+  auto sumw2_proxy = sumw2.template mutable_unchecked<2>();
+  auto data_proxy = data.template unchecked<1>();
+  auto weight_proxy = weights.template unchecked<2>();
 
 #pragma omp parallel
   {
@@ -194,28 +200,30 @@ void c_fix1d_multiple_weights_omp(const T* data, const std::vector<const T*>& we
     }
 
 #pragma omp for nowait
-    for (std::size_t i = 0; i < n; i++) {
+    for (std::size_t i = 0; i < ndata; i++) {
       std::size_t binId;
-      if (data[i] < xmin) {
+      const T idataval = data_proxy(i);
+      if (idataval < xmin) {
         binId = 0;
       }
-      else if (data[i] > xmax) {
+      else if (idataval > xmax) {
         binId = nbins + 1;
       }
       else {
-        binId = static_cast<std::size_t>((data[i] - xmin) * norm * nbins) + 1;
+        binId = static_cast<std::size_t>((idataval - xmin) * norm * nbins) + 1;
       }
-      for (std::size_t j = 0; j < weightsvec.size(); j++) {
-        count_privs[j].get()[binId] += weightsvec[j][i];
-        sumw2_privs[j].get()[binId] += weightsvec[j][i] * weightsvec[j][i];
+      for (std::size_t j = 0; j < nweights; j++) {
+        const T weight = weight_proxy(i, j);
+        count_privs[j].get()[binId] += weight;
+        sumw2_privs[j].get()[binId] += weight * weight;
       }
     }
 
 #pragma omp critical
-    for (int i = 0; i < (nbins + 2); i++) {
-      for (std::size_t j = 0; j < nweights; j++) {
-        countvec[j][i] += count_privs[j][i];
-        sumw2vec[j][i] += sumw2_privs[j][i];
+    for (std::size_t i = 0; i < (nbins + 2); ++i) {
+      for (std::size_t j = 0; j < nweights; ++j) {
+        count_proxy(i, j) += count_privs[j][i];
+        sumw2_proxy(i, j) += sumw2_privs[j][i];
       }
     }
   }
