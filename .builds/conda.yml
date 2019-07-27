@@ -3,7 +3,7 @@ packages:
   - git
   - wget
 sources:
-  - https://github.com/drdavis/pygram11
+  - https://github.com/douglasdavis/pygram11
 tasks:
   - setup: |
       wget -nv http://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh

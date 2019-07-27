@@ -4,7 +4,7 @@ packages:
   - libgomp1
   - g++
 sources:
-  - https://github.com/drdavis/pygram11.git
+  - https://github.com/douglasdavis/pygram11.git
 tasks:
   - setup: |
       sudo pip3 install numpy pytest

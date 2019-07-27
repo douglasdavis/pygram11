@@ -5,7 +5,7 @@ packages:
   - python3-pip
   - python3-numpy
 sources:
-  - https://github.com/drdavis/pygram11
+  - https://github.com/douglasdavis/pygram11
 tasks:
   - setup: |
       pip3 install pytest --user
