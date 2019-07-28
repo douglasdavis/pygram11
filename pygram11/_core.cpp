@@ -6,85 +6,6 @@
 #include <vector>
 
 template <typename T>
-py::array_t<T> py_f1d(py::array_t<T> x, int nbins, T xmin, T xmax, bool use_omp);
-
-template <typename T>
-py::tuple py_f1dw(py::array_t<T> x, py::array_t<T> w, int nbins, T xmin, T xmax,
-                  bool use_omp);
-
-template <typename T>
-py::tuple py_f1dmw(py::array_t<T> x, py::array_t<T> ws, int nbins, T xmin, T xmax,
-                   bool use_omp);
-
-template <typename T>
-py::array_t<T> py_v1d(py::array_t<T> x, py::array_t<T> edges, bool use_omp);
-
-template <typename T>
-py::tuple py_v1dw(py::array_t<T> x, py::array_t<T> w, py::array_t<T> edges,
-                  bool use_omp);
-
-template <typename T>
-py::tuple py_v1dmw(py::array_t<T> x, py::array_t<T> ws, py::array_t<T> edges,
-                   bool use_omp);
-
-template <typename T>
-py::array_t<T> fix2d(py::array_t<T> x, py::array_t<T> y, int nbinsx, T xmin, T xmax,
-                     int nbinsy, T ymin, T ymax, bool use_omp);
-
-template <typename T>
-py::tuple fix2d_weighted(py::array_t<T> x, py::array_t<T> y, py::array_t<T> w,
-                         int nbinsx, T xmin, T xmax, int nbinsy, T ymin, T ymax,
-                         bool use_omp);
-
-template <typename T>
-py::array_t<T> var2d(py::array_t<T> x, py::array_t<T> y, py::array_t<T> xedges,
-                     py::array_t<T> yedges, bool use_omp);
-
-template <typename T>
-py::tuple var2d_weighted(py::array_t<T> x, py::array_t<T> y, py::array_t<T> w,
-                         py::array_t<T> xedges, py::array_t<T> yedges, bool use_omp);
-
-bool has_OpenMP();
-
-PYBIND11_MODULE(_core, m) {
-  m.doc() = "Core pygram11 histogramming code";
-
-  m.def("_HAS_OPENMP", &has_OpenMP);
-
-  // one-dimensional
-  m.def("_f1d_f8", &py_f1d<double>);
-  m.def("_f1d_f4", &py_f1d<float>);
-  m.def("_f1dw_f8", &py_f1dw<double>);
-  m.def("_f1dw_f4", &py_f1dw<float>);
-  m.def("_f1dmw_f4", &py_f1dmw<float>);
-  m.def("_f1dmw_f8", &py_f1dmw<double>);
-  m.def("_v1d_f8", &py_v1d<double>);
-  m.def("_v1d_f4", &py_v1d<float>);
-  m.def("_v1dw_f8", &py_v1dw<double>);
-  m.def("_v1dw_f4", &py_v1dw<float>);
-  m.def("_v1dmw_f8", &py_v1dmw<double>);
-  m.def("_v1dmw_f4", &py_v1dmw<float>);
-
-  // two-dimensional
-  m.def("_fix2d_f8", &fix2d<double>);
-  m.def("_fix2d_f4", &fix2d<float>);
-  m.def("_fix2d_weighted_f8", &fix2d_weighted<double>);
-  m.def("_fix2d_weighted_f4", &fix2d_weighted<float>);
-  m.def("_var2d_f8", &var2d<double>);
-  m.def("_var2d_f4", &var2d<float>);
-  m.def("_var2d_weighted_f8", &var2d_weighted<double>);
-  m.def("_var2d_weighted_f4", &var2d_weighted<float>);
-}
-
-bool has_OpenMP() {
-#ifdef PYGRAMUSEOMP
-  return true;
-#else
-  return false;
-#endif
-}
-
-template <typename T>
 py::array_t<T> py_f1d(py::array_t<T> x, int nbins, T xmin, T xmax, bool use_omp) {
   auto count = py::array_t<std::int64_t>(nbins + 2);
 #ifdef PYGRAMUSEOMP
@@ -290,4 +211,37 @@ py::tuple py_v1dmw(py::array_t<T> x, py::array_t<T> weights, py::array_t<T> edge
 #endif
   pygram11::detail::v1dmw<T>(x, weights, edges, count, sumw2);
   return py::make_tuple(count, sumw2);
+}
+
+PYBIND11_MODULE(_core, m) {
+  m.doc() = "Core pygram11 histogramming code";
+
+#ifdef PYGRAMUSEOMP
+  m.attr("_HAS_OPENMP") = true;
+#else
+  m.attr("_HAS_OPENMP") = false;
+#endif
+
+  m.def("_f1d_f8", &py_f1d<double>);       // fixed 1 dimensional double precision
+  m.def("_f1d_f4", &py_f1d<float>);        // fixed 1 dimensional single precision
+  m.def("_f1dw_f8", &py_f1dw<double>);     // fixed 1 dimensional weighted double precision
+  m.def("_f1dw_f4", &py_f1dw<float>);      // fixed 1 dimensional weighted single precsision
+  m.def("_f1dmw_f8", &py_f1dmw<double>);   // fixed 1 dimensional multi weighted double precision
+  m.def("_f1dmw_f4", &py_f1dmw<float>);    // fixed 1 dimensional multi weighted single precision
+  m.def("_v1d_f8", &py_v1d<double>);       // variable 1 dimensional double precision
+  m.def("_v1d_f4", &py_v1d<float>);        // variable 1 dimensional single precision
+  m.def("_v1dw_f8", &py_v1dw<double>);     // variable 1 dimensional weighted double precision
+  m.def("_v1dw_f4", &py_v1dw<float>);      // variable 1 dimensional weighted single precsision
+  m.def("_v1dmw_f8", &py_v1dmw<double>);   // variable 1 dimensional multi weighted double precision
+  m.def("_v1dmw_f4", &py_v1dmw<float>);    // variable 1 dimensional multi weighted single precision
+
+  // two-dimensional
+  m.def("_fix2d_f8", &fix2d<double>);
+  m.def("_fix2d_f4", &fix2d<float>);
+  m.def("_fix2d_weighted_f8", &fix2d_weighted<double>);
+  m.def("_fix2d_weighted_f4", &fix2d_weighted<float>);
+  m.def("_var2d_f8", &var2d<double>);
+  m.def("_var2d_f4", &var2d<float>);
+  m.def("_var2d_weighted_f8", &var2d_weighted<double>);
+  m.def("_var2d_weighted_f4", &var2d_weighted<float>);
 }
