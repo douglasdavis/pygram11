@@ -21,10 +21,10 @@ tasks:
       mkdir play
       cd play
       python -c "import pygram11; print(pygram11.OPENMP)"
-  - deploy: |
-      cd pygram11
-      python setup.py sdist
-      python .ci-scripts/srht-pypi.py
+  #- deploy: |
+  #    cd pygram11
+  #    python setup.py sdist
+  #    python .ci-scripts/srht-pypi.py
 triggers:
   - action: email
     condition: failure
