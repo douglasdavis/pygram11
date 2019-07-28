@@ -12,27 +12,11 @@ from distutils.sysconfig import customize_compiler, get_config_var
 from distutils.errors import CompileError, LinkError
 
 
-class get_pybind_include(object):
-    """
-    Helper class to determine the pybind11 include path
-
-    The purpose of this class is to postpone importing pybind11
-    until it is actually installed, so that the ``get_include()``
-    method can be invoked. """
-
-    def __init__(self, user=False):
-        self.user = user
-
-    def __str__(self):
-        return pybind11.get_include(self.user)
-
-
 ext_modules = [
     Extension(
         "pygram11._core",
         [os.path.join("pygram11", "_core.cpp")],
         include_dirs=[
-            "/usr/local/include",
             "extern/pybind11/include",
         ],
         language="c++",
@@ -137,11 +121,13 @@ def has_omp():
 
 def cpp_std_flag(compiler):
     """
-    Return the -std=c++[11/14] compiler flag.
+    Return the -std=c++[11/14/17] compiler flag.
 
-    The c++14 is prefered over c++11 (when it is available).
+    The 17 prefered over 14 which is prefered over 11.
     """
-    if has_flag(compiler, "-std=c++14"):
+    if has_flag(compiler, "-std=c++17"):
+        return "-std=c++17"
+    elif has_flag(compiler, "-std=c++14"):
         return "-std=c++14"
     elif has_flag(compiler, "-std=c++11"):
         return "-std=c++11"
@@ -155,7 +141,7 @@ class BuildExt(build_ext):
     c_opts = []
 
     if sys.platform == "darwin":
-        c_opts += ["-stdlib=libc++", "-mmacosx-version-min=10.7"]
+        c_opts += ["-stdlib=libc++", "-mmacosx-version-min=10.9"]
 
     def build_extensions(self):
         use_omp = has_omp()
