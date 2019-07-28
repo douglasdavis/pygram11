@@ -20,3 +20,7 @@ python:
     - requirements: docs/requirements.txt
     - method: pip
       path: .
+
+submodules:
+  include: all
+  recursive: true
