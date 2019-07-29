@@ -14,6 +14,8 @@ into bins.
   to retrieve the sum of weights squared in each bin (it's possible in
   NumPy, but not directly from the histogramming functions). This
   calculation is a "first class citizen" in pygram11.
+- pygram11 also provided an API for histogramming the same data with
+  multiple weight variations in a single function call.
 - Finally, I thought it would be fun to learn how to write software
   with OpenMP and pybind11 because I had not used either piece of
   software before. Hopefully having them in my tool belt will be
