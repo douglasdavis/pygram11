@@ -75,6 +75,27 @@ def test_fix2d():
     npt.assert_almost_equal(pygram_h, numpy_h, 5)
 
 
+def test_var1dmw():
+    bins = [-3, -2.5, -1.8, -1.2, 0.5, 1.1, 2.2, 2.5, 3]
+    nweights = 8
+    x = np.random.randn(10000)
+    w = (0.1 + np.random.randn(x.shape[0], nweights)) / 2.0
+    w_lo = np.sum(w[x < bins[0]], axis=0)
+    w_hi = np.sum(w[x > bins[-1]], axis=0)
+    hnf, err = pygram11.var1dmw(
+        x, w, bins=bins, flow=False, omp=False,
+    )
+    hh, err = pygram11.var1dmw(
+        x, w, bins=bins, flow=True, omp=False,
+    )
+    for i in range(hh.shape[1]):
+        ihn, _ = np.histogram(x, bins=bins,  weights=w.T[i])
+        assert np.allclose(hnf.T[i], ihn)
+        ihn[0] += w_lo[i]
+        ihn[-1] += w_hi[i]
+        assert np.allclose(hh.T[i], ihn)
+
+
 def test_var2d():
     x = np.random.randn(5000)
     y = np.random.randn(5000)
@@ -205,6 +226,28 @@ if pygram11.OPENMP:
         pygram_h, __ = pygram11.var1d(x, bins=bins, weights=w, omp=True)
         numpy_h, __ = np.histogram(x, bins=bins, weights=w)
         npt.assert_almost_equal(pygram_h, numpy_h, 5)
+
+
+    def test_var1dmw_omp():
+        bins = [-3, -2.5, -1.8, -1.2, 0.5, 1.1, 2.2, 2.5, 3]
+        nweights = 8
+        x = np.random.randn(10000)
+        w = (0.1 + np.random.randn(x.shape[0], nweights)) / 2.0
+        w_lo = np.sum(w[x < bins[0]], axis=0)
+        w_hi = np.sum(w[x > bins[-1]], axis=0)
+        hnf, err = pygram11.var1dmw(
+            x, w, bins=bins, flow=False, omp=True,
+        )
+        hh, err = pygram11.var1dmw(
+            x, w, bins=bins, flow=True, omp=True,
+        )
+        for i in range(hh.shape[1]):
+            ihn, _ = np.histogram(x, bins=bins,  weights=w.T[i])
+            assert np.allclose(hnf.T[i], ihn)
+            ihn[0] += w_lo[i]
+            ihn[-1] += w_hi[i]
+            assert np.allclose(hh.T[i], ihn)
+
 
     def test_fix2d_omp():
         x = np.random.randn(5000)

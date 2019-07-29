@@ -4,6 +4,7 @@ from ._core import _f1dmw_f4, _f1dmw_f8
 
 from ._core import _v1d_f4, _v1d_f8
 from ._core import _v1dw_f4, _v1dw_f8
+from ._core import _v1dmw_f4, _v1dmw_f8
 
 from ._core import _fix2d_f4
 from ._core import _fix2d_f8
@@ -67,7 +68,8 @@ def fix1d(x, bins=10, range=None, weights=None, density=False, flow=False, omp="
     x = np.asarray(x)
     if weights is not None:
         weights = np.asarray(weights)
-        assert weights.shape == x.shape, "weights must be the same shape as the data"
+        if weights.shape != x.shape:
+            raise ValueError("weights must be the same shape as the data")
 
     if omp == "auto":
         use_omp = len(x) > 1e4
@@ -84,7 +86,8 @@ def fix1d(x, bins=10, range=None, weights=None, density=False, flow=False, omp="
 
     if range is None:
         range = (x.min(), x.max())
-    assert range[0] < range[1], "range=(a, b) must satisfy b > a"
+    if range[0] > range[1]:
+        raise ValueError("range=(a, b) must satisfy b > a")
 
     if weights is not None:
         result, sw2 = weighted_func(x, weights, bins, range[0], range[1], use_omp)
@@ -147,8 +150,10 @@ def fix1dmw(x, weights, bins=10, range=None, flow=False, omp="auto"):
     """
     x = np.asarray(x)
     weights = np.asarray(weights)
-    assert weights.ndim == 2, "weights must be the same shape as the data"
-    assert weights.shape[0] == x.shape[0], "x and weights must have equal shape[0]"
+    if weights.ndim != 2:
+        raise ValueError("weights must be the same shape as the data")
+    if weights.shape[0] != x.shape[0]:
+        raise ValueError("x and weights must have equal shape[0]")
 
     if omp == "auto":
         use_omp = len(x) > 1e4
@@ -158,8 +163,9 @@ def fix1dmw(x, weights, bins=10, range=None, flow=False, omp="auto"):
         raise TypeError("omp should be 'auto' or a boolean value")
 
     if range is None:
-       range = (x.min(), x.max())
-    assert range[0] < range[1], "range=(a, b) must satisfy b > a"
+        range = (x.min(), x.max())
+    if range[0] > range[1]:
+        raise ValueError("range=(a, b) must satisfy b > a")
 
     hfunc = _f1dmw_f8
     if weights.dtype == np.float32:
@@ -219,7 +225,8 @@ def var1d(x, bins, weights=None, density=False, flow=False, omp="auto"):
     x = np.asarray(x)
     if weights is not None:
         weights = np.asarray(weights)
-        assert weights.shape == x.shape, "weights must be same shape as data"
+        if weights.shape != x.shape:
+            raise ValueError("weights must be same shape as data")
 
     if omp == "auto":
         use_omp = len(x) > 1e3
@@ -229,7 +236,8 @@ def var1d(x, bins, weights=None, density=False, flow=False, omp="auto"):
         raise TypeError("omp should be 'auto' or a boolean value")
 
     bins = np.asarray(bins)
-    assert np.all(bins[1:] >= bins[:-1]), "bins sequence must monotonically increase"
+    if not np.all(bins[1:] >= bins[:-1]):
+        raise ValueError("bins sequence must monotonically increase")
 
     weighted_func = _v1dw_f8
     unweight_func = _v1d_f8
@@ -261,6 +269,67 @@ def var1d(x, bins, weights=None, density=False, flow=False, omp="auto"):
     if weights is None:
         return (result, None)
     return (result, np.sqrt(sw2))
+
+
+def var1dmw(x, weights, bins, flow=False, omp="auto"):
+    """histogram ``x`` with fixed (uniform) binning over a range
+    [xmin, xmax) using multiple weight variations.
+
+    Parameters
+    ----------
+    x: array_like
+        data to histogram
+    weights: array_like
+        weight variations for the elements of ``x``, first dimension
+        is the shape of ``x``, second dimension is the number of weights.
+    bins: int or str, optional
+        number of bins or str
+    flow: bool
+        if ``True`` the under and overflow bin contents are added to the first
+        and last bins, respectively
+    omp: bool or str
+        if ``True``, use OpenMP if available; if "auto" (and OpenMP is available),
+        enables OpenMP if len(x) > 10^4
+
+    Returns
+    -------
+    :obj:`numpy.ndarray`
+        bin counts (heights) for each variation (shape == [n_bins, n_weight_variations])
+    :obj:`numpy.ndarray`
+        Poisson uncertainty on counts (``None`` if weights are absent,
+        shape == [n_bins, n_weight_variations])
+
+    """
+    x = np.asarray(x)
+    weights = np.asarray(weights)
+    if weights.ndim != 2:
+        raise ValueError("weights must be the same shape as the data")
+    if weights.shape[0] != x.shape[0]:
+        raise ValueError("x and weights must have equal shape[0]")
+
+    if omp == "auto":
+        use_omp = len(x) > 1e4
+    elif type(omp) == bool:
+        use_omp = omp
+    else:
+        raise TypeError("omp should be 'auto' or a boolean value")
+
+    bins = np.asarray(bins)
+    if not np.all(bins[1:] >= bins[:-1]):
+        raise ValueError("bins sequence must monotonically increase")
+
+    hfunc = _v1dmw_f8
+    if weights.dtype == np.float32:
+        hfunc = _v1dmw_f4
+
+    count, sumw2 = hfunc(x, weights, bins, use_omp)
+    if flow:
+        count[-2, :] += count[-1, :]
+        sumw2[-2, :] += sumw2[-1, :]
+        count[1, :] += count[0, :]
+        sumw2[1, :] += sumw2[0, :]
+
+    return (count[1:-1, :], np.sqrt(sumw2[1:-1, :]))
 
 
 def fix2d(x, y, bins=10, range=None, weights=None, omp=False):
@@ -308,7 +377,8 @@ def fix2d(x, y, bins=10, range=None, weights=None, omp=False):
     """
     x = np.asarray(x)
     y = np.asarray(y)
-    assert x.shape == y.shape, "x and y must be the same shape"
+    if x.shape != y.shape:
+        raise ValueError("x and y must be the same shape")
 
     weighted_func = _fix2d_weighted_f8
     unweight_func = _fix2d_f8
@@ -327,7 +397,8 @@ def fix2d(x, y, bins=10, range=None, weights=None, omp=False):
 
     if weights is not None:
         weights = np.asarray(weights)
-        assert weights.shape == x.shape, "weights must be the same shape as the data"
+        if weights.shape != x.shape:
+            raise ValueError("weights must be the same shape as the data")
         count, sumw2 = weighted_func(x, y, weights, nx, xmin, xmax, ny, ymin, ymax, omp)
         return (count, np.sqrt(sumw2))
     else:
@@ -373,11 +444,14 @@ def var2d(x, y, xbins, ybins, weights=None, omp=False):
     """
     x = np.asarray(x)
     y = np.asarray(y)
-    assert x.shape == y.shape, "x and y must be the same shape"
+    if x.shape != y.shape:
+        raise ValueError("x and y must be the same shape")
     xbins = np.asarray(xbins)
     ybins = np.asarray(ybins)
-    assert np.all(xbins[1:] >= xbins[:-1]), "xbins sequence must monotonically increase"
-    assert np.all(ybins[1:] >= ybins[:-1]), "ybins sequence must monotonically increase"
+    if not np.all(xbins[1:] >= xbins[:-1]):
+        raise ValueError("xbins sequence must monotonically increase")
+    if not np.all(ybins[1:] >= ybins[:-1]):
+        raise ValueError("ybins sequence must monotonically increase")
 
     weighted_func = _var2d_weighted_f8
     unweight_func = _var2d_f8
@@ -387,7 +461,8 @@ def var2d(x, y, xbins, ybins, weights=None, omp=False):
 
     if weights is not None:
         weights = np.asarray(weights)
-        assert weights.shape == x.shape, "weights must be the same shape as data"
+        if weights.shape != x.shape:
+            raise ValueError("weights must be the same shape as data")
         count, sumw2 = weighted_func(x, y, weights, xbins, ybins, omp)
         return (count, np.sqrt(sumw2))
     else:
@@ -395,7 +470,9 @@ def var2d(x, y, xbins, ybins, weights=None, omp=False):
         return (count, None)
 
 
-def histogram(x, bins=10, range=None, weights=None, density=False, flow=False, omp="auto"):
+def histogram(
+    x, bins=10, range=None, weights=None, density=False, flow=False, omp="auto"
+):
     """Compute the histogram for the data ``x``.
 
     This function provides an API very simiar to
@@ -448,9 +525,18 @@ def histogram(x, bins=10, range=None, weights=None, density=False, flow=False, o
             if weights.ndim == 2:
                 return fix1dmw(x, weights, bins=bins, range=range, flow=flow, omp=omp)
         return fix1d(
-            x, bins=bins, range=range, weights=weights, density=density, flow=flow, omp=omp
+            x,
+            bins=bins,
+            range=range,
+            weights=weights,
+            density=density,
+            flow=flow,
+            omp=omp,
         )
     else:
+        if weights is not None:
+            if weights.ndim == 2:
+                return var1dmw(x, weights, bins, flow=flow, omp=omp)
         return var1d(x, bins, weights=weights, density=density, flow=flow, omp=omp)
 
 
@@ -508,7 +594,9 @@ def histogram2d(x, y, bins=10, range=None, weights=None, omp=False):
         return fix2d(x, y, bins=bins, range=range, weights=weights, omp=omp)
 
     if N == 2:
-        if isinstance(bins[0], numbers.Integral) and isinstance(bins[1], numbers.Integral):
+        if isinstance(bins[0], numbers.Integral) and isinstance(
+            bins[1], numbers.Integral
+        ):
             return fix2d(x, y, bins=bins, range=range, weights=weights, omp=omp)
         else:
             return var2d(x, y, bins[0], bins[1], weights=weights, omp=omp)
