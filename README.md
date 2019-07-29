@@ -26,9 +26,10 @@ with C++11 support).
 
 ### From conda-forge
 
-For a simple installation process which provides OpenMP acceleration,
+For a simple installation process via the `conda` package manager`
 [pygram11 is part of
-conda-forge](https://anaconda.org/conda-forge/pygram11).
+conda-forge](https://anaconda.org/conda-forge/pygram11). These builds
+include OpenMP acceleration.
 
 ```none
 conda install pygram11 -c conda-forge
@@ -37,7 +38,7 @@ conda install pygram11 -c conda-forge
 ### From PyPI
 
 Binary wheels are provided for Linux and macOS, they can be installed
-from PyPI via pip:
+from PyPI via pip. These builds include OpenMP acceleration.
 
 ```
 pip install pygram11
