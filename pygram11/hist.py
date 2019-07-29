@@ -55,7 +55,7 @@ def fix1d(x, bins=10, range=None, weights=None, density=False, flow=False, omp="
 
     Examples
     --------
-    A histogram of ``x`` with 20 bins between 0 and 100, and weighted.
+    A histogram of ``x`` with 20 bins between 0 and 100.
 
     >>> h = fix1d(x, bins=20, range=(0, 100))
 
@@ -143,9 +143,20 @@ def fix1dmw(x, weights, bins=10, range=None, flow=False, omp="auto"):
     :obj:`numpy.ndarray`
         bin counts (heights) for each variation (shape == [n_bins, n_weight_variations])
     :obj:`numpy.ndarray`
-        Poisson uncertainty on counts (``None`` if weights are absent,
-        shape == [n_bins, n_weight_variations])
+        Poisson uncertainty on counts, shape == [n_bins, n_weight_variations],
+        (``None`` if weights are absent)
 
+    Examples
+    --------
+    Multiple histograms of ``x`` with 50 bins between 0 and 100; using
+    20 different weight variations:
+
+    >>> x = np.random.randn(10000)
+    >>> twenty_weights = np.random.rand(x.shape[0], 20)
+    >>> h, err = fix1dmw(x, w, bins=50, range=(-3, 3), omp=True)
+
+    ``h`` and ``err`` are now shape ``(50, 20)``. Each column
+    represents the histogram of the data with the respective weight.
 
     """
     x = np.asarray(x)
@@ -215,7 +226,7 @@ def var1d(x, bins, weights=None, density=False, flow=False, omp="auto"):
     A histogram of ``x`` where the edges are defined by the list
     ``[1, 5, 10, 12]``:
 
-    >>> h, w = var1d(x, [1, 5, 10, 12])
+    >>> h = var1d(x, [1, 5, 10, 12])
 
     The same data, now weighted and accelerated with OpenMP:
 
@@ -296,8 +307,22 @@ def var1dmw(x, weights, bins, flow=False, omp="auto"):
     :obj:`numpy.ndarray`
         bin counts (heights) for each variation (shape == [n_bins, n_weight_variations])
     :obj:`numpy.ndarray`
-        Poisson uncertainty on counts (``None`` if weights are absent,
-        shape == [n_bins, n_weight_variations])
+        Poisson uncertainty on counts, shape == [n_bins, n_weight_variations]
+        (``None`` if weights are absent)
+
+    Examples
+    --------
+    Multiple histograms of ``x`` (with 9 variable width bins); using
+    20 different weight variations (also shifting under and overflow
+    contents):
+
+    >>> x = np.random.randn(10000)
+    >>> bins = [-2, -1.5, -1.2, -1, -0.8, 0, 1.2, 1.5, 3.0]
+    >>> twenty_weights = np.random.rand(x.shape[0], 20)
+    >>> h, err = fix1dmw(x, w, bins, flow, True, omp=True)
+
+    ``h`` and ``err`` are now shape ``(9, 20)``. Each column
+    represents the histogram of the data with the respective weight.
 
     """
     x = np.asarray(x)
@@ -499,8 +524,8 @@ def histogram(
        value of ``x`` will contribute its associated weight to the
        bin count. If argument is two-dimensional then the function will
        return histogram data for all weight variations. The first
-       dimenstion of the shape must be the shape of ``x``.
-       dimensional weight variation
+       dimension of the shape of the weights (if multiple variations)
+       must be the shape of ``x``.
     density: bool
         normalize histogram bins as value of PDF such that the integral
         over the range is 1.
@@ -518,6 +543,49 @@ def histogram(
         bin counts (heights)
     :obj:`numpy.ndarray`,
         Poisson uncertainty on each bin count (``None`` if weights are absent)
+
+
+    Examples
+    --------
+    A histogram of ``x`` with 20 bins between 0 and 100.
+
+    >>> h = fix1d(x, bins=20, range=(0, 100))
+
+    The same data, now histogrammed weighted & accelerated with
+    OpenMP.
+
+    >>> h, h_err = histogram(x, bins=20, range=(0, 100), omp=True)
+
+    Multiple histograms of ``x`` with 50 bins between 0 and 100; using
+    20 different weight variations:
+
+    >>> x = np.random.randn(10000)
+    >>> twenty_weights = np.random.rand(x.shape[0], 20)
+    >>> h, err = histogram(x, bins=50, range=(-3, 3), weights=twenty_weights, omp=True)
+
+    ``h`` and ``err`` are now shape ``(50, 20)``. Each column
+    represents the histogram of the data with the respective weight.
+
+    A histogram of ``x`` where the edges are defined by the list
+    ``[1, 5, 10, 12]``:
+
+    >>> h = var1d(x, bins=[1, 5, 10, 12])
+
+    The same data, now weighted and accelerated with OpenMP:
+
+    >>> h, err = histogram(x, bin=[1, 5, 10, 12], weights=w, omp=True)
+
+    Multiple histograms of ``x`` (with 9 variable width bins); using
+    20 different weight variations (also shifting under and overflow
+    contents):
+
+    >>> x = np.random.randn(10000)
+    >>> bins = [-2, -1.5, -1.2, -1, -0.8, 0, 1.2, 1.5, 3.0]
+    >>> twenty_weights = np.random.rand(x.shape[0], 20)
+    >>> h, err = histogram(x, bins=bins, weights=twenty_weights, flow=True, omp=True)
+
+    ``h`` and ``err`` are now shape ``(9, 20)``. Each column
+    represents the histogram of the data with the respective weight.
 
     """
     if isinstance(bins, numbers.Integral):
