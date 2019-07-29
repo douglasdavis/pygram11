@@ -10,6 +10,7 @@ pygram11 provides a simple set of functions for calculating histograms:
    pygram11.fix1d
    pygram11.fix1dmw
    pygram11.var1d
+   pygram11.var1dmw
    pygram11.fix2d
    pygram11.var2d
 

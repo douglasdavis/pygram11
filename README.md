@@ -26,7 +26,7 @@ with C++11 support).
 
 ### From conda-forge
 
-For a simple installation process via the `conda` package manager`
+For a simple installation process via the `conda` package manager
 [pygram11 is part of
 conda-forge](https://anaconda.org/conda-forge/pygram11). These builds
 include OpenMP acceleration.
@@ -38,7 +38,8 @@ conda install pygram11 -c conda-forge
 ### From PyPI
 
 Binary wheels are provided for Linux and macOS, they can be installed
-from PyPI via pip. These builds include OpenMP acceleration.
+from [PyPI](https://pypi.org/project/pygram11/) via pip. These builds
+include OpenMP acceleration.
 
 ```
 pip install pygram11
@@ -47,7 +48,7 @@ pip install pygram11
 ### From Source
 
 ```none
-$ pip install git+https://github.com/douglasdavis/pygram11.git@master
+pip install git+https://github.com/douglasdavis/pygram11.git@master
 ```
 
 **Note**: For releases older than v0.5, when building from source or
@@ -55,11 +56,6 @@ PyPI, `pybind11` was required to be explicitly installed before
 `pygram11` (because `setup.py` used `pybind11` to determine include
 directories). Starting with v0.5 `pybind11` is bundled with the source
 for non-binary (conda-forge or wheel) installations.
-
-```none
-$ pip install pybind11 ## or `conda install pybind11`
-$ pip install pygram11
-```
 
 ## In Action
 
