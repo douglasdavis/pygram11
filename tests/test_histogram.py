@@ -17,6 +17,29 @@ def test_fix1d():
     npt.assert_almost_equal(pygram_h, numpy_h, 5)
 
 
+def test_fix1dmw():
+    nbins = 12
+    xmin = -3
+    xmax = 3
+    nweights = 8
+    x = np.random.randn(10000)
+    w = (0.1 + np.random.randn(x.shape[0], nweights)) / 2.0
+    w_lo = np.sum(w[x < xmin], axis=0)
+    w_hi = np.sum(w[x > xmax], axis=0)
+    hnf, err = pygram11.fix1dmw(
+        x, w, bins=nbins, range=(xmin, xmax), flow=False, omp=False,
+    )
+    hh, err = pygram11.fix1dmw(
+        x, w, bins=nbins, range=(xmin, xmax), flow=True, omp=False,
+    )
+    for i in range(hh.shape[1]):
+        ihn, _ = np.histogram(x, bins=nbins, range=(xmin, xmax), weights=w.T[i])
+        assert np.allclose(hnf.T[i], ihn)
+        ihn[0] += w_lo[i]
+        ihn[-1] += w_hi[i]
+        assert np.allclose(hh.T[i], ihn)
+
+
 def test_var1d():
     x = np.random.randn(5000)
     bins = [-1.2, -1, -0.2, 0.7, 1.5, 2.1]
@@ -146,6 +169,30 @@ if pygram11.OPENMP:
         numpy_h, __ = np.histogram(x, bins=np.linspace(-3, 3, 26), weights=w)
         npt.assert_almost_equal(pygram_h, numpy_h, 5)
 
+
+    def test_fix1dmw_omp():
+        nbins = 12
+        xmin = -3
+        xmax = 3
+        nweights = 8
+        x = np.random.randn(10000)
+        w = (0.1 + np.random.randn(x.shape[0], nweights)) / 2.0
+        w_lo = np.sum(w[x < xmin], axis=0)
+        w_hi = np.sum(w[x > xmax], axis=0)
+        hnf, err = pygram11.fix1dmw(
+            x, w, bins=nbins, range=(xmin, xmax), flow=False, omp=True,
+        )
+        hh, err = pygram11.fix1dmw(
+            x, w, bins=nbins, range=(xmin, xmax), flow=True, omp=True,
+        )
+        for i in range(hh.shape[1]):
+            ihn, _ = np.histogram(x, bins=nbins, range=(xmin, xmax), weights=w.T[i])
+            assert np.allclose(hnf.T[i], ihn)
+            ihn[0] += w_lo[i]
+            ihn[-1] += w_hi[i]
+            assert np.allclose(hh.T[i], ihn)
+
+
     def test_var1d_omp():
         x = np.random.randn(5000)
         bins = [-1.2, -1, -0.2, 0.7, 1.5, 2.1]
@@ -165,7 +212,9 @@ if pygram11.OPENMP:
         bins = 25
         w = np.random.uniform(0.25, 0.5, 5000)
 
-        pygram_h, __ = pygram11.fix2d(x, y, bins=bins, range=((-3, 3), (-2, 2)), omp=True)
+        pygram_h, __ = pygram11.fix2d(
+            x, y, bins=bins, range=((-3, 3), (-2, 2)), omp=True
+        )
         numpy_h, __, __ = np.histogram2d(
             x, y, bins=[np.linspace(-3, 3, 26), np.linspace(-2, 2, 26)]
         )
@@ -228,11 +277,14 @@ def test_flow_weights():
     w = np.random.uniform(0.5, 0.8, x.shape[0])
     nbins = 50
     rg = (-3, 3)
-    pygram_h, __ = pygram11.histogram(x, bins=nbins, range=rg, weights=w, omp=False, flow=True)
+    pygram_h, __ = pygram11.histogram(
+        x, bins=nbins, range=rg, weights=w, omp=False, flow=True
+    )
     numpy_h, __ = np.histogram(x, bins=nbins, range=rg, weights=w)
     numpy_h[0] += sum(w[x < rg[0]])
     numpy_h[-1] += sum(w[x > rg[1]])
     assert np.allclose(pygram_h, numpy_h)
+
 
 def test_flow():
     x = np.random.randn(100000)
@@ -244,6 +296,7 @@ def test_flow():
     numpy_h[-1] += sum(x > rg[1])
     assert np.all(pygram_h == numpy_h)
 
+
 def test_flow_var():
     x = np.random.randn(100000)
     bins = [-2, -1.7, -0.5, 0.2, 2.2]
@@ -252,6 +305,7 @@ def test_flow_var():
     numpy_h[0] += sum(x < bins[0])
     numpy_h[-1] += sum(x > bins[-1])
     assert np.all(pygram_h == numpy_h)
+
 
 def test_flow_weights_var():
     x = np.random.randn(100000)
@@ -265,12 +319,15 @@ def test_flow_weights_var():
 
 
 if pygram11.OPENMP:
+
     def test_flow_weights_omp():
         x = np.random.randn(100000)
         w = np.random.uniform(0.5, 0.8, x.shape[0])
         nbins = 50
         rg = (-3, 3)
-        pygram_h, __ = pygram11.histogram(x, bins=nbins, range=rg, weights=w, omp=True, flow=True)
+        pygram_h, __ = pygram11.histogram(
+            x, bins=nbins, range=rg, weights=w, omp=True, flow=True
+        )
         numpy_h, __ = np.histogram(x, bins=nbins, range=rg, weights=w)
         numpy_h[0] += sum(w[x < rg[0]])
         numpy_h[-1] += sum(w[x > rg[1]])

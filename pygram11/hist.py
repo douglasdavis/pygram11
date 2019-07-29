@@ -1,12 +1,9 @@
-from ._core import _f1d_f4
-from ._core import _f1d_f8
-from ._core import _f1dw_f4
-from ._core import _f1dw_f8
+from ._core import _f1d_f4, _f1d_f8
+from ._core import _f1dw_f4, _f1dw_f8
+from ._core import _f1dmw_f4, _f1dmw_f8
 
-from ._core import _v1d_f4
-from ._core import _v1d_f8
-from ._core import _v1dw_f4
-from ._core import _v1dw_f8
+from ._core import _v1d_f4, _v1d_f8
+from ._core import _v1dw_f4, _v1dw_f8
 
 from ._core import _fix2d_f4
 from ._core import _fix2d_f8
@@ -88,7 +85,7 @@ def fix1d(x, bins=10, range=None, weights=None, density=False, flow=False, omp="
 
     if range is None:
         range = (x.min(), x.max())
-    assert range[0] < range[1], "range must go from low value to higher value"
+    assert range[0] < range[1], "range=(a, b) must satisfy b > a"
 
     if weights is not None:
         result, sw2 = weighted_func(x, weights, bins, range[0], range[1], use_omp)
@@ -115,6 +112,67 @@ def fix1d(x, bins=10, range=None, weights=None, density=False, flow=False, omp="
         return (result, None)
 
     return (result, np.sqrt(sw2))
+
+
+def fix1dmw(x, weights, bins=10, range=None, flow=False, omp="auto"):
+    """histogram ``x`` with fixed (uniform) binning over a range
+    [xmin, xmax) using multiple weight variations.
+
+    Parameters
+    ----------
+    x: array_like
+        data to histogram
+    weights: array_like
+        weight variations for the elements of ``x``, first dimension
+        is the shape of ``x``, second dimension is the number of weights.
+    bins: int or str, optional
+        number of bins or str
+    range: (float, float), optional
+        axis limits to histogram over
+    flow: bool
+        if ``True`` the under and overflow bin contents are added to the first
+        and last bins, respectively
+    omp: bool or str
+        if ``True``, use OpenMP if available; if "auto" (and OpenMP is available),
+        enables OpenMP if len(x) > 10^4
+
+    Returns
+    -------
+    :obj:`numpy.ndarray`
+        bin counts (heights) for each variation
+    :obj:`numpy.ndarray`
+        square root of the sum of weights squared
+        for each variation
+
+    """
+    x = np.asarray(x)
+    weights = np.asarray(weights)
+    assert weights.ndim == 2, "weights must be the same shape as the data"
+    assert weights.shape[0] == x.shape[0], "x and weights must have equal shape[0]"
+
+    if omp == "auto":
+        use_omp = len(x) > 1e4
+    elif type(omp) == bool:
+        use_omp = omp
+    else:
+        raise TypeError("omp should be 'auto' or a boolean value")
+
+    if range is None:
+       range = (x.min(), x.max())
+    assert range[0] < range[1], "range=(a, b) must satisfy b > a"
+
+    hfunc = _f1dmw_f8
+    if weights.dtype == np.float32:
+        hfunc = _f1dmw_f4
+
+    count, sumw2 = hfunc(x, weights, bins, range[0], range[1], use_omp)
+    if flow:
+        count[-2, :] += count[-1, :]
+        sumw2[-2, :] += sumw2[-1, :]
+        count[1, :] += count[0, :]
+        sumw2[1, :] += sumw2[0, :]
+
+    return (count[1:-1, :], np.sqrt(sumw2[1:-1, :]))
 
 
 def var1d(x, bins, weights=None, density=False, flow=False, omp="auto"):
@@ -367,7 +425,7 @@ def histogram(x, bins=10, range=None, weights=None, density=False, flow=False, o
         and last bins, respectively
     omp: bool or str
         if ``True``, use OpenMP if available; if "auto" (and OpenMP is available),
-        enables OpenMP if len(x) > 10^4 for fixed width and > 10^3 for variable
+        enables OpenMP if len(x) > 10^4 for fixed width and > 10^3 for variaxsble
         width bins.
 
     Returns
@@ -379,6 +437,9 @@ def histogram(x, bins=10, range=None, weights=None, density=False, flow=False, o
 
     """
     if isinstance(bins, numbers.Integral):
+        if weights is not None:
+            if weights.ndim == 2:
+                return fix1dmw(x, weights, bins=bins, range=range, flow=flow, omp=omp)
         return fix1d(
             x, bins=bins, range=range, weights=weights, density=density, flow=flow, omp=omp
         )
