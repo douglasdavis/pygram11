@@ -121,13 +121,11 @@ def has_omp():
 
 def cpp_std_flag(compiler):
     """
-    Return the -std=c++[11/14/17] compiler flag.
+    Return the -std=c++[11/14] compiler flag.
 
-    The 17 prefered over 14 which is prefered over 11.
+    c++14 prefered over c++11.
     """
-    if has_flag(compiler, "-std=c++17"):
-        return "-std=c++17"
-    elif has_flag(compiler, "-std=c++14"):
+    if has_flag(compiler, "-std=c++14"):
         return "-std=c++14"
     elif has_flag(compiler, "-std=c++11"):
         return "-std=c++11"
