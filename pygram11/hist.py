@@ -50,8 +50,7 @@ def fix1d(x, bins=10, range=None, weights=None, density=False, flow=False, omp="
     :obj:`numpy.ndarray`
         bin counts (heights)
     :obj:`numpy.ndarray`
-        square root of the sum of weights squared
-        (only if ``weights`` is not None)
+        Poisson uncertainty on counts (``None`` if weights are absent)
 
     Examples
     --------
@@ -139,10 +138,11 @@ def fix1dmw(x, weights, bins=10, range=None, flow=False, omp="auto"):
     Returns
     -------
     :obj:`numpy.ndarray`
-        bin counts (heights) for each variation
+        bin counts (heights) for each variation (shape == [n_bins, n_weight_variations])
     :obj:`numpy.ndarray`
-        square root of the sum of weights squared
-        for each variation
+        Poisson uncertainty on counts (``None`` if weights are absent,
+        shape == [n_bins, n_weight_variations])
+
 
     """
     x = np.asarray(x)
@@ -202,7 +202,7 @@ def var1d(x, bins, weights=None, density=False, flow=False, omp="auto"):
     :obj:`numpy.ndarray`
         bin counts (heights)
     :obj:`numpy.ndarray`
-        sum of weights squared (only if ``weights`` is not None)
+        Poisson uncertainty on counts (``None`` if weights are absent)
 
     Examples
     --------
@@ -285,10 +285,10 @@ def fix2d(x, y, bins=10, range=None, weights=None, omp=False):
 
     Returns
     -------
-    :obj:`numpy.ndarray`:
+    :obj:`numpy.ndarray`
         bin counts (heights)
-    :obj:`numpy.ndarray`:
-        sum of weights squared (only if `weights` is not None)
+    :obj:`numpy.ndarray`
+        Poisson uncertainty on counts (``None`` if weights are absent)
 
     Examples
     --------
@@ -302,7 +302,7 @@ def fix2d(x, y, bins=10, range=None, weights=None, omp=False):
     The same data, now histogrammed weighted (via ``w``) & accelerated
     with OpenMP.
 
-    >>> h, sw2 = fix2d(x, y, bins=(20, 10), range=((0, 100), (0, 50)),
+    >>> h, err = fix2d(x, y, bins=(20, 10), range=((0, 100), (0, 50)),
     ...                weights=w, omp=True)
 
     """
@@ -328,9 +328,11 @@ def fix2d(x, y, bins=10, range=None, weights=None, omp=False):
     if weights is not None:
         weights = np.asarray(weights)
         assert weights.shape == x.shape, "weights must be the same shape as the data"
-        return weighted_func(x, y, weights, nx, xmin, xmax, ny, ymin, ymax, omp)
+        count, sumw2 = weighted_func(x, y, weights, nx, xmin, xmax, ny, ymin, ymax, omp)
+        return (count, np.sqrt(sumw2))
     else:
-        return (unweight_func(x, y, nx, xmin, xmax, ny, ymin, ymax, omp), None)
+        count = unweight_func(x, y, nx, xmin, xmax, ny, ymin, ymax, omp)
+        return (count, None)
 
 
 def var2d(x, y, xbins, ybins, weights=None, omp=False):
@@ -354,10 +356,10 @@ def var2d(x, y, xbins, ybins, weights=None, omp=False):
 
     Returns
     -------
-    :obj:`numpy.ndarray`:
+    :obj:`numpy.ndarray`
         bin counts (heights)
-    :obj:`numpy.ndarray`:
-        sum of weights squared (only if `weights` is not None)
+    :obj:`numpy.ndarray`
+        Poisson uncertainty on counts (``None`` if weights are absent)
 
     Examples
     --------
@@ -386,9 +388,11 @@ def var2d(x, y, xbins, ybins, weights=None, omp=False):
     if weights is not None:
         weights = np.asarray(weights)
         assert weights.shape == x.shape, "weights must be the same shape as data"
-        return weighted_func(x, y, weights, xbins, ybins, omp)
+        count, sumw2 = weighted_func(x, y, weights, xbins, ybins, omp)
+        return (count, np.sqrt(sumw2))
     else:
-        return (unweight_func(x, y, xbins, ybins, omp), None)
+        count = unweight_func(x, y, xbins, ybins, omp)
+        return (count, None)
 
 
 def histogram(x, bins=10, range=None, weights=None, density=False, flow=False, omp="auto"):
@@ -415,8 +419,11 @@ def histogram(x, bins=10, range=None, weights=None, density=False, flow=False, o
        options is ignored.
     weights: array_like, optional
        An array of weights associated to each element of ``x``. Each
-       value of the ``x`` will contribute its associated weight to the
-       bin count.
+       value of ``x`` will contribute its associated weight to the
+       bin count. If argument is two-dimensional then the function will
+       return histogram data for all weight variations. The first
+       dimenstion of the shape must be the shape of ``x``.
+       dimensional weight variation
     density: bool
         normalize histogram bins as value of PDF such that the integral
         over the range is 1.
@@ -432,8 +439,8 @@ def histogram(x, bins=10, range=None, weights=None, density=False, flow=False, o
     -------
     :obj:`numpy.ndarray`
         bin counts (heights)
-    :obj:`numpy.ndarray`
-        sum of weights squared (only if ``weights`` is not None)
+    :obj:`numpy.ndarray`,
+        Poisson uncertainty on each bin count (``None`` if weights are absent)
 
     """
     if isinstance(bins, numbers.Integral):
@@ -486,7 +493,7 @@ def histogram2d(x, y, bins=10, range=None, weights=None, omp=False):
     :obj:`numpy.ndarray`:
         bin counts (heights)
     :obj:`numpy.ndarray`:
-        sum of weights squared (only if ``weights`` is not None)
+        Poisson uncertainty on each bin count (``None`` if weights are absent)
 
     """
     try:

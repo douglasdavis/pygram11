@@ -186,7 +186,7 @@ epub_exclude_files = ["search.html"]
 
 # -- Options for intersphinx extension ---------------------------------------
 
-intersphinx_mapping = {
-    "python": ("http://docs.python.org/", None),
-    "numpy": ("http://docs.scipy.org/doc/numpy", None),
-}
+#intersphinx_mapping = {
+#    "python": ("http://docs.python.org/", None),
+#    "numpy": ("http://docs.scipy.org/doc/numpy", None),
+#}

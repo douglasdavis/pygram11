@@ -5,6 +5,8 @@ Histogramming: pygram11 Specific
 
 .. autofunction:: fix1d
 
+.. autofunction:: fix1dmw
+
 .. autofunction:: var1d
 
 .. autofunction:: fix2d

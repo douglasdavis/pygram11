@@ -4,18 +4,17 @@ Quick Intro
 Core pygram11 Functions
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-pygram11 provides four simple functions for histogramming.
+pygram11 provides a simple set of functions for calculating histograms:
 
 .. autosummary::
    pygram11.fix1d
+   pygram11.fix1dmw
    pygram11.var1d
    pygram11.fix2d
    pygram11.var2d
 
-You'll see there are a number of types of histograms supported by
-pygram11. For each of the four generic types, one can build a weighted
-or unweighted histogram. The weighted histograms always return the sum
-of weights squared in each bin.
+You'll see that the API specific to pygram11 is a bit more specialized
+than the NumPy histogramming API (shown below).
 
 Histogramming a normal distribution:
 
