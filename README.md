@@ -21,8 +21,18 @@ examples.
 
 ## Installing
 
-pygram11 requires NumPy and pybind11 (and therefore a C++ compiler
-with C++11 support).
+pygram11 only requires NumPy at runtime. To build from source, you'll
+just need a C++ compiler with C++11 support.
+
+### From PyPI
+
+Binary wheels are provided for Linux and macOS, they can be installed
+from [PyPI](https://pypi.org/project/pygram11/) via pip. These builds
+include OpenMP acceleration.
+
+```
+pip install pygram11
+```
 
 ### From conda-forge
 
@@ -33,16 +43,6 @@ include OpenMP acceleration.
 
 ```none
 conda install pygram11 -c conda-forge
-```
-
-### From PyPI
-
-Binary wheels are provided for Linux and macOS, they can be installed
-from [PyPI](https://pypi.org/project/pygram11/) via pip. These builds
-include OpenMP acceleration.
-
-```
-pip install pygram11
 ```
 
 ### From Source
