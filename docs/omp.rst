@@ -4,8 +4,8 @@ OpenMP Support
 If installing pygram11 from conda-forge or via a binary wheel from
 PyPI, OpenMP acceleration should be available. If using the source
 (from PyPI or GitHub), the ``setup.py`` script tests to see of OpenMP
-is available during installation. If you don't want to use
-conda-forge, keep reading.
+is available during installation. If you don't want to use conda-forge
+or you can't use a binary wheel, keep reading.
 
 You can look at the `continuous integration configuration files
 <https://github.com/douglasdavis/pygram11/tree/master/.builds>`_ to

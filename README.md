@@ -51,6 +51,9 @@ pip install pygram11
 pip install git+https://github.com/douglasdavis/pygram11.git@master
 ```
 
+To ensure OpenMP acceleration in a build from source, read the OpenMP
+section of the docs.
+
 **Note**: For releases older than v0.5, when building from source or
 PyPI, `pybind11` was required to be explicitly installed before
 `pygram11` (because `setup.py` used `pybind11` to determine include
