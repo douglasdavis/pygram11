@@ -87,6 +87,20 @@ A histogram in two dimensions with variable width bins:
 >>> h, __ = pygram11.histogram2d(x, y, bins=[xbins, ybins])
 ```
 
+Histogramming multiple weight variations for the same data, then
+putting the result in a DataFrame (the input pandas DataFrame will be
+interpreted as a NumPy array):
+
+```python
+>>> weights = pd.DataFrame({"weight_a" : np.abs(np.random.randn(10000)),
+...                         "weight_b" : np.random.uniform(0.5, 0.8, 10000),
+...                         "weight_c" : np.random.rand(10000)})
+>>> data = np.random.randn(10000)
+>>> count, err = pygram11.histogram(data, bins=20, range=(-3, 3), weights=weights, flow=True, omp=True)
+>>> count_df = pd.DataFrame(count, columns=["a", "b", "c"])
+>>> err_df = pd.DataFrame(err, columns=["a", "b", "c"])
+```
+
 ## Other Libraries
 
 - There is an effort to develop an object oriented histogramming
