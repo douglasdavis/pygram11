@@ -62,7 +62,8 @@ def fix1d(x, bins=10, range=None, weights=None, density=False, flow=False, omp="
     The same data, now histogrammed weighted & accelerated with
     OpenMP.
 
-    >>> h, h_err = fix1d(x, bins=20, range=(0, 100), omp=True)
+    >>> w = np.abs(np.random.randn(x.shape[0]))
+    >>> h, h_err = fix1d(x, bins=20, range=(0, 100), weights=w, omp=True)
 
     """
     x = np.asarray(x)
