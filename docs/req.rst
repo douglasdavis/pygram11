@@ -4,8 +4,8 @@ Installation
 Requirements
 ------------
 
-Hard Requirments
-^^^^^^^^^^^^^^^^
+Hard Requirements
+^^^^^^^^^^^^^^^^^
 
 - NumPy_
 
