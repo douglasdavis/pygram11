@@ -19,10 +19,11 @@ should be available.
 
 You can use pygram11 without OpenMP, but you might want to try
 `fast-histogram <https://github.com/astrofrog/fast-histogram>`_ if you
-just need to compute fixed bin histograms with OpenMP (see `the
-benchmarks <purpose.html#some-benchmarks>`__). If you're here for
-variable width histograms or the sum-of-weights-squared first class
-citizenry - I think you'll still find pygram11 useful.
+just need to compute fixed bin histograms (see `the benchmarks
+<purpose.html#some-benchmarks>`__). If you're here for variable width
+histograms or the sum-of-weights-squared first class citizenry or the
+multiple weight variation histograms - I think you'll still find
+pygram11 useful.
 
 
 Install Options
