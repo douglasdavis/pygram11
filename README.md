@@ -12,8 +12,9 @@ Simple and fast histogramming in Python via
 [OpenMP](https://www.openmp.org/).
 
 `pygram11` provides fast functions for calculating histograms (and
-their sums-of-weights squared). The API is very simple, documentation
-[found here](https://pygram11.readthedocs.io/) (you'll also find [some
+their statistical uncertainties). The API is very simple,
+documentation [found here](https://pygram11.readthedocs.io/) (you'll
+also find [some
 benchmarks](https://pygram11.readthedocs.io/en/stable/purpose.html#some-benchmarks)
 there). I also wrote a [blog
 post](https://ddavis.io/posts/introducing-pygram11/) with some simple
