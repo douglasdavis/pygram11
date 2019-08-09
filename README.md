@@ -117,7 +117,7 @@ interpreted as a NumPy array):
   weights or overflow).
 - If you want to calculate histograms on a GPU in Python, check out
   [cupy.histogram](https://docs-cupy.chainer.org/en/stable/reference/generated/cupy.histogram.html#cupy.histogram). They
-  only have 1D histograms (no weights over overflow).
+  only have 1D histograms (no weights or overflow).
 
 ---
 

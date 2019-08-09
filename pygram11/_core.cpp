@@ -217,9 +217,11 @@ PYBIND11_MODULE(_core, m) {
   m.doc() = "Core pygram11 histogramming code";
 
 #ifdef PYGRAMUSEOMP
-  m.attr("_HAS_OPENMP") = true;
+  m.attr("_HAS_OPENMP")  = true;
+  m.attr("_max_threads") = static_cast<std::size_t>(omp_get_max_threads());
 #else
-  m.attr("_HAS_OPENMP") = false;
+  m.attr("_HAS_OPENMP")  = false;
+  m.attr("_max_threads") = static_cast<std::size_t>(1);
 #endif
 
   m.def("_f1d_f8", &py_f1d<double>);       // fixed 1 dimensional double precision
