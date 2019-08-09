@@ -73,7 +73,7 @@ language = None
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = "emacs"
+pygments_style = "sphinx"
 
 
 # -- Options for HTML output -------------------------------------------------
@@ -186,7 +186,7 @@ epub_exclude_files = ["search.html"]
 
 # -- Options for intersphinx extension ---------------------------------------
 
-#intersphinx_mapping = {
-#    "python": ("http://docs.python.org/", None),
-#    "numpy": ("http://docs.scipy.org/doc/numpy", None),
-#}
+intersphinx_mapping = {
+    "python": ("http://docs.python.org/", None),
+    "numpy": ("http://docs.scipy.org/doc/numpy", None),
+}
