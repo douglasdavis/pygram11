@@ -27,8 +27,9 @@ just need a C++ compiler with C++11 support.
 
 ### From PyPI
 
-Binary wheels are provided for Linux and macOS, they can be installed
-from [PyPI](https://pypi.org/project/pygram11/) via pip. These builds
+Binary wheels are provided for Linux (starting with version 0.5.0) and
+macOS (starting with version 0.5.1), they can be installed from
+[PyPI](https://pypi.org/project/pygram11/) via pip. These builds
 include OpenMP acceleration.
 
 ```
@@ -40,10 +41,16 @@ pip install pygram11
 For a simple installation process via the `conda` package manager
 [pygram11 is part of
 conda-forge](https://anaconda.org/conda-forge/pygram11). These builds
-include OpenMP acceleration.
+include OpenMP acceleration. Please note that on macOS the OpenMP
+library from GNU (`libgomp`) and Intel (`libiomp`) can clash if your
+Anaconda environment includes the Intel MKL package. You may need to
+install the `nomkl` package to prevent the clash (Intel MKL
+accelerates many linear algebra operations, but does not impact
+pygram11):
 
 ```none
 conda install pygram11 -c conda-forge
+conda install nomkl ## sometimes necessary fix on (macOS only)
 ```
 
 ### From Source
