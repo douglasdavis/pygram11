@@ -1,6 +1,6 @@
 #!/bin/bash
 
-## This script will generate manylinux1 x86_64 wheels; it should be
+## This script will build manylinux1 x86_64 wheels; it should be
 ## executed from the root project directory while inside a
 ## skhep/manylinuxgcc-x86_64 docker container.
 
@@ -17,7 +17,7 @@ pys=(
 )
 
 for py in "${pys[@]}"; do
-    $py -m pip install pip numpy -U
+    $py -m pip install pip -U
     $py -m pip wheel .
 done
 
