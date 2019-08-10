@@ -60,7 +60,7 @@ def has_omp():
     customize_compiler(c_compiler)
 
     linkflags, compflags = [], []
-    if sys.platform == "darwin":
+    if sys.platform.startswith("darwin"):
         if prefixEnviron is not None:
             linkflags += ["-Wl,-rpath,{}/lib".format(prefixEnviron)]
         compflags += ["-Xpreprocessor", "-fopenmp"]
@@ -82,7 +82,7 @@ def has_omp():
             ["test_openmp.c"],
             output_dir="objects",
             extra_preargs=["-I/usr/local/include"]
-            if sys.platform == "darwin"
+            if sys.platform.startswith("darwin")
             else None,
             extra_postargs=compflags,
         )
@@ -138,7 +138,7 @@ class BuildExt(build_ext):
 
     c_opts = []
 
-    if sys.platform == "darwin":
+    if sys.platform.startswith("darwin"):
         c_opts += ["-stdlib=libc++", "-mmacosx-version-min=10.9"]
 
     def build_extensions(self):
@@ -147,7 +147,7 @@ class BuildExt(build_ext):
         prefixEnviron = os.getenv("PREFIX")
 
         if use_omp:
-            if sys.platform == "darwin":
+            if sys.platform.startswith("darwin"):
                 self.c_opts.append("-Xpreprocessor")
             self.c_opts.append("-fopenmp")
             self.c_opts.append("-DPYGRAMUSEOMP")
@@ -158,7 +158,7 @@ class BuildExt(build_ext):
         for ext in self.extensions:
             ext.extra_compile_args = self.c_opts
             if use_omp:
-                if sys.platform == "darwin":
+                if sys.platform.startswith("darwin"):
                     if prefixEnviron is not None:
                         ext.extra_link_args.append(
                             "-Wl,-rpath,{}/lib".format(prefixEnviron)
