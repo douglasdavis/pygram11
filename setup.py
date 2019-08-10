@@ -191,7 +191,6 @@ setup(
     long_description_content_type="text/markdown",
     packages=["pygram11"],
     ext_modules=ext_modules,
-    setup_requires=["numpy>=1.12"],
     install_requires=["numpy>=1.12"],
     cmdclass={"build_ext": BuildExt},
     test_suite="tests",
