@@ -4,7 +4,7 @@ from .hist import fix1d, fix1dmw, var1d, var1dmw, fix2d, var2d
 from .hist import histogram, histogram2d
 from ._core import _HAS_OPENMP as OPENMP
 
-__version__ = "0.5.1"
+__version__ = "0.5.2.dev0"
 
 __all__ = [
     "fix1d",
