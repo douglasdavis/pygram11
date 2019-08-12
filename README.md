@@ -7,9 +7,9 @@
 [![Conda Forge](https://img.shields.io/conda/vn/conda-forge/pygram11.svg?colorB=486b87&style=flat)](https://anaconda.org/conda-forge/pygram11)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
-Simple and fast histogramming in Python via
-[pybind11](https://github.com/pybind/pybind11) and accelerated with
-[OpenMP](https://www.openmp.org/).
+Simple and fast histogramming in Python and accelerated with
+[OpenMP](https://www.openmp.org/) (built using
+[pybind11](https://github.com/pybind/pybind11)).
 
 `pygram11` provides fast functions for calculating histograms (and
 their statistical uncertainties). The API is very simple,
@@ -107,9 +107,10 @@ interpreted as a NumPy array):
 ...                         "weight_b" : np.random.uniform(0.5, 0.8, 10000),
 ...                         "weight_c" : np.random.rand(10000)})
 >>> data = np.random.randn(10000)
->>> count, err = pygram11.histogram(data, bins=20, range=(-3, 3), weights=weights, flow=True, omp=True)
->>> count_df = pd.DataFrame(count, columns=["a", "b", "c"])
->>> err_df = pd.DataFrame(err, columns=["a", "b", "c"])
+>>> count, err = pygram11.histogram(data, bins=20, range=(-3, 3),
+...                                 weights=weights, flow=True, omp=True)
+>>> count_df = pd.DataFrame(count, columns=weights.columns)
+>>> err_df = pd.DataFrame(err, columns=weights.columns)
 ```
 
 ## Other Libraries
