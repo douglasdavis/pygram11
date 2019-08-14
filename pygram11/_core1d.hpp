@@ -31,10 +31,8 @@ void f1dwo(const py::array_t<T>& data, const py::array_t<T>& weights,
 
 #pragma omp parallel
   {
-    std::unique_ptr<T[]> count_ot(new T[nbins + 2]);
-    std::unique_ptr<T[]> sumw2_ot(new T[nbins + 2]);
-    std::memset(count_ot.get(), 0, sizeof(T) * (nbins + 2));
-    std::memset(sumw2_ot.get(), 0, sizeof(T) * (nbins + 2));
+    std::vector<T> count_ot(nbins + 2, 0.0);
+    std::vector<T> sumw2_ot(nbins + 2, 0.0);
 #pragma omp for nowait
     for (std::size_t i = 0; i < ndata; i++) {
       auto bin = pygram11::detail::get_bin(data_proxy(i), norm, {nbins, xmin, xmax});
@@ -84,8 +82,7 @@ void f1do(const py::array_t<T>& data, py::array_t<std::int64_t>& count,
 
 #pragma omp parallel
   {
-    std::unique_ptr<std::int64_t[]> count_ot(new std::int64_t[nbins + 2]);
-    memset(count_ot.get(), 0, sizeof(std::int64_t) * (nbins + 2));
+    std::vector<std::int64_t> count_ot(nbins + 2, 0.0);
 #pragma omp for nowait
     for (std::size_t i = 0; i < ndata; i++) {
       auto bin = pygram11::detail::get_bin(data_proxy(i), norm, {nbins, xmin, xmax});
@@ -136,11 +133,8 @@ void v1dwo(const py::array_t<T>& data, const py::array_t<T>& weights,
 
 #pragma omp parallel
   {
-    std::unique_ptr<T[]> count_ot(new T[nbins + 2]);
-    std::unique_ptr<T[]> sumw2_ot(new T[nbins + 2]);
-    memset(count_ot.get(), 0, sizeof(T) * (nbins + 2));
-    memset(sumw2_ot.get(), 0, sizeof(T) * (nbins + 2));
-
+    std::vector<T> count_ot(nbins + 2, 0.0);
+    std::vector<T> sumw2_ot(nbins + 2, 0.0);
 #pragma omp for nowait
     for (std::size_t i = 0; i < ndata; i++) {
       auto bin = pygram11::detail::get_bin(data_proxy(i), edges_v);
@@ -195,15 +189,12 @@ void v1do(const py::array_t<T>& data, const py::array_t<T>& edges,
 
 #pragma omp parallel
   {
-    std::unique_ptr<std::int64_t[]> count_ot(new std::int64_t[nbins + 2]);
-    memset(count_ot.get(), 0, sizeof(T) * (nbins + 2));
-
+    std::vector<std::int64_t> count_ot(nbins + 2, 0.0);
 #pragma omp for nowait
     for (std::size_t i = 0; i < ndata; i++) {
       auto bin = pygram11::detail::get_bin(data_proxy(i), edges_v);
       ++count_ot[bin];
     }
-
 #pragma omp critical
     for (std::size_t i = 0; i < (nbins + 2); i++) {
       count_proxy(i) += count_ot[i];
@@ -255,7 +246,6 @@ void f1dmwo(const py::array_t<T>& data, const py::array_t<T>& weights,
       memset(counts_ot[i].get(), 0, sizeof(T) * (nbins + 2));
       memset(sumw2s_ot[i].get(), 0, sizeof(T) * (nbins + 2));
     }
-
 #pragma omp for nowait
     for (std::size_t i = 0; i < ndata; i++) {
       auto bin = pygram11::detail::get_bin(data_proxy(i), norm, {nbins, xmin, xmax});
@@ -265,7 +255,6 @@ void f1dmwo(const py::array_t<T>& data, const py::array_t<T>& weights,
         sumw2s_ot[j].get()[bin] += weight * weight;
       }
     }
-
 #pragma omp critical
     for (std::size_t i = 0; i < (nbins + 2); ++i) {
       for (std::size_t j = 0; j < nweights; ++j) {
@@ -331,7 +320,6 @@ void v1dmwo(const py::array_t<T>& data, const py::array_t<T>& weights,
       memset(counts_ot[i].get(), 0, sizeof(T) * (nbins + 2));
       memset(sumw2s_ot[i].get(), 0, sizeof(T) * (nbins + 2));
     }
-
 #pragma omp for nowait
     for (std::size_t i = 0; i < ndata; i++) {
       auto bin = pygram11::detail::get_bin(data_proxy(i), edges_v);
@@ -341,7 +329,6 @@ void v1dmwo(const py::array_t<T>& data, const py::array_t<T>& weights,
         sumw2s_ot[j].get()[bin] += weight * weight;
       }
     }
-
 #pragma omp critical
     for (std::size_t i = 0; i < (nbins + 2); ++i) {
       for (std::size_t j = 0; j < nweights; ++j) {
