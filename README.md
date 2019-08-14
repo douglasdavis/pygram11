@@ -1,11 +1,11 @@
 # pygram11
 
+[![Build Status](https://dev.azure.com/ddavis0485/pygram11/_apis/build/status/douglasdavis.pygram11?branchName=master)](https://dev.azure.com/ddavis0485/pygram11/_build/latest?definitionId=4&branchName=master)
 [![builds.sr.ht status](https://builds.sr.ht/~ddavis/pygram11.svg)](https://builds.sr.ht/~ddavis/pygram11?)
 [![Documentation Status](https://readthedocs.org/projects/pygram11/badge/?version=latest)](https://pygram11.readthedocs.io/en/latest/?badge=latest)
 ![](https://img.shields.io/pypi/pyversions/pygram11.svg?colorB=blue&style=flat)
 [![PyPI version](https://img.shields.io/pypi/v/pygram11.svg?colorB=486b87&style=flat)](https://pypi.org/project/pygram11/)
 [![Conda Forge](https://img.shields.io/conda/vn/conda-forge/pygram11.svg?colorB=486b87&style=flat)](https://anaconda.org/conda-forge/pygram11)
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 Simple and fast histogramming in Python and accelerated with
 [OpenMP](https://www.openmp.org/) (built using

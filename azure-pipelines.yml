@@ -23,6 +23,7 @@ jobs:
   steps:
   - checkout: self
     submodules: true
+    displayName: 'checkout self and submodules'
   - template: .ci/azure-steps.yml
 
 
@@ -41,4 +42,10 @@ jobs:
   steps:
   - checkout: self
     submodules: true
+    displayName: 'Checkout self and submodules'
+  - script: |
+      set -e -x
+      brew update
+      brew install libomp
+    displayName: 'Install libomp from Homebrew'
   - template: .ci/azure-steps.yml
