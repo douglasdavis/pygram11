@@ -24,7 +24,7 @@ tasks:
   #- deploy: |
   #    cd pygram11
   #    python setup.py sdist
-  #    python .ci-scripts/srht-pypi.py
+  #    python .ci/srht-pypi.py
 triggers:
   - action: email
     condition: failure
