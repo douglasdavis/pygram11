@@ -1,10 +1,10 @@
 trigger:
   branches:
     include:
-      - master
+    - master
 
 pr:
-  - master
+- master
 
 jobs:
 
@@ -21,7 +21,9 @@ jobs:
         python.version: '3.7'
 
   steps:
-    - template: .ci/azure-steps.yml
+  - checkout: self
+    submodules: true
+  - template: .ci/azure-steps.yml
 
 
 - job: 'macOS'
@@ -37,4 +39,6 @@ jobs:
         python.version: '3.7'
 
   steps:
-    - template: .ci/azure-steps.yml
+  - checkout: self
+    submodules: true
+  - template: .ci/azure-steps.yml
