@@ -54,7 +54,7 @@ pygram11; for pure `conda-forge` environments this is probably not
 necessary):
 
 ```none
-conda install nomkl ## sometimes necessary fix on (macOS only)
+conda install nomkl ## sometimes necessary fix (macOS only)
 ```
 
 ### From Source
