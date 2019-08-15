@@ -1,31 +1,36 @@
 image: archlinux
 packages:
-  - python-pip
-  - python-numpy
-  - python-pytest
-  - pybind11
-  - twine
+- pyenv
+- gcc
 sources:
-  - https://github.com/douglasdavis/pygram11
-secrets:
-  - a7bb07f9-3681-4e7e-8650-e49e3ca8c822
+- https://github.com/douglasdavis/pygram11.git
 tasks:
-  - setup: |
-      echo "no setup"
-  - build: |
-      cd pygram11
-      sudo pip install .
-  - test: |
-      cd pygram11
-      pytest --ignore=extern
-      mkdir play
-      cd play
-      python -c "import pygram11; print(pygram11.OPENMP)"
-  #- deploy: |
-  #    cd pygram11
-  #    python setup.py sdist
-  #    python .ci/srht-pypi.py
+- setup: |
+    pyenv install 3.7.4
+    pyenv install 3.6.9
+    pyenv install 2.7.16
+- build: |
+    cd pygram11
+    eval "$(pyenv init -)"
+    pyenv shell 3.7.4
+    pip install pip pytest -U
+    pip install .
+    pyenv shell 3.6.9
+    pip install pip pytest -U
+    pip install .
+    pyenv shell 2.7.16
+    pip install pip pytest -U
+    pip install .
+- test: |
+    eval "$(pyenv init -)"
+    cd pygram11
+    pyenv shell 3.7.4
+    pytest --ignore=extern
+    pyenv shell 3.6.9
+    pytest --ignore=extern
+    pyenv shell 2.7.16
+    pytest --ignore=extern
 triggers:
-  - action: email
-    condition: failure
-    to: "<ddavis@ddavis.io>"
+- action: email
+  condition: failure
+  to: "<ddavis@ddavis.io>"
