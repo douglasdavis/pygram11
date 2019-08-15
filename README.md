@@ -29,8 +29,7 @@ source you'll need a C++ compiler with C++11 support.
 
 Binary wheels are provided for Linux (starting with version 0.5.0) and
 macOS (starting with version 0.5.1), they can be installed from
-[PyPI](https://pypi.org/project/pygram11/) via pip. These builds
-include OpenMP acceleration.
+[PyPI](https://pypi.org/project/pygram11/) via pip.
 
 ```
 pip install pygram11
@@ -40,16 +39,21 @@ pip install pygram11
 
 For a simple installation process via the `conda` package manager
 [pygram11 is part of
-conda-forge](https://anaconda.org/conda-forge/pygram11). These builds
-include OpenMP acceleration. Please note that on macOS the OpenMP
-library from GNU (`libgomp`) and Intel (`libiomp`) can clash if your
-Anaconda environment includes the Intel MKL package. You may need to
-install the `nomkl` package to prevent the clash (Intel MKL
-accelerates many linear algebra operations, but does not impact
-pygram11):
+conda-forge](https://anaconda.org/conda-forge/pygram11).
 
 ```none
 conda install pygram11 -c conda-forge
+```
+
+Please note that on macOS the OpenMP library from LLVM (`libomp`) and
+Intel (`libiomp`) can clash if your Anaconda environment includes the
+Intel Math Kernel Library (MKL) package distributed by Anaconda. You
+may need to install the `nomkl` package to prevent the clash (Intel
+MKL accelerates many linear algebra operations, but does not impact
+pygram11; for pure `conda-forge` environments this is probably not
+necessary):
+
+```none
 conda install nomkl ## sometimes necessary fix on (macOS only)
 ```
 
@@ -60,7 +64,9 @@ pip install git+https://github.com/douglasdavis/pygram11.git@master
 ```
 
 To ensure OpenMP acceleration in a build from source, read the OpenMP
-section of the docs.
+section of the docs. If you have a modern GCC verion on Linux, you
+probably don't have to worry about anything. If you are on macOS,
+you'll probably want to install `libomp` from Homebrew.
 
 **Note**: For releases older than v0.5, when building from source or
 PyPI, `pybind11` was required to be explicitly installed before
