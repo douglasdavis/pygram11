@@ -45,13 +45,12 @@ conda-forge](https://anaconda.org/conda-forge/pygram11).
 conda install pygram11 -c conda-forge
 ```
 
-Please note that on macOS the OpenMP library from LLVM (`libomp`) and
-Intel (`libiomp`) can clash if your Anaconda environment includes the
-Intel Math Kernel Library (MKL) package distributed by Anaconda. You
-may need to install the `nomkl` package to prevent the clash (Intel
-MKL accelerates many linear algebra operations, but does not impact
-pygram11; for pure `conda-forge` environments this is probably not
-necessary):
+Please note that on macOS the OpenMP libraries from LLVM (`libomp`)
+and Intel (`libiomp`) can clash if your `conda` environment includes
+the Intel Math Kernel Library (MKL) package distributed by
+Anaconda. You may need to install the `nomkl` package to prevent the
+clash (Intel MKL accelerates many linear algebra operations, but does
+not impact pygram11):
 
 ```none
 conda install nomkl ## sometimes necessary fix (macOS only)
