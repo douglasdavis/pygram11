@@ -57,7 +57,7 @@ def fix1d(x, bins=10, range=None, weights=None, density=False, flow=False, omp="
     --------
     A histogram of ``x`` with 20 bins between 0 and 100.
 
-    >>> h = fix1d(x, bins=20, range=(0, 100))
+    >>> h, __ = fix1d(x, bins=20, range=(0, 100))
 
     The same data, now histogrammed weighted & accelerated with
     OpenMP.
@@ -227,11 +227,11 @@ def var1d(x, bins, weights=None, density=False, flow=False, omp="auto"):
     A histogram of ``x`` where the edges are defined by the list
     ``[1, 5, 10, 12]``:
 
-    >>> h = var1d(x, [1, 5, 10, 12])
+    >>> h, __ = var1d(x, [1, 5, 10, 12])
 
     The same data, now weighted and accelerated with OpenMP:
 
-    >>> h = var1d(x, [1, 5, 10, 12], weights=w, omp=True)
+    >>> h, err = var1d(x, [1, 5, 10, 12], weights=w, omp=True)
 
     """
     x = np.asarray(x)
@@ -392,7 +392,7 @@ def fix2d(x, y, bins=10, range=None, weights=None, omp=False):
     the ``x`` dimention and 10 bins between 0 and 50 in the ``y``
     dimension.
 
-    >>> h = fix2d(x, y, bins=(20, 10), range=((0, 100), (0, 50)))
+    >>> h, __ = fix2d(x, y, bins=(20, 10), range=((0, 100), (0, 50)))
 
     The same data, now histogrammed weighted (via ``w``) & accelerated
     with OpenMP.
@@ -465,7 +465,7 @@ def var2d(x, y, xbins, ybins, weights=None, omp=False):
     OpenMP.
 
     >>> bins = numpy.logspace(0.1, 1.0, 10, endpoint=True)
-    >>> h = var2d(x, y, bins, bins, omp=True)
+    >>> h, __ = var2d(x, y, bins, bins, omp=True)
 
     """
     x = np.asarray(x)
@@ -550,12 +550,12 @@ def histogram(
     --------
     A histogram of ``x`` with 20 bins between 0 and 100.
 
-    >>> h = fix1d(x, bins=20, range=(0, 100))
+    >>> h, __ = fix1d(x, bins=20, range=(0, 100))
 
     The same data, now histogrammed weighted & accelerated with
     OpenMP.
 
-    >>> h, h_err = histogram(x, bins=20, range=(0, 100), omp=True)
+    >>> h, err = histogram(x, bins=20, range=(0, 100), omp=True)
 
     Multiple histograms of ``x`` with 50 bins between 0 and 100; using
     20 different weight variations:
@@ -570,7 +570,7 @@ def histogram(
     A histogram of ``x`` where the edges are defined by the list
     ``[1, 5, 10, 12]``:
 
-    >>> h = var1d(x, bins=[1, 5, 10, 12])
+    >>> h, __ = var1d(x, bins=[1, 5, 10, 12])
 
     The same data, now weighted and accelerated with OpenMP:
 

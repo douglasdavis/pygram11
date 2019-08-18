@@ -21,7 +21,7 @@ Histogramming a normal distribution:
 
 .. code-block:: python
 
-   >>> h = pygram11.fix1d(np.random.randn(10000), bins=25, range=(-3, 3))
+   >>> h, __ = pygram11.fix1d(np.random.randn(10000), bins=25, range=(-3, 3))
 
 See the API reference for more examples.
 
