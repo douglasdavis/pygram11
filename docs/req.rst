@@ -5,10 +5,17 @@ Requirements
 ------------
 
 The only requirement for pygram11 is NumPy_. All installation methods
-will ensure that ``numpy`` is installed. When building from source,
-all you need is a C++ compiler with C++11 support. The ``setup.py``
-script will test to see if OpenMP is available during compilation and
-linking of the backend extenstion module (if you install binaries from
+will ensure that ``numpy`` is installed.
+
+Extras for Source Builds
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+When building from source, all you need is a C++ compiler with C++11
+support. The ``setup.py`` script will test to see if OpenMP is
+available during compilation and linking of the backend extenstion
+module. Most Linux distributions with relatively modern GCC versions
+should provide OpenMP automatically. On macOS, you might want to
+install ``libomp`` from Homebrew. If you install binaries from
 conda-forge or PyPI, OpenMP acceleration is available).
 
 You can use pygram11 without OpenMP, but you might want to try
