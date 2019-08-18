@@ -8,7 +8,7 @@ pygram11
 
 pygram11 is a small Python library for creating simple histograms
 quickly. The backend is written in C++11 (with help from pybind11_)
-and (optionally) accelerated with OpenMP_.
+and accelerated with OpenMP_.
 
 
 .. image:: https://img.shields.io/conda/vn/conda-forge/pygram11.svg?colorB=486b87&style=flat

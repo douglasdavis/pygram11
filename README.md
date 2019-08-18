@@ -7,8 +7,8 @@
 [![PyPI version](https://img.shields.io/pypi/v/pygram11.svg?colorB=486b87&style=flat)](https://pypi.org/project/pygram11/)
 [![Conda Forge](https://img.shields.io/conda/vn/conda-forge/pygram11.svg?colorB=486b87&style=flat)](https://anaconda.org/conda-forge/pygram11)
 
-Simple and fast histogramming in Python and accelerated with
-[OpenMP](https://www.openmp.org/) (built using
+Simple and fast histogramming in Python accelerated with
+[OpenMP](https://www.openmp.org/) (with help from
 [pybind11](https://github.com/pybind/pybind11)).
 
 `pygram11` provides fast functions for calculating histograms (and
