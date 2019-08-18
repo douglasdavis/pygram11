@@ -14,9 +14,11 @@ When building from source, all you need is a C++ compiler with C++11
 support. The ``setup.py`` script will test to see if OpenMP is
 available during compilation and linking of the backend extenstion
 module. Most Linux distributions with relatively modern GCC versions
-should provide OpenMP automatically. On macOS, you might want to
-install ``libomp`` from Homebrew. If you install binaries from
-conda-forge or PyPI, OpenMP acceleration is available).
+should provide OpenMP automatically (search the web to see how to
+install OpenMP from your distribution's package manager). On macOS you
+you'll want to install ``libomp`` from Homebrew to use OpenMP with the
+Clang compiler shipped with macOS. If you install binaries from
+conda-forge or PyPI, OpenMP acceleration is available.
 
 You can use pygram11 without OpenMP, but you might want to try
 `fast-histogram <https://github.com/astrofrog/fast-histogram>`_ if you
@@ -48,12 +50,12 @@ Installations from conda-forge provide a build that used OpenMP.
 
 .. note::
 
-   Please note that on macOS the OpenMP libraries from LLVM
-   (``libomp``) and Intel (``libiomp``) can clash if your ``conda``
-   environment includes the Intel Math Kernel Library (MKL) package
-   distributed by Anaconda. You may need to install the ``nomkl``
-   package to prevent the clash (Intel MKL accelerates many linear
-   algebra operations, but does not impact pygram11):
+   On macOS the OpenMP libraries from LLVM (``libomp``) and Intel
+   (``libiomp``) can clash if your ``conda`` environment includes the
+   Intel Math Kernel Library (MKL) package distributed by
+   Anaconda. You may need to install the ``nomkl`` package to prevent
+   the clash (Intel MKL accelerates many linear algebra operations,
+   but does not impact pygram11):
 
 Source
 ^^^^^^
