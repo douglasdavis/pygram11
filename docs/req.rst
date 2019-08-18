@@ -4,18 +4,12 @@ Installation
 Requirements
 ------------
 
-Hard Requirements
-^^^^^^^^^^^^^^^^^
-
-- NumPy_
-
-Soft Requirements
-^^^^^^^^^^^^^^^^^
-
-- OpenMP_
-
-If you install binaries from conda-forge or PyPI, OpenMP acceleration
-should be available.
+The only requirement for pygram11 is NumPy_. All installation methods
+will ensure that ``numpy`` is installed. When building from source,
+all you need is a C++ compiler with C++11 support. The ``setup.py``
+script will test to see if OpenMP is available during compilation and
+linking of the backend extenstion module (if you install binaries from
+conda-forge or PyPI, OpenMP acceleration is available).
 
 You can use pygram11 without OpenMP, but you might want to try
 `fast-histogram <https://github.com/astrofrog/fast-histogram>`_ if you
