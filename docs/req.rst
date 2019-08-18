@@ -5,7 +5,8 @@ Requirements
 ------------
 
 The only requirement for pygram11 is NumPy_. All installation methods
-will ensure that ``numpy`` is installed.
+will ensure that ``numpy`` is installed. If you install binaries from
+conda-forge or PyPI, OpenMP acceleration is enabled.
 
 Extras for Source Builds
 ^^^^^^^^^^^^^^^^^^^^^^^^
@@ -15,10 +16,9 @@ support. The ``setup.py`` script will test to see if OpenMP is
 available during compilation and linking of the backend extenstion
 module. Most Linux distributions with relatively modern GCC versions
 should provide OpenMP automatically (search the web to see how to
-install OpenMP from your distribution's package manager). On macOS you
+install OpenMP from your distribution's package manager). On macOS
 you'll want to install ``libomp`` from Homebrew to use OpenMP with the
-Clang compiler shipped with macOS. If you install binaries from
-conda-forge or PyPI, OpenMP acceleration is available.
+Clang compiler shipped with macOS.
 
 You can use pygram11 without OpenMP, but you might want to try
 `fast-histogram <https://github.com/astrofrog/fast-histogram>`_ if you
