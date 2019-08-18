@@ -29,6 +29,13 @@ pygram11 useful.
 Install Options
 ---------------
 
+PyPI
+^^^^
+
+.. code-block:: none
+
+   $ pip install pygram11
+
 conda-forge
 ^^^^^^^^^^^
 
@@ -38,13 +45,14 @@ Installations from conda-forge provide a build that used OpenMP.
 
    $ conda install pygram11 -c conda-forge
 
-PyPI
-^^^^
+.. note::
 
-.. code-block:: none
-
-   $ pip install pygram11
-
+   Please note that on macOS the OpenMP libraries from LLVM
+   (``libomp``) and Intel (``libiomp``) can clash if your ``conda``
+   environment includes the Intel Math Kernel Library (MKL) package
+   distributed by Anaconda. You may need to install the ``nomkl``
+   package to prevent the clash (Intel MKL accelerates many linear
+   algebra operations, but does not impact pygram11):
 
 Source
 ^^^^^^
@@ -56,7 +64,10 @@ Source
 .. note::
 
    If installing from source on macOS 10.14 you might have to prepend
-   the ``pip`` command with ``MACOS_DEPLOYMENT_TARGET=10.14``.
+   the ``pip`` command with ``MACOSX_DEPLOYMENT_TARGET=10.14``. (This
+   may be required for Anaconda environments, because the Python
+   distribution from Anaconda for macOS is built with an older macOS
+   SDK).
 
 .. code-block:: none
 
