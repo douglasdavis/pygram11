@@ -238,21 +238,19 @@ void f1dmwo(const py::array_t<T>& data, const py::array_t<T>& weights,
 
 #pragma omp parallel
   {
-    std::vector<std::unique_ptr<T[]>> counts_ot;
-    std::vector<std::unique_ptr<T[]>> sumw2s_ot;
+    std::vector<std::vector<T>> counts_ot;
+    std::vector<std::vector<T>> sumw2s_ot;
     for (std::size_t i = 0; i < nweights; ++i) {
-      counts_ot.emplace_back(new T[nbins + 2]);
-      sumw2s_ot.emplace_back(new T[nbins + 2]);
-      memset(counts_ot[i].get(), 0, sizeof(T) * (nbins + 2));
-      memset(sumw2s_ot[i].get(), 0, sizeof(T) * (nbins + 2));
+      counts_ot.emplace_back(nbins + 2, 0);
+      sumw2s_ot.emplace_back(nbins + 2, 0);
     }
 #pragma omp for nowait
     for (std::size_t i = 0; i < ndata; i++) {
       auto bin = pygram11::detail::get_bin(data_proxy(i), norm, {nbins, xmin, xmax});
       for (std::size_t j = 0; j < nweights; j++) {
         const T weight = weight_proxy(i, j);
-        counts_ot[j].get()[bin] += weight;
-        sumw2s_ot[j].get()[bin] += weight * weight;
+        counts_ot[j][bin] += weight;
+        sumw2s_ot[j][bin] += weight * weight;
       }
     }
 #pragma omp critical
@@ -312,21 +310,19 @@ void v1dmwo(const py::array_t<T>& data, const py::array_t<T>& weights,
 
 #pragma omp parallel
   {
-    std::vector<std::unique_ptr<T[]>> counts_ot;
-    std::vector<std::unique_ptr<T[]>> sumw2s_ot;
+    std::vector<std::vector<T>> counts_ot;
+    std::vector<std::vector<T>> sumw2s_ot;
     for (std::size_t i = 0; i < nweights; ++i) {
-      counts_ot.emplace_back(new T[nbins + 2]);
-      sumw2s_ot.emplace_back(new T[nbins + 2]);
-      memset(counts_ot[i].get(), 0, sizeof(T) * (nbins + 2));
-      memset(sumw2s_ot[i].get(), 0, sizeof(T) * (nbins + 2));
+      counts_ot.emplace_back(nbins + 2, 0);
+      sumw2s_ot.emplace_back(nbins + 2, 0);
     }
 #pragma omp for nowait
     for (std::size_t i = 0; i < ndata; i++) {
       auto bin = pygram11::detail::get_bin(data_proxy(i), edges_v);
       for (std::size_t j = 0; j < nweights; j++) {
         const T weight = weight_proxy(i, j);
-        counts_ot[j].get()[bin] += weight;
-        sumw2s_ot[j].get()[bin] += weight * weight;
+        counts_ot[j][bin] += weight;
+        sumw2s_ot[j][bin] += weight * weight;
       }
     }
 #pragma omp critical
