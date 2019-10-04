@@ -13,8 +13,6 @@ jobs:
     vmImage: 'ubuntu-latest'
   strategy:
     matrix:
-      Python27:
-        python.version: '2.7'
       Python36:
         python.version: '3.6'
       Python37:
@@ -32,8 +30,6 @@ jobs:
     vmImage: 'macOS-latest'
   strategy:
     matrix:
-      Python27:
-        python.version: '2.7'
       Python36:
         python.version: '3.6'
       Python37:
