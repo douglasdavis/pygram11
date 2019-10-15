@@ -21,8 +21,18 @@ from .utils import densify1d
 import numpy as np
 import numbers
 
+from typing import Any, Optional, Tuple, Union
 
-def fix1d(x, bins=10, range=None, weights=None, density=False, flow=False, omp="auto"):
+
+def fix1d(
+    x: Any,
+    bins: Union[int, Any] = 10,
+    range: Optional[Tuple[float, float]] = None,
+    weights: Optional[Any] = None,
+    density: bool = False,
+    flow: bool = False,
+    omp: Union[str, bool] = "auto",
+) -> Tuple[np.ndarray, Optional[np.ndarray]]:
     """histogram ``x`` with fixed (uniform) binning over a range
     [xmin, xmax).
 
@@ -30,7 +40,7 @@ def fix1d(x, bins=10, range=None, weights=None, density=False, flow=False, omp="
     ----------
     x: array_like
         data to histogram
-    bins: int or str, optional
+    bins: int or array_like
         number of bins or str
     range: (float, float), optional
         axis limits to histogram over
@@ -50,7 +60,7 @@ def fix1d(x, bins=10, range=None, weights=None, density=False, flow=False, omp="
     -------
     :obj:`numpy.ndarray`
         bin counts (heights)
-    :obj:`numpy.ndarray`
+    :obj:`numpy.ndarray` or None
         Poisson uncertainty on counts (``None`` if weights are absent)
 
     Examples
@@ -117,7 +127,14 @@ def fix1d(x, bins=10, range=None, weights=None, density=False, flow=False, omp="
     return (result, np.sqrt(sw2))
 
 
-def fix1dmw(x, weights, bins=10, range=None, flow=False, omp="auto"):
+def fix1dmw(
+    x: Any,
+    weights: Any,
+    bins: Union[int, Any] = 10,
+    range: Optional[Tuple[float, float]] = None,
+    flow: bool = False,
+    omp: Union[str, bool] = "auto",
+) -> Tuple[np.ndarray, Optional[np.ndarray]]:
     """histogram ``x`` with fixed (uniform) binning over a range
     [xmin, xmax) using multiple weight variations.
 
