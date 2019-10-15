@@ -8,7 +8,6 @@ tasks:
 - setup: |
     pyenv install 3.7.4
     pyenv install 3.6.9
-    pyenv install 2.7.16
 - build: |
     cd pygram11
     eval "$(pyenv init -)"
@@ -18,17 +17,12 @@ tasks:
     pyenv shell 3.6.9
     pip install pip pytest -U
     pip install .
-    pyenv shell 2.7.16
-    pip install pip pytest -U
-    pip install .
 - test: |
     eval "$(pyenv init -)"
     cd pygram11
     pyenv shell 3.7.4
     pytest --ignore=extern
     pyenv shell 3.6.9
-    pytest --ignore=extern
-    pyenv shell 2.7.16
     pytest --ignore=extern
 triggers:
 - action: email

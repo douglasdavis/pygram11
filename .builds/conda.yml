@@ -10,8 +10,8 @@ tasks:
       bash miniconda.sh -b -p $HOME/miniconda
       source $HOME/miniconda/etc/profile.d/conda.sh
       conda config --set always_yes yes --set changeps1 no
-      conda create -q -n py27 python=2.7 numpy pytest
       conda create -q -n py36 python=3.6 numpy pytest
+      conda create -q -n py37 python=3.7 numpy pytest
   - test_python36: |
       cd pygram11
       source $HOME/miniconda/etc/profile.d/conda.sh
@@ -19,10 +19,10 @@ tasks:
       pip install pip -U
       pip install .
       pytest --ignore=extern
-  - test_python27: |
+  - test_python37: |
       cd pygram11
       source $HOME/miniconda/etc/profile.d/conda.sh
-      conda activate py27
+      conda activate py37
       pip install pip -U
       pip install .
       pytest --ignore=extern
