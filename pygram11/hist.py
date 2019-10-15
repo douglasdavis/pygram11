@@ -21,37 +21,47 @@ from .utils import densify1d
 import numpy as np
 import numbers
 
+from typing import Any, Optional, Tuple, Union, Iterable
 
-def fix1d(x, bins=10, range=None, weights=None, density=False, flow=False, omp="auto"):
+
+def fix1d(
+    x: Any,
+    bins: int = 10,
+    range: Optional[Tuple[float, float]] = None,
+    weights: Optional[Any] = None,
+    density: bool = False,
+    flow: bool = False,
+    omp: Union[str, bool] = "auto",
+) -> Tuple[np.ndarray, Union[np.ndarray, None]]:
     """histogram ``x`` with fixed (uniform) binning over a range
     [xmin, xmax).
 
     Parameters
     ----------
-    x: array_like
-        data to histogram
-    bins: int or str, optional
-        number of bins or str
-    range: (float, float), optional
-        axis limits to histogram over
-    weights: array_like, optional
-        weight for each element of ``x``.
-    density: bool
-        normalize histogram bins as value of PDF such that the integral
-        over the range is 1.
-    flow: bool
-        if ``True`` the under and overflow bin contents are added to the first
-        and last bins, respectively
-    omp: bool or str
-        if ``True``, use OpenMP if available; if "auto" (and OpenMP is available),
-        enables OpenMP if len(x) > 10^4
+    x : array_like
+       data to histogram
+    bins : int
+       number of bins
+    range : (float, float), optional
+       axis limits to histogram over
+    weights : array_like, optional
+       weight for each element of ``x``.
+    density : bool
+       normalize histogram bins as value of PDF such that the integral
+       over the range is 1.
+    flow : bool
+       if ``True`` the under and overflow bin contents are added to the first
+       and last bins, respectively
+    omp : bool or str
+       if ``True``, use OpenMP if available; if "auto" (and OpenMP is available),
+       enables OpenMP if len(x) > 10^4
 
     Returns
     -------
     :obj:`numpy.ndarray`
-        bin counts (heights)
-    :obj:`numpy.ndarray`
-        Poisson uncertainty on counts (``None`` if weights are absent)
+       bin counts (heights)
+    :obj:`numpy.ndarray` or None
+       Poisson uncertainty on counts (``None`` if weights are absent)
 
     Examples
     --------
@@ -117,35 +127,41 @@ def fix1d(x, bins=10, range=None, weights=None, density=False, flow=False, omp="
     return (result, np.sqrt(sw2))
 
 
-def fix1dmw(x, weights, bins=10, range=None, flow=False, omp="auto"):
+def fix1dmw(
+    x: Any,
+    weights: Any,
+    bins: int = 10,
+    range: Optional[Tuple[float, float]] = None,
+    flow: bool = False,
+    omp: Union[str, bool] = "auto",
+) -> Tuple[np.ndarray, np.ndarray]:
     """histogram ``x`` with fixed (uniform) binning over a range
     [xmin, xmax) using multiple weight variations.
 
     Parameters
     ----------
-    x: array_like
-        data to histogram
-    weights: array_like
-        weight variations for the elements of ``x``, first dimension
-        is the shape of ``x``, second dimension is the number of weights.
-    bins: int or str, optional
-        number of bins or str
-    range: (float, float), optional
-        axis limits to histogram over
-    flow: bool
-        if ``True`` the under and overflow bin contents are added to the first
-        and last bins, respectively
-    omp: bool or str
-        if ``True``, use OpenMP if available; if "auto" (and OpenMP is available),
-        enables OpenMP if len(x) > 10^4
+    x : array_like
+       data to histogram
+    weights : array_like
+       weight variations for the elements of ``x``, first dimension
+       is the shape of ``x``, second dimension is the number of weights.
+    bins : int
+       number of bins
+    range : (float, float), optional
+       axis limits to histogram over
+    flow : bool
+       if ``True`` the under and overflow bin contents are added to the first
+       and last bins, respectively
+    omp : bool or str
+       if ``True``, use OpenMP if available; if "auto" (and OpenMP is available),
+       enables OpenMP if len(x) > 10^4
 
     Returns
     -------
     :obj:`numpy.ndarray`
-        bin counts (heights) for each variation (shape == [n_bins, n_weight_variations])
+       bin counts (heights) for each variation (shape == [n_bins, n_weight_variations])
     :obj:`numpy.ndarray`
-        Poisson uncertainty on counts, shape == [n_bins, n_weight_variations],
-        (``None`` if weights are absent)
+       Poisson uncertainty on counts, shape == [n_bins, n_weight_variations],
 
     Examples
     --------
@@ -193,34 +209,41 @@ def fix1dmw(x, weights, bins=10, range=None, flow=False, omp="auto"):
     return (count[1:-1, :], np.sqrt(sumw2[1:-1, :]))
 
 
-def var1d(x, bins, weights=None, density=False, flow=False, omp="auto"):
+def var1d(
+    x: Any,
+    bins: Any,
+    weights: Optional[Any] = None,
+    density: bool = False,
+    flow: bool = False,
+    omp: Union[str, bool] = "auto",
+) -> Tuple[np.ndarray, Union[np.ndarray, None]]:
     """histogram ``x`` with variable (non-uniform) binning over a range
     [bins[0], bins[-1]).
 
     Parameters
     ----------
-    x: array_like
-        data to histogram
-    bins: array_like
-        bin edges
-    weights: array_like, optional
-        weight for each element of ``x``
-    density: bool
-        normalize histogram bins as value of PDF such that the integral
-        over the range is 1.
-    flow: bool
-        if ``True`` the under and overflow bin contents are added to the first
-        and last bins, respectively
-    omp: bool or str
-        if ``True``, use OpenMP if available; if "auto" (and OpenMP is available),
-        enables OpenMP if len(x) > 10^3
+    x : array_like
+       data to histogram
+    bins : array_like
+       bin edges
+    weights : array_like, optional
+       weight for each element of ``x``
+    density : bool
+       normalize histogram bins as value of PDF such that the integral
+       over the range is 1.
+    flow : bool
+       if ``True`` the under and overflow bin contents are added to the first
+       and last bins, respectively
+    omp : bool or str
+       if ``True``, use OpenMP if available; if "auto" (and OpenMP is available),
+       enables OpenMP if len(x) > 10^3
 
     Returns
     -------
     :obj:`numpy.ndarray`
-        bin counts (heights)
+       bin counts (heights)
     :obj:`numpy.ndarray`
-        Poisson uncertainty on counts (``None`` if weights are absent)
+       Poisson uncertainty on counts (``None`` if weights are absent)
 
     Examples
     --------
@@ -283,33 +306,34 @@ def var1d(x, bins, weights=None, density=False, flow=False, omp="auto"):
     return (result, np.sqrt(sw2))
 
 
-def var1dmw(x, weights, bins, flow=False, omp="auto"):
+def var1dmw(
+    x: Any, weights: Any, bins: Any, flow: bool = False, omp: Union[str, bool] = "auto"
+) -> Tuple[np.ndarray, np.ndarray]:
     """histogram ``x`` with fixed (uniform) binning over a range
     [xmin, xmax) using multiple weight variations.
 
     Parameters
     ----------
-    x: array_like
-        data to histogram
-    weights: array_like
-        weight variations for the elements of ``x``, first dimension
-        is the shape of ``x``, second dimension is the number of weights.
-    bins: int or str, optional
-        number of bins or str
-    flow: bool
-        if ``True`` the under and overflow bin contents are added to the first
-        and last bins, respectively
-    omp: bool or str
-        if ``True``, use OpenMP if available; if "auto" (and OpenMP is available),
-        enables OpenMP if len(x) > 10^4
+    x : array_like
+       data to histogram
+    weights : array_like
+       weight variations for the elements of ``x``, first dimension
+       is the shape of ``x``, second dimension is the number of weights.
+    bins : int or str, optional
+       number of bins or str
+    flow : bool
+       if ``True`` the under and overflow bin contents are added to the first
+       and last bins, respectively
+    omp : bool or str
+       if ``True``, use OpenMP if available; if "auto" (and OpenMP is available),
+       enables OpenMP if len(x) > 10^4
 
     Returns
     -------
     :obj:`numpy.ndarray`
-        bin counts (heights) for each variation (shape == [n_bins, n_weight_variations])
+       bin counts (heights) for each variation (shape == [n_bins, n_weight_variations])
     :obj:`numpy.ndarray`
-        Poisson uncertainty on counts, shape == [n_bins, n_weight_variations]
-        (``None`` if weights are absent)
+       Poisson uncertainty on counts, shape == [n_bins, n_weight_variations]
 
     Examples
     --------
@@ -358,32 +382,39 @@ def var1dmw(x, weights, bins, flow=False, omp="auto"):
     return (count[1:-1, :], np.sqrt(sumw2[1:-1, :]))
 
 
-def fix2d(x, y, bins=10, range=None, weights=None, omp=False):
+def fix2d(
+    x: Any,
+    y: Any,
+    bins: Union[int, Iterable] = 10,
+    range: Optional[Iterable] = None,
+    weights: Optional[Any] = None,
+    omp: bool = False,
+) -> Tuple[np.ndarray, Union[np.ndarray, None]]:
     """histogram the ``x``, ``y`` data with fixed (uniform) binning in
     two dimensions over the ranges [xmin, xmax), [ymin, ymax).
 
     Parameters
     ----------
-    x: array_like
+    x : array_like
        first entries in data pairs to histogram
-    y: array_like
+    y : array_like
        second entries in data pairs to histogram
-    bins: int or iterable
+    bins : int or iterable
        if int, both dimensions will have that many bins,
        if iterable, the number of bins for each dimension
-    range: iterable, optional
-        axis limits to histogram over in the form [(xmin, xmax), (ymin, ymax)]
-    weights: array_like, optional
-        weight for each :math:`(x_i, y_i)` pair.
-    omp: bool
-        use OpenMP if available
+    range : iterable, optional
+       axis limits to histogram over in the form [(xmin, xmax), (ymin, ymax)]
+    weights : array_like, optional
+       weight for each :math:`(x_i, y_i)` pair.
+    omp : bool
+       use OpenMP if available
 
     Returns
     -------
     :obj:`numpy.ndarray`
-        bin counts (heights)
+       bin counts (heights)
     :obj:`numpy.ndarray`
-        Poisson uncertainty on counts (``None`` if weights are absent)
+       Poisson uncertainty on counts (``None`` if weights are absent)
 
     Examples
     --------
@@ -432,31 +463,38 @@ def fix2d(x, y, bins=10, range=None, weights=None, omp=False):
         return (count, None)
 
 
-def var2d(x, y, xbins, ybins, weights=None, omp=False):
+def var2d(
+    x: Any,
+    y: Any,
+    xbins: Any,
+    ybins: Any,
+    weights: Optional[Any] = None,
+    omp: bool = False,
+) -> Tuple[np.ndarray, Union[np.ndarray, None]]:
     """histogram the ``x`` and ``y`` data with variable width binning in
     two dimensions over the range [xbins[0], xbins[-1]), [ybins[0], ybins[-1])
 
     Parameters
     ----------
-    x: array_like
+    x : array_like
        first entries in the data pairs to histogram
-    y: array_like
+    y : array_like
        second entries in the data pairs to histogram
-    xbins: array_like
+    xbins : array_like
        bin edges for the ``x`` dimension
-    ybins: array_like
+    ybins : array_like
        bin edges for the ``y`` dimension
-    weights: array_like, optional
+    weights : array_like, optional
        weights for each :math:`(x_i, y_i)` pair.
-    omp: bool
+    omp : bool
        use OpenMP if available
 
     Returns
     -------
     :obj:`numpy.ndarray`
-        bin counts (heights)
+       bin counts (heights)
     :obj:`numpy.ndarray`
-        Poisson uncertainty on counts (``None`` if weights are absent)
+       Poisson uncertainty on counts (``None`` if weights are absent)
 
     Examples
     --------
@@ -497,8 +535,14 @@ def var2d(x, y, xbins, ybins, weights=None, omp=False):
 
 
 def histogram(
-    x, bins=10, range=None, weights=None, density=False, flow=False, omp="auto"
-):
+    x: Any,
+    bins: Union[int, Any] = 10,
+    range: Optional[Tuple[float, float]] = None,
+    weights: Optional[Any] = None,
+    density: bool = False,
+    flow: bool = False,
+    omp: Union[str, bool] = "auto",
+) -> Tuple[np.ndarray, Union[np.ndarray, None]]:
     """Compute the histogram for the data ``x``.
 
     This function provides an API very simiar to
@@ -508,42 +552,42 @@ def histogram(
 
     Parameters
     ----------
-    x: array_like
+    x : array_like
        Data to histogram.
-    bins: int or sequence of scalars, optional
+    bins : int or sequence of scalars, optional
        If bins is an int, that many equal-width bins will be used to
        construct the histogram in the given range. If bins is a
        sequence, it must define a monotonically increasing array of
        bin edges. This allows for nonuniform bin widths.
-    range: (float, float), optional
+    range : (float, float), optional
        The range over which the histogram is constructed. If a range
        is not provided then the default is (x.min(), x.max()). Values
        outside of the range are ignored. If bins is a sequence, this
        options is ignored.
-    weights: array_like, optional
+    weights : array_like, optional
        An array of weights associated to each element of ``x``. Each
        value of ``x`` will contribute its associated weight to the
        bin count. If argument is two-dimensional then the function will
        return histogram data for all weight variations. The first
        dimension of the shape of the weights (if multiple variations)
        must be the shape of ``x``.
-    density: bool
-        normalize histogram bins as value of PDF such that the integral
-        over the range is 1.
-    flow: bool
-        if ``True`` the under and overflow bin contents are added to the first
-        and last bins, respectively
-    omp: bool or str
-        if ``True``, use OpenMP if available; if "auto" (and OpenMP is available),
-        enables OpenMP if len(x) > 10^4 for fixed width and > 10^3 for variaxsble
-        width bins.
+    density : bool
+       normalize histogram bins as value of PDF such that the integral
+       over the range is 1.
+    flow : bool
+       if ``True`` the under and overflow bin contents are added to the first
+       and last bins, respectively
+    omp : bool or str
+       if ``True``, use OpenMP if available; if "auto" (and OpenMP is available),
+       enables OpenMP if len(x) > 10^4 for fixed width and > 10^3 for variaxsble
+       width bins.
 
     Returns
     -------
     :obj:`numpy.ndarray`
-        bin counts (heights)
+       bin counts (heights)
     :obj:`numpy.ndarray`,
-        Poisson uncertainty on each bin count (``None`` if weights are absent)
+       Poisson uncertainty on each bin count (``None`` if weights are absent)
 
 
     Examples
@@ -609,7 +653,14 @@ def histogram(
         return var1d(x, bins, weights=weights, density=density, flow=flow, omp=omp)
 
 
-def histogram2d(x, y, bins=10, range=None, weights=None, omp=False):
+def histogram2d(
+    x: Any,
+    y: Any,
+    bins: Union[int, Any] = 10,
+    range: Optional[Any] = None,
+    weights: Optional[Any] = None,
+    omp: bool = False,
+) -> Tuple[np.ndarray, Union[np.ndarray, None]]:
     """Compute the two-dimensional histogram for the data (``x``, ``y``).
 
     This function provides an API very simiar to
