@@ -1,7 +1,13 @@
 import numpy as np
+from typing import Any, Optional, Tuple, Union
 
 
-def densify1d(h, range, binw=None, sumw2=None):
+def densify1d(
+    h: Any,
+    range: Tuple[float, float],
+    binw: Optional[Any] = None,
+    sumw2: Optional[Any] = None,
+) -> Tuple[np.ndarray, Union[np.ndarray, None]]:
     """normalize histogram as a PDF such that the integral over the range
     is equal to 1.
 
