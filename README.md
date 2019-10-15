@@ -24,7 +24,9 @@ examples.
 ## Installing
 
 pygram11 only requires [NumPy](https://www.numpy.org/). To build from
-source you'll need a C++ compiler with C++11 support.
+source you'll need a C++ compiler with C++11 support. **Note**: the
+last version of pygram11 supporting Python 2 is
+[0.5.2](https://github.com/douglasdavis/pygram11/releases/tag/0.5.2).
 
 ### From PyPI
 
