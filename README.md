@@ -13,20 +13,19 @@ Simple and fast histogramming in Python accelerated with
 [pybind11](https://github.com/pybind/pybind11)).
 
 `pygram11` provides fast functions for calculating histograms (and
-their statistical uncertainties). The API is very simple,
-documentation [found here](https://pygram11.readthedocs.io/) (you'll
+their statistical uncertainties). The API is very simple;
+documentation can be [found here](https://pygram11.readthedocs.io/) (you'll
 also find [some
 benchmarks](https://pygram11.readthedocs.io/en/stable/purpose.html#some-benchmarks)
-there). I also wrote a [blog
-post](https://ddavis.io/posts/introducing-pygram11/) with some simple
-examples.
+there).
+
+**Note**: the last version of pygram11 supporting Python 2 is
+[0.5.2](https://github.com/douglasdavis/pygram11/releases/tag/0.5.2).
 
 ## Installing
 
 pygram11 only requires [NumPy](https://www.numpy.org/). To build from
-source you'll need a C++ compiler with C++11 support. **Note**: the
-last version of pygram11 supporting Python 2 is
-[0.5.2](https://github.com/douglasdavis/pygram11/releases/tag/0.5.2).
+source you'll need a C++ compiler with C++11 support.
 
 ### From PyPI
 
@@ -120,6 +119,10 @@ interpreted as a NumPy array):
 >>> count_df = pd.DataFrame(count, columns=weights.columns)
 >>> err_df = pd.DataFrame(err, columns=weights.columns)
 ```
+
+I also wrote a [blog
+post](https://ddavis.io/posts/introducing-pygram11/) with some simple
+examples.
 
 ## Other Libraries
 
