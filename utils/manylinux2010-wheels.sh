@@ -2,17 +2,14 @@
 
 ## This script will build manylinux1 x86_64 wheels; it should be
 ## executed from the root project directory while inside a
-## skhep/manylinuxgcc-x86_64 docker container.
+## manylinux2010 docker container
 
 set -e -x
-
-CC=/usr/local/gcc-9.2.0/bin/gcc-9.2.0
-CXX=/usr/local/gcc-9.2.0/bin/g++-9.2.0
-LD_LIBRARY_PATH=/usr/local/gcc-9.2.0/lib64
 
 pys=(
     /opt/python/cp36-cp36m/bin/python
     /opt/python/cp37-cp37m/bin/python
+    /opt/python/cp38-cp38/bin/python
 )
 
 for py in "${pys[@]}"; do

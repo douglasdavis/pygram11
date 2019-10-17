@@ -198,12 +198,14 @@ setup(
     tests_require=["pytest>=4.0"],
     zip_safe=False,
     classifiers=[
-        "Programming Language :: Python",
+        "Programming Language :: Python :: 3 :: Only",
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: C++",
         "Operating System :: Unix",
         "License :: OSI Approved :: MIT License",
+        "Development Status :: 5 - Production/Stable",
+        "Intended Audience :: Science/Research",
     ],
 )
