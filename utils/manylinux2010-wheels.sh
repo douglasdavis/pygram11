@@ -1,6 +1,6 @@
 #!/bin/bash
 
-## This script will build manylinux1 x86_64 wheels; it should be
+## This script will build manylinux2010 x86_64 wheels; it should be
 ## executed from the root project directory while inside a
 ## manylinux2010 docker container
 
