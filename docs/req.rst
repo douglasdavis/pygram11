@@ -66,15 +66,16 @@ Source
 
 .. note::
 
-   If installing from source on macOS 10.14 you might have to prepend
-   the ``pip`` command with ``MACOSX_DEPLOYMENT_TARGET=10.14``. (This
-   may be required for Anaconda environments, because the Python
+   If installing from source on macOS 10.14 or later, you may have to
+   prepend the ``pip`` command with ``MACOSX_DEPLOYMENT_TARGET=10.x``,
+   where ``x`` is your macOS minor version number. (This may be
+   required for ``conda`` environments, because the Python
    distribution from Anaconda for macOS is built with an older macOS
    SDK).
 
-.. code-block:: none
+   .. code-block:: none
 
-   $ MACOSX_DEPLOYMENT_TARGET=10.14 pip install ...
+      $ MACOSX_DEPLOYMENT_TARGET=10.14 pip install git+https://github.com/douglasdavis/pygram11.git@master
 
 
 .. _pybind11: https://github.com/pybind/pybind11

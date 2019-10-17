@@ -13,11 +13,11 @@ see how builds are defined (Linux only) to ensure OpenMP acceleration
 is available. For macOS 10.14, manual tests have shown these setups
 are OpenMP accelerated:
 
-- Homebrew or `pyenv <https://github.com/pyenv/pyenv>`_ Python3
+- Homebrew or `pyenv <https://github.com/pyenv/pyenv>`_ Python 3
   (3.7.*) with ``libomp`` installed from Homebrew (Apple LLVM version
   10.0.*). This is probably simplest non-conda-forge setup.
-- Default (not conda-forge) Anaconda Python3 (3.6.8 and 3.7.3) and
-  Python2 (2.7.16) distributions with ``libomp`` installed from
+- Default (not conda-forge) Anaconda Python 3 (3.6.8 and 3.7.3) and
+  Python 2 (2.7.16) distributions with ``libomp`` installed from
   Homebrew (you'll likely need to remove the extra ``libiomp5.dylib``
   from the Anaconda environment ``lib`` folder or ``conda install
   nomkl``, see `here <https://github.com/dmlc/xgboost/issues/1715>`_).
@@ -28,12 +28,15 @@ module ``pygram11._core``, try the following:
 .. code-block:: python
 
    >>> import pygram11
-   >>> pygram11.OPENMP
+   >>> pygram11.omp_available()
    True
 
 Needless to say, if you see ``False`` OpenMP acceleration isn't
 available.
 
 The histogramming functions use a named argument (``omp``) for
-requesting OpenMP usage. If ``pygram11.OPENMP`` is ``False`` the
-``omp`` function argument is ignored.
+requesting OpenMP usage. If ``pygram11.omp_available()`` is ``False``
+the ``omp`` function argument is ignored.
+
+You can use ``pygram11.omp_max_threads()`` to check the number of
+threads that OpenMP has determined are available.
