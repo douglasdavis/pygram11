@@ -18,9 +18,25 @@ __version__ = "0.6.1dev0"
 version_info = tuple(__version__.split("."))
 
 def omp_available() -> bool:
+    """query the existence of OpenMP acceleration
+
+    Returns
+    -------
+    bool
+       whether or not OpenMP is available
+
+    """
     return _has_openmp()
 
 def omp_max_threads() -> int:
+    """query the number of threads available to OpenMP
+
+    Returns
+    -------
+    int
+       the number of available threads
+
+    """
     return _max_threads()
 
 # to be removed in future release
