@@ -14,7 +14,7 @@ __all__ = [
     "histogram2d",
 ]
 
-__version__ = "0.6.1dev0"
+__version__ = "0.6.1"
 version_info = tuple(__version__.split("."))
 
 def omp_available() -> bool:
