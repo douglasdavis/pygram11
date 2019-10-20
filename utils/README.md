@@ -1,1 +1,1 @@
-Some rough benchmarking code; heavy inspiration taken from https://github.com/astrofrog/fast-histogram/tree/master/comparison
+A place to store development utilities.

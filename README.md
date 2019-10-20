@@ -72,8 +72,8 @@ you'll probably want to install `libomp` from Homebrew.
 **Note**: For releases older than v0.5, when building from source or
 PyPI, `pybind11` was required to be explicitly installed before
 `pygram11` (because `setup.py` used `pybind11` to determine include
-directories). Starting with v0.5 `pybind11` is bundled with the source
-for non-binary (conda-forge or wheel) installations.
+directories). Starting with v0.5 `pybind11` is bundled as a git
+submodule for installations from source.
 
 ## In Action
 

@@ -171,7 +171,7 @@ def test_numpyAPI_var2d():
     npt.assert_almost_equal(pygram_h, numpy_h, 5)
 
 
-if pygram11.OPENMP:
+if pygram11.omp_available():
 
     def test_fix1d_omp():
         x = np.random.randn(5000)
@@ -349,7 +349,7 @@ def test_flow_weights_var():
     assert np.allclose(pygram_h, numpy_h)
 
 
-if pygram11.OPENMP:
+if pygram11.omp_available():
 
     def test_flow_weights_omp():
         x = np.random.randn(100000)
