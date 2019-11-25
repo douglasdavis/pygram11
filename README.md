@@ -12,10 +12,9 @@ Simple and fast histogramming in Python accelerated with
 [OpenMP](https://www.openmp.org/) (with help from
 [pybind11](https://github.com/pybind/pybind11)).
 
-`pygram11` provides fast functions for calculating histograms (and
-their statistical uncertainties). The API is very simple;
-documentation can be [found here](https://pygram11.readthedocs.io/) (you'll
-also find [some
+`pygram11` provides fast functions for calculating histograms (and the
+bin variances). The API is very simple; documentation can be [found
+here](https://pygram11.readthedocs.io/) (you'll also find [some
 benchmarks](https://pygram11.readthedocs.io/en/stable/purpose.html#some-benchmarks)
 there).
 
