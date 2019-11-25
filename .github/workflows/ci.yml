@@ -19,7 +19,7 @@ jobs:
         python-version: ${{matrix.python-version}}
     - name: install deps
       run: |
-        python -m pip install pip setuptools pytest -U
+        python -m pip install pip setuptools pytest numpy -U
         pip install --ignore-installed -U -q --no-cache-dir -e .
         pip list
     - name: run pytest
@@ -40,7 +40,7 @@ jobs:
     - name: install deps
       run: |
         brew install libomp
-        python -m pip install pip setuptools pytest -U
+        python -m pip install pip setuptools pytest numpy -U
         pip install --ignore-installed -U -q --no-cache-dir -e .
         pip list
     - name: run pytest

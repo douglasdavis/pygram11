@@ -1,6 +1,5 @@
 # pygram11
 
-[![Build Status](https://dev.azure.com/ddavis0485/pygram11/_apis/build/status/douglasdavis.pygram11?branchName=master)](https://dev.azure.com/ddavis0485/pygram11/_build/latest?definitionId=4&branchName=master)
 [![builds.sr.ht status](https://builds.sr.ht/~ddavis/pygram11.svg)](https://builds.sr.ht/~ddavis/pygram11?)
 [![Documentation Status](https://readthedocs.org/projects/pygram11/badge/?version=latest)](https://pygram11.readthedocs.io/en/latest/?badge=latest)
 ![](https://img.shields.io/pypi/pyversions/pygram11.svg?colorB=blue&style=flat)
