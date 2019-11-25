@@ -29,9 +29,8 @@ source you'll need a C++ compiler with C++11 support.
 
 ### From PyPI
 
-Binary wheels are provided for Linux (starting with version 0.5.0) and
-macOS (starting with version 0.5.1), they can be installed from
-[PyPI](https://pypi.org/project/pygram11/) via pip.
+Binary wheels are provided for Linux and macOS. They can be installed
+from [PyPI](https://pypi.org/project/pygram11/) via pip.
 
 ```
 pip install pygram11
@@ -39,8 +38,7 @@ pip install pygram11
 
 ### From conda-forge
 
-For a simple installation process via the `conda` package manager
-[pygram11 is part of
+For installation via the `conda` package manager [pygram11 is part of
 conda-forge](https://anaconda.org/conda-forge/pygram11).
 
 ```none
