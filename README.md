@@ -62,9 +62,10 @@ pip install git+https://github.com/douglasdavis/pygram11.git@master
 ```
 
 To ensure OpenMP acceleration in a build from source, read the OpenMP
-section of the docs. If you have a modern GCC verion on Linux, you
-probably don't have to worry about anything. If you are on macOS,
-you'll probably want to install `libomp` from Homebrew.
+section of the docs. If you are using a relatively modern GCC release
+on Linux then you probably don't have to worry about any extra
+steps/dependencies. If you are on macOS, you'll probably want to
+install `libomp` from Homebrew.
 
 **Note**: For releases older than v0.5, when building from source or
 PyPI, `pybind11` was required to be explicitly installed before
