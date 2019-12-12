@@ -38,6 +38,3 @@ def omp_max_threads() -> int:
 
     """
     return _max_threads()
-
-# to be removed in future release
-OPENMP = omp_available()
