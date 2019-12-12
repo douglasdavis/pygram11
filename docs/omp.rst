@@ -2,25 +2,18 @@ OpenMP Support
 ==============
 
 If installing pygram11 from conda-forge or via a binary wheel from
-PyPI, OpenMP acceleration should be available. If using the source
-(from PyPI or GitHub), the ``setup.py`` script tests to see of OpenMP
-is available during installation. If you don't want to use conda-forge
-or you can't use a binary wheel, keep reading.
+PyPI, OpenMP acceleration should be available. If you don't want to
+use conda-forge or you can't use a binary wheel, keep reading.
 
-You can look at the `continuous integration configuration files
+If you are building from source, the ``setup.py`` script tests to see
+if OpenMP is available during installation. You can look at the
+`builds.sr.ht continuous integration configuration files
 <https://github.com/douglasdavis/pygram11/tree/master/.builds>`_ to
 see how builds are defined (Linux only) to ensure OpenMP acceleration
-is available. For macOS 10.14, manual tests have shown these setups
-are OpenMP accelerated:
-
-- Homebrew or `pyenv <https://github.com/pyenv/pyenv>`_ Python 3
-  (3.7.*) with ``libomp`` installed from Homebrew (Apple LLVM version
-  10.0.*). This is probably simplest non-conda-forge setup.
-- Default (not conda-forge) Anaconda Python 3 (3.6.8 and 3.7.3) and
-  Python 2 (2.7.16) distributions with ``libomp`` installed from
-  Homebrew (you'll likely need to remove the extra ``libiomp5.dylib``
-  from the Anaconda environment ``lib`` folder or ``conda install
-  nomkl``, see `here <https://github.com/dmlc/xgboost/issues/1715>`_).
+is available. For macOS, take a look at the `GitHub actions
+configuration files
+<https://github.com/douglasdavis/pygram11/blob/master/.github/workflows/ci.yml>`_. We
+rely on ``libomp`` from Homebrew.
 
 To check if OpenMP was detected and used while compiling the extension
 module ``pygram11._core``, try the following:
@@ -39,4 +32,4 @@ requesting OpenMP usage. If ``pygram11.omp_available()`` is ``False``
 the ``omp`` function argument is ignored.
 
 You can use ``pygram11.omp_max_threads()`` to check the number of
-threads that OpenMP has determined are available.
+threads that OpenMP has determined are available on your CPU.
