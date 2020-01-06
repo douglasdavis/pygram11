@@ -48,8 +48,7 @@ py::array_t<T> py_v1d(py::array_t<T> x, py::array_t<T> edges, bool use_omp) {
 }
 
 template <typename T>
-py::tuple py_v1dw(py::array_t<T> x, py::array_t<T> w, py::array_t<T> edges,
-                  bool use_omp) {
+py::tuple py_v1dw(py::array_t<T> x, py::array_t<T> w, py::array_t<T> edges, bool use_omp) {
   std::size_t nbins = static_cast<std::size_t>(edges.shape(0)) - 1;
   auto count = py::array_t<T>(nbins + 2);
   auto sumw2 = py::array_t<T>(nbins + 2);
@@ -72,20 +71,19 @@ py::array_t<T> fix2d(py::array_t<T> x, py::array_t<T> y, int nbinsx, T xmin, T x
 
 #ifdef PYGRAMUSEOMP
   if (use_omp) {
-    c_fix2d_omp<T>(x.data(), y.data(), result_count_ptr, ndata, nbinsx, xmin, xmax,
-                   nbinsy, ymin, ymax);
+    c_fix2d_omp<T>(x.data(), y.data(), result_count_ptr, ndata, nbinsx, xmin, xmax, nbinsy,
+                   ymin, ymax);
     return result_count;
   }
 #endif
-  c_fix2d<T>(x.data(), y.data(), result_count_ptr, ndata, nbinsx, xmin, xmax, nbinsy,
-             ymin, ymax);
+  c_fix2d<T>(x.data(), y.data(), result_count_ptr, ndata, nbinsx, xmin, xmax, nbinsy, ymin,
+             ymax);
   return result_count;
 }
 
 template <typename T>
-py::tuple fix2d_weighted(py::array_t<T> x, py::array_t<T> y, py::array_t<T> w,
-                         int nbinsx, T xmin, T xmax, int nbinsy, T ymin, T ymax,
-                         bool use_omp) {
+py::tuple fix2d_weighted(py::array_t<T> x, py::array_t<T> y, py::array_t<T> w, int nbinsx,
+                         T xmin, T xmax, int nbinsy, T ymin, T ymax, bool use_omp) {
   auto result_count = py::array_t<T>({nbinsx, nbinsy});
   auto result_sumw2 = py::array_t<T>({nbinsx, nbinsy});
   T* result_count_ptr = result_count.mutable_data();
@@ -129,8 +127,8 @@ py::array_t<T> var2d(py::array_t<T> x, py::array_t<T> y, py::array_t<T> xedges,
 
 #ifdef PYGRAMUSEOMP
   if (use_omp) {
-    c_var2d_omp<T>(x.data(), y.data(), result_count_ptr, ndata, nbinsx, nbinsy,
-                   xedges_vec, yedges_vec);
+    c_var2d_omp<T>(x.data(), y.data(), result_count_ptr, ndata, nbinsx, nbinsy, xedges_vec,
+                   yedges_vec);
     return result_count;
   }
 #endif
@@ -224,20 +222,19 @@ PYBIND11_MODULE(_core, m) {
   m.def("_max_threads", []() { return std::size_t(1); });
 #endif
 
-  m.def("_f1d_f8", &py_f1d<double>);       // fixed 1 dimensional double precision
-  m.def("_f1d_f4", &py_f1d<float>);        // fixed 1 dimensional single precision
-  m.def("_f1dw_f8", &py_f1dw<double>);     // fixed 1 dimensional weighted double precision
-  m.def("_f1dw_f4", &py_f1dw<float>);      // fixed 1 dimensional weighted single precsision
-  m.def("_f1dmw_f8", &py_f1dmw<double>);   // fixed 1 dimensional multi weighted double precision
-  m.def("_f1dmw_f4", &py_f1dmw<float>);    // fixed 1 dimensional multi weighted single precision
-  m.def("_v1d_f8", &py_v1d<double>);       // variable 1 dimensional double precision
-  m.def("_v1d_f4", &py_v1d<float>);        // variable 1 dimensional single precision
-  m.def("_v1dw_f8", &py_v1dw<double>);     // variable 1 dimensional weighted double precision
-  m.def("_v1dw_f4", &py_v1dw<float>);      // variable 1 dimensional weighted single precsision
-  m.def("_v1dmw_f8", &py_v1dmw<double>);   // variable 1 dimensional multi weighted double precision
-  m.def("_v1dmw_f4", &py_v1dmw<float>);    // variable 1 dimensional multi weighted single precision
+  m.def("_f1d_f8", &py_f1d<double>);
+  m.def("_f1d_f4", &py_f1d<float>);
+  m.def("_f1dw_f8", &py_f1dw<double>);
+  m.def("_f1dw_f4", &py_f1dw<float>);
+  m.def("_f1dmw_f8", &py_f1dmw<double>);
+  m.def("_f1dmw_f4", &py_f1dmw<float>);
+  m.def("_v1d_f8", &py_v1d<double>);
+  m.def("_v1d_f4", &py_v1d<float>);
+  m.def("_v1dw_f8", &py_v1dw<double>);
+  m.def("_v1dw_f4", &py_v1dw<float>);
+  m.def("_v1dmw_f8", &py_v1dmw<double>);
+  m.def("_v1dmw_f4", &py_v1dmw<float>);
 
-  // two-dimensional
   m.def("_fix2d_f8", &fix2d<double>);
   m.def("_fix2d_f4", &fix2d<float>);
   m.def("_fix2d_weighted_f8", &fix2d_weighted<double>);

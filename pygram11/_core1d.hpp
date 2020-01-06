@@ -17,9 +17,8 @@ namespace detail {
 
 #ifdef PYGRAMUSEOMP
 template <typename T>
-void f1dwo(const py::array_t<T>& data, const py::array_t<T>& weights,
-           py::array_t<T>& count, py::array_t<T>& sumw2, const std::size_t nbins,
-           const T xmin, const T xmax) {
+void f1dwo(const py::array_t<T>& data, const py::array_t<T>& weights, py::array_t<T>& count,
+           py::array_t<T>& sumw2, const std::size_t nbins, const T xmin, const T xmax) {
   const T norm = 1.0 / (xmax - xmin);
   const std::size_t ndata = static_cast<std::size_t>(data.shape(0));
   std::memset(count.mutable_data(), 0, sizeof(T) * (nbins + 2));
@@ -50,9 +49,8 @@ void f1dwo(const py::array_t<T>& data, const py::array_t<T>& weights,
 #endif
 
 template <typename T>
-void f1dw(const py::array_t<T>& data, const py::array_t<T>& weights,
-          py::array_t<T>& count, py::array_t<T>& sumw2, const std::size_t nbins,
-          const T xmin, const T xmax) {
+void f1dw(const py::array_t<T>& data, const py::array_t<T>& weights, py::array_t<T>& count,
+          py::array_t<T>& sumw2, const std::size_t nbins, const T xmin, const T xmax) {
   const T norm = 1.0 / (xmax - xmin);
   const std::size_t ndata = static_cast<std::size_t>(data.shape(0));
   std::memset(count.mutable_data(), 0, sizeof(T) * (nbins + 2));
@@ -265,9 +263,8 @@ void f1dmwo(const py::array_t<T>& data, const py::array_t<T>& weights,
 #endif
 
 template <typename T>
-void f1dmw(const py::array_t<T>& data, const py::array_t<T>& weights,
-           py::array_t<T>& count, py::array_t<T>& sumw2, const std::size_t nbins,
-           const T xmin, const T xmax) {
+void f1dmw(const py::array_t<T>& data, const py::array_t<T>& weights, py::array_t<T>& count,
+           py::array_t<T>& sumw2, const std::size_t nbins, const T xmin, const T xmax) {
   const T norm = 1.0 / (xmax - xmin);
   const std::size_t nweights = static_cast<std::size_t>(weights.shape(1));
   const std::size_t ndata = static_cast<std::size_t>(data.shape(0));

@@ -1,26 +1,29 @@
-from setuptools import setup, Extension
-from setuptools.command.build_ext import build_ext
+import codecs
 import glob
-import tempfile
 import os
-import sys
+import re
 import setuptools
 import subprocess
-from distutils import log
-from distutils.ccompiler import new_compiler
-from distutils.sysconfig import customize_compiler, get_config_var
-from distutils.errors import CompileError, LinkError
+import sys
+import tempfile
+
+from setuptools import setup, Extension
+from setuptools.command.build_ext import build_ext
 
 
 ext_modules = [
     Extension(
         "pygram11._core",
         [os.path.join("pygram11", "_core.cpp")],
-        include_dirs=[
-            "extern/pybind11/include",
-        ],
+        include_dirs=["extern/pybind11/include",],
         language="c++",
-    )
+    ),
+    Extension(
+        "pygram11._obj",
+        [os.path.join("pygram11", "_obj.cpp")],
+        include_dirs=["extern/pybind11/include",],
+        language="c++",
+    ),
 ]
 
 
@@ -56,8 +59,8 @@ def has_omp():
     ## for conda-forge
     prefixEnviron = os.getenv("PREFIX")
 
-    c_compiler = new_compiler()
-    customize_compiler(c_compiler)
+    c_compiler = setuptools.distutils.ccompiler.new_compiler()
+    setuptools.distutils.sysconfig.customize_compiler(c_compiler)
 
     linkflags, compflags = [], []
     if sys.platform.startswith("darwin"):
@@ -96,13 +99,13 @@ def has_omp():
             if len(output) == nthreads:
                 has_omp = True
             else:
-                log.warn(
+                print(
                     "Unexpected number of lines from output of test OpenMP "
                     "program (output was {0})".format(output)
                 )
                 has_omp = False
         else:
-            log.warn(
+            print(
                 "Unexpected output from test OpenMP "
                 "program (output was {0})".format(output)
             )
@@ -110,7 +113,7 @@ def has_omp():
 
         has_omp = True
 
-    except (CompileError, LinkError):
+    except (setuptools.distutils.errors.CompileError, setuptools.distutils.errors.LinkError):
         has_omp = False
 
     finally:
@@ -169,25 +172,34 @@ class BuildExt(build_ext):
         build_ext.build_extensions(self)
 
 
-def get_version():
-    with open(os.path.join("pygram11", "__init__.py"), "r") as f:
-        for line in f.readlines():
-            if "__version__ = " in line:
-                return line.strip().split(" = ")[-1][1:-1]
+def read_files(*parts):
+    here = os.path.abspath(os.path.dirname(__file__))
+    with codecs.open(os.path.join(here, *parts), "r") as fp:
+        return fp.read()
 
 
-this_directory = os.path.abspath(os.path.dirname(__file__))
-with open(os.path.join(this_directory, "README.md"), "rb") as f:
-    long_description = f.read().decode("utf-8")
+def find_version(*file_paths):
+    version_file = read_files(*file_paths)
+    version_match = re.search(r"^__version__ = ['\"]([^'\"]*)['\"]", version_file, re.M)
+    if version_match:
+        return version_match.group(1)
+    raise RuntimeError("Unable to find version string.")
+
+
+def get_readme():
+    here = os.path.abspath(os.path.dirname(__file__))
+    with open(os.path.join(here, "README.md"), "rb") as f:
+        return f.read().decode("utf-8")
+
 
 setup(
     name="pygram11",
-    version=get_version(),
+    version=find_version("pygram11", "__init__.py"),
     author="Doug Davis",
     author_email="ddavis@ddavis.io",
     url="https://github.com/douglasdavis/pygram11",
     description="Fast histogramming in python built on pybind11 and OpenMP.",
-    long_description=long_description,
+    long_description=get_readme(),
     long_description_content_type="text/markdown",
     packages=["pygram11"],
     ext_modules=ext_modules,

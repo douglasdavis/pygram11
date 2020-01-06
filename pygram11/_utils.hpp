@@ -16,11 +16,10 @@ namespace pygram11 {
 namespace detail {
 
 /// makes function calls cleaner
-template <typename T>
-struct bindef {
+struct bindef_t {
   std::size_t nbins;
-  T xmin;
-  T xmax;
+  double xmin;
+  double xmax;
 };
 
 /// a binary search function for filling variable bin width histograms
@@ -36,15 +35,15 @@ inline typename FItr::difference_type find_bin(FItr first, FItr last, const T v)
 }
 
 template <typename T>
-inline std::size_t get_bin(const T x, const T norm, const bindef<T> bdef) {
-  if (x < bdef.xmin) {
-    return std::size_t(0);
+inline std::size_t get_bin(const T x, const double norm, const bindef_t bindef) {
+  if (x < bindef.xmin) {
+    return 0;
   }
-  else if (x > bdef.xmax) {
-    return std::size_t(bdef.nbins + 1);
+  else if (x > bindef.xmax) {
+    return bindef.nbins + 1;
   }
   else {
-    return static_cast<std::size_t>((x - bdef.xmin) * norm * bdef.nbins) + 1;
+    return static_cast<std::size_t>((x - bindef.xmin) * norm * bindef.nbins) + 1;
   }
 }
 
@@ -57,7 +56,7 @@ inline std::size_t get_bin(const T x, std::vector<T>& edges) {
     return edges.size();
   }
   else {
-    return find_bin(std::begin(edges), std::end(edges), x) + 1;
+    return static_cast<std::size_t>(find_bin(std::begin(edges), std::end(edges), x)) + 1;
   }
 }
 
@@ -81,8 +80,7 @@ void fill(T* count, T* sumw2, const T x, const T weight, const int nbins,
 
 /// fill a variable bin width unweighted 1d histogram
 template <typename T>
-void fill(std::int64_t* count, const T x, const int nbins,
-          const std::vector<T>& edges) {
+void fill(std::int64_t* count, const T x, const int nbins, const std::vector<T>& edges) {
   std::size_t binId;
   if (x < edges[0]) {
     binId = 0;
@@ -124,8 +122,7 @@ void fill(std::int64_t* count, const T x, const T y, const T normx, const int nb
 /// fill a variable bin width weighted 2d histogram
 template <typename T>
 void fill(T* count, T* sumw2, const T x, const T y, const T weight, const int nbinsx,
-          const std::vector<T>& xedges, const int nbinsy,
-          const std::vector<T>& yedges) {
+          const std::vector<T>& xedges, const int nbinsy, const std::vector<T>& yedges) {
   if (!(x >= xedges[0] && x < xedges[nbinsx])) return;
   if (!(y >= yedges[0] && y < yedges[nbinsy])) return;
   std::size_t xbinId = find_bin(std::begin(xedges), std::end(xedges), x);
@@ -137,8 +134,7 @@ void fill(T* count, T* sumw2, const T x, const T y, const T weight, const int nb
 /// fill a variable bin width unweighted 2d histogram
 template <typename T>
 void fill(std::int64_t* count, const T x, const T y, const int nbinsx,
-          const std::vector<T>& xedges, const int nbinsy,
-          const std::vector<T>& yedges) {
+          const std::vector<T>& xedges, const int nbinsy, const std::vector<T>& yedges) {
   if (!(x >= xedges[0] && x < xedges[nbinsx])) return;
   if (!(y >= yedges[0] && y < yedges[nbinsy])) return;
   std::size_t xbinId = find_bin(std::begin(xedges), std::end(xedges), x);

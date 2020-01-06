@@ -22,8 +22,8 @@ namespace py = pybind11;
 #ifdef PYGRAMUSEOMP
 template <typename T>
 void c_fix2d_weighted_omp(const T* x, const T* y, const T* weights, T* count, T* sumw2,
-                          const std::size_t n, const int nbinsx, const T xmin,
-                          const T xmax, const int nbinsy, const T ymin, const T ymax) {
+                          const std::size_t n, const int nbinsx, const T xmin, const T xmax,
+                          const int nbinsy, const T ymin, const T ymax) {
   const int nbins = nbinsx * nbinsy;
   const T normx = 1.0 / (xmax - xmin);
   const T normy = 1.0 / (ymax - ymin);
@@ -62,8 +62,8 @@ void c_fix2d_weighted(const T* x, const T* y, const T* weights, T* count, T* sum
   memset(count, 0, sizeof(T) * nbins);
   memset(sumw2, 0, sizeof(T) * nbins);
   for (std::size_t i = 0; i < n; i++) {
-    pygram11::detail::fill(count, sumw2, x[i], y[i], weights[i], normx, nbinsx, xmin,
-                           xmax, normy, nbinsy, ymin, ymax);
+    pygram11::detail::fill(count, sumw2, x[i], y[i], weights[i], normx, nbinsx, xmin, xmax,
+                           normy, nbinsy, ymin, ymax);
   }
 }
 
@@ -84,8 +84,8 @@ void c_fix2d_omp(const T* x, const T* y, std::int64_t* count, const std::size_t 
 
 #pragma omp for nowait
     for (std::size_t i = 0; i < n; i++) {
-      pygram11::detail::fill(count_priv.get(), x[i], y[i], normx, nbinsx, xmin, xmax,
-                             normy, nbinsy, ymin, ymax);
+      pygram11::detail::fill(count_priv.get(), x[i], y[i], normx, nbinsx, xmin, xmax, normy,
+                             nbinsy, ymin, ymax);
     }
 
 #pragma omp critical
@@ -98,8 +98,8 @@ void c_fix2d_omp(const T* x, const T* y, std::int64_t* count, const std::size_t 
 
 template <typename T>
 void c_fix2d(const T* x, const T* y, std::int64_t* count, const std::size_t n,
-             const int nbinsx, const T xmin, const T xmax, const int nbinsy,
-             const T ymin, const T ymax) {
+             const int nbinsx, const T xmin, const T xmax, const int nbinsy, const T ymin,
+             const T ymax) {
   const int nbins = nbinsx * nbinsy;
   const T normx = 1.0 / (xmax - xmin);
   const T normy = 1.0 / (ymax - ymin);
@@ -141,8 +141,7 @@ void c_var2d_omp(const T* x, const T* y, std::int64_t* count, const std::size_t 
 
 #pragma omp for nowait
     for (std::size_t i = 0; i < n; i++) {
-      pygram11::detail::fill(count_priv.get(), x[i], y[i], nbinsx, xedges, nbinsy,
-                             yedges);
+      pygram11::detail::fill(count_priv.get(), x[i], y[i], nbinsx, xedges, nbinsy, yedges);
     }
 
 #pragma omp critical
