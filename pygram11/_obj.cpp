@@ -87,18 +87,18 @@ template <typename TD, typename TW>
 inline void histogram1d::fill(std::size_t N, const TD* data, const TW* weights) {
 #pragma omp parallel if (N > 1000)
   {
-    std::vector<double> count_ot(m_nbins + 2, 0.0);
+    std::vector<double> counts_ot(m_nbins + 2, 0.0);
     std::vector<double> variance_ot(m_nbins + 2, 0.0);
 #pragma omp for nowait
     for (std::size_t i = 0; i < N; ++i) {
       auto bin = pygram11::detail::get_bin(data[i], m_norm, {m_nbins, m_xmin, m_xmax});
       auto weight = static_cast<double>(weights[i]);
-      count_ot[bin] += weight;
+      counts_ot[bin] += weight;
       variance_ot[bin] += weight * weight;
     }
 #pragma omp critical
     for (std::size_t i = 0; i < (m_nbins + 2); ++i) {
-      m_counts[i] += count_ot[i];
+      m_counts[i] += counts_ot[i];
       m_variance[i] += variance_ot[i];
     }
   }
@@ -112,15 +112,16 @@ template <typename TD>
 inline void histogram1d::fill(std::size_t N, const TD* data) {
 #pragma omp parallel if (N > 1000)
   {
-    std::vector<std::size_t> count_ot(m_nbins + 2, 0);
+    std::vector<std::size_t> counts_ot(m_nbins + 2, 0);
 #pragma omp for nowait
     for (std::size_t i = 0; i < N; ++i) {
       auto bin = pygram11::detail::get_bin(data[i], m_norm, {m_nbins, m_xmin, m_xmax});
-      count_ot[bin]++;
+      counts_ot[bin]++;
     }
 #pragma omp critical
     for (std::size_t i = 0; i < (m_nbins + 2); ++i) {
-      m_counts[i] += static_cast<double>(count_ot[i]);
+      m_counts[i] += static_cast<double>(counts_ot[i]);
+      m_variance[i] += static_cast<double>(counts_ot[i]);
     }
   }
   if (m_flow) {
@@ -197,7 +198,7 @@ void setup_histogram1d(py::module& m, const char* cname) {
 
       .def(
           "error",
-          [](pygram11::histogram1d& h) -> py::array_t<double> {
+          [](const pygram11::histogram1d& h) -> py::array_t<double> {
             return py::array_t<double>(h.nbins() + 2, h.error());
           },
           py::return_value_policy::move)
