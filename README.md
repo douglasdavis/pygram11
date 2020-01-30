@@ -3,6 +3,7 @@
 [![Actions Status](https://github.com/douglasdavis/pygram11/workflows/Linux/macOS/badge.svg)](https://github.com/douglasdavis/pygram11/actions)
 [![builds.sr.ht status](https://builds.sr.ht/~ddavis/pygram11.svg)](https://builds.sr.ht/~ddavis/pygram11?)
 [![Documentation Status](https://readthedocs.org/projects/pygram11/badge/?version=latest)](https://pygram11.readthedocs.io/en/latest/?badge=latest)
+
 ![](https://img.shields.io/pypi/pyversions/pygram11.svg?colorB=blue&style=flat)
 ![PyPI - Wheel](https://img.shields.io/pypi/wheel/pygram11?color=blue)
 [![PyPI version](https://img.shields.io/pypi/v/pygram11.svg?colorB=486b87&style=flat)](https://pypi.org/project/pygram11/)
@@ -18,13 +19,11 @@ variance in each bin). The API is very simple; documentation can be
 benchmarks](https://pygram11.readthedocs.io/en/stable/purpose.html#some-benchmarks)
 there).
 
-**Note**: the last version of pygram11 supporting Python 2 is
-[0.5.2](https://github.com/douglasdavis/pygram11/releases/tag/0.5.2).
-
 ## Installing
 
-pygram11 only requires [NumPy](https://www.numpy.org/). To build from
-source you'll need a C++ compiler with C++11 support.
+Using pygram11 only requires [NumPy](https://www.numpy.org/). To build
+and install from source you'll need NumPy pre-installed and a compiler
+with support for C++11 and OpenMP.
 
 ### From PyPI
 
@@ -57,21 +56,18 @@ conda install nomkl ## sometimes necessary fix (macOS only)
 
 ### From Source
 
+When installing from source you'll need NumPy pre-installed and
+OpenMP. If you are using a relatively modern GCC release on Linux then
+you probably don't have to worry about the OpenMP dependency. If you
+are on macOS, you'll probably want to install `libomp` from Homebrew.
+
 ```none
+pip install numpy
 pip install git+https://github.com/douglasdavis/pygram11.git@master
 ```
 
 To ensure OpenMP acceleration in a build from source, read the OpenMP
-section of the docs. If you are using a relatively modern GCC release
-on Linux then you probably don't have to worry about any extra
-steps/dependencies. If you are on macOS, you'll probably want to
-install `libomp` from Homebrew.
-
-**Note**: For releases older than v0.5, when building from source or
-PyPI, `pybind11` was required to be explicitly installed before
-`pygram11` (because `setup.py` used `pybind11` to determine include
-directories). Starting with v0.5 `pybind11` is bundled as a git
-submodule for installations from source.
+section of the docs.
 
 ## In Action
 

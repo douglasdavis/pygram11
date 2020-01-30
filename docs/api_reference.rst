@@ -7,4 +7,3 @@ API Reference
 
    api/pygramspecific.rst
    api/numpylike.rst
-   api/utils.rst
