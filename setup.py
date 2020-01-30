@@ -61,6 +61,11 @@ def get_compile_flags(is_cpp=False):
     if is_cpp:
         cpp_std = get_cpp_std_flag()
     cflags = ["-Wall", "-Wextra"]
+    debug_env = os.getenv("PYGRAM11_DEBUG")
+    if debug_env is None:
+        cflags += ["-g0"]
+    else:
+        cflags += ["-g"]
     if sys.platform.startswith("darwin"):
         if is_cpp:
             cflags += ["-fvisibility=hidden", "-stdlib=libc++", cpp_std]
@@ -148,6 +153,14 @@ def get_extensions():
         Extension(
             "pygram11._CPP_PB",
             [os.path.join("pygram11", "_backend_pb.cpp")],
+            language="c++",
+            include_dirs=["extern/pybind11/include"],
+            extra_compile_args=cpp_cflags,
+            extra_link_args=cpp_lflags,
+        ),
+        Extension(
+            "pygram11._CPP_CPP_OBJ",
+            [os.path.join("pygram11", "_backend_pb_obj.cpp")],
             language="c++",
             include_dirs=["extern/pybind11/include"],
             extra_compile_args=cpp_cflags,
