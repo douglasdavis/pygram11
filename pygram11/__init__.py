@@ -237,6 +237,9 @@ def var1d(x, bins, weights=None, density=False, flow=False, omp=None):
     if not np.all(bins[1:] >= bins[:-1]):
         raise ValueError("bins sequence must monotonically increase")
 
+    if _likely_uniform_bins(bins):
+        return _f1dw(x, weights, len(bins) - 1, bins[0], bins[-1], flow, density, True)
+
     return _v1dw(x, weights, bins, flow, density, True)
 
 
@@ -279,6 +282,9 @@ def var1dmw(x, weights, bins, flow=False, omp=None):
     if not np.all(bins[1:] >= bins[:-1]):
         raise ValueError("bins sequence must monotonically increase")
 
+    if _likely_uniform_bins(bins):
+        return _f1dmw(x, weights, len(bins) - 1, bins[0], bins[-1], flow, True)
+
     return _v1dmw(x, weights, bins, flow, True)
 
 
@@ -316,42 +322,22 @@ def histogram(
         the standard error of each bin count, :math:`\sqrt{\sum_i w_i^2}`
 
     """
-    _deprecation_check(omp)
-    x = np.ascontiguousarray(x)
-    if weights is not None:
-        weights = np.ascontiguousarray(weights)
-    else:
-        weights = np.ones_like(x, order="C")
-        if not (weights.dtype == np.float32 or weights.dtype == np.float64):
-            weights = weights.astype(np.float64)
 
-    if isinstance(bins, int):
-        if range is not None:
-            start, stop = range[0], range[1]
-        else:
-            start, stop = np.amin(x), np.amax(x)
-        if weights.shape == x.shape:
-            return _f1dw(x, weights, bins, start, stop, flow, density, True)
-        else:
-            return _f1dmw(x, weights, bins, start, stop, flow, True)
+    # fixed bins
+    if isinstance(bins, numbers.Integral):
+        if weights is not None:
+            if weights.shape != x.shape:
+                return fix1dmw(x, weights, bins=bins, range=range, flow=flow)
+        return fix1d(x, weights=weights, bins=bins, range=range, density=density, flow=flow)
 
+    # variable bins
     else:
         if range is not None:
             raise TypeError("range must be None if bins is non-int")
-        bins = np.ascontiguousarray(bins)
-        if not np.all(bins[1:] >= bins[:-1]):
-            raise ValueError("bins sequence must monotonically increase")
-        if _likely_uniform_bins(bins):
-            if weights.shape == x.shape:
-                return _f1dw(
-                    x, weights, len(bins) - 1, bins[0], bins[-1], flow, density, True
-                )
-            else:
-                return _f1dmw(x, weights, len(bins) - 1, bins[0], bins[-1], flow, True)
-        if weights.shape == x.shape:
-            return _v1dw(x, weights, bins, flow, density, True)
-        else:
-            return _v1dmw(x, weights, bins, flow, True)
+        if weights is not None:
+            if weights.shape != x.shape:
+                return var1dmw(x, weights, bins=bins, flow=flow)
+        return var1d(x, weights=weights, bins=bins, density=density, flow=flow)
 
 
 def fix2d(x, y, bins=10, range=None, weights=None, omp=None):
