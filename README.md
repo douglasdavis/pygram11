@@ -66,18 +66,14 @@ pip install numpy
 pip install git+https://github.com/douglasdavis/pygram11.git@master
 ```
 
-To ensure OpenMP acceleration in a build from source, read the OpenMP
-section of the docs.
-
 ## In Action
 
-A histogram (with fixed bin width) of weighted data in one dimension,
-accelerated with OpenMP:
+A histogram (with fixed bin width) of weighted data in one dimension:
 
 ```python
 >>> x = np.random.randn(10000)
 >>> w = np.random.uniform(0.8, 1.2, 10000)
->>> h, staterr = pygram11.histogram(x, bins=40, range=(-4, 4), weights=w, omp=True)
+>>> h, staterr = pygram11.histogram(x, bins=40, range=(-4, 4), weights=w)
 ```
 
 A histogram with fixed bin width which saves the under and overflow in
@@ -86,7 +82,7 @@ to the absence of weights):
 
 ```python
 >>> x = np.random.randn(1000000)
->>> h, __ = pygram11.histogram(x, bins=20, range=(-3, 3), flow=True, omp=True)
+>>> h, __ = pygram11.histogram(x, bins=20, range=(-3, 3), flow=True)
 ```
 
 A histogram in two dimensions with variable width bins:
@@ -109,7 +105,7 @@ interpreted as a NumPy array):
 ...                         "weight_c" : np.random.rand(10000)})
 >>> data = np.random.randn(10000)
 >>> count, err = pygram11.histogram(data, bins=20, range=(-3, 3),
-...                                 weights=weights, flow=True, omp=True)
+...                                 weights=weights, flow=True)
 >>> count_df = pd.DataFrame(count, columns=weights.columns)
 >>> err_df = pd.DataFrame(err, columns=weights.columns)
 ```
