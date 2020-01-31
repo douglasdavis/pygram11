@@ -1,5 +1,6 @@
 include pygram11/*.hpp
 include tests/*.py
+include tests/*.npz
 include LICENSE
 
 graft extern/pybind11/include

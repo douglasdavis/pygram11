@@ -22,18 +22,22 @@
 
 import os
 import multiprocessing
+from pathlib import PosixPath
+
 import pygram11 as pg
 import numpy as np
 import pytest
 
+data_file = PosixPath(__file__).parent / "data" / "test_data.npz"
+test_data = np.load(data_file)
 
-x_f32 = np.random.randn(10000).astype(np.float32)
-x_f64 = np.random.randn(10000).astype(np.float64)
-x_ui32 = np.abs(5 * np.random.randn(10000)).astype(np.uint32)
-x_i32 = (8 * np.random.randn(10000)).astype(np.int32)
+x_f64 = test_data["data_f64"]
+x_f32 = x_f64.astype(np.float32)
+x_ui32 = test_data["data_ui32"]
+x_i32 = x_ui32.astype(np.int32)
 
-w_f32 = np.random.uniform(0.5, 0.6, x_f32.shape[0]).astype(np.float32)
-w_f64 = np.random.uniform(0.5, 0.6, x_f64.shape[0]).astype(np.float64)
+w_f32 = test_data["weights_f32"] * 0.5
+w_f64 = w_f32.astype(np.float64)
 
 
 class TestMisc:
@@ -46,7 +50,7 @@ class TestMisc:
 
 class TestFixedNoFlow:
     def test_fixed_noflow_f32f32(self):
-        nbins, xmin, xmax = (12, -3, 3)
+        nbins, xmin, xmax = 25, 40, 180
         hm_res = pg.histogram(
             x_f32, weights=w_f32, bins=nbins, range=(xmin, xmax), flow=False
         )
@@ -54,7 +58,7 @@ class TestFixedNoFlow:
         assert np.allclose(hm_res[0], np_res[0])
 
     def test_fixed_noflow_f64f32(self):
-        nbins, xmin, xmax = (12, -3, 3)
+        nbins, xmin, xmax = 25, 40, 180
         hm_res = pg.histogram(
             x_f64, weights=w_f32, bins=nbins, range=(xmin, xmax), flow=False
         )
@@ -62,7 +66,7 @@ class TestFixedNoFlow:
         assert np.allclose(hm_res[0], np_res[0])
 
     def test_fixed_noflow_f64f64(self):
-        nbins, xmin, xmax = (12, -3, 3)
+        nbins, xmin, xmax = 25, 40, 180
         hm_res = pg.histogram(
             x_f64, weights=w_f64, bins=nbins, range=(xmin, xmax), flow=False
         )
@@ -70,7 +74,7 @@ class TestFixedNoFlow:
         assert np.allclose(hm_res[0], np_res[0])
 
     def test_fixed_noflow_f32f64(self):
-        nbins, xmin, xmax = (12, -3, 3)
+        nbins, xmin, xmax = 25, 40, 180
         hm_res = pg.histogram(
             x_f32, weights=w_f64, bins=nbins, range=(xmin, xmax), flow=False
         )
@@ -78,7 +82,7 @@ class TestFixedNoFlow:
         assert np.allclose(hm_res[0], np_res[0])
 
     def test_fixed_noflow_ui32f64(self):
-        nbins, xmin, xmax = (3, 0.5, 3.5)
+        nbins, xmin, xmax = (6, -0.5, 5.5)
         hm_res = pg.histogram(
             x_ui32, weights=w_f64, bins=nbins, range=(xmin, xmax), flow=False
         )
@@ -86,7 +90,7 @@ class TestFixedNoFlow:
         assert np.allclose(hm_res[0], np_res[0])
 
     def test_fixed_noflow_ui32f32(self):
-        nbins, xmin, xmax = (4, -0.5, 3.5)
+        nbins, xmin, xmax = (6, -0.5, 5.5)
         hm_res = pg.histogram(
             x_ui32, weights=w_f32, bins=nbins, range=(xmin, xmax), flow=False
         )
@@ -96,7 +100,7 @@ class TestFixedNoFlow:
 
 class TestFixedNoFlowDensity:
     def test_fixed_noflow_f32f32(self):
-        nbins, xmin, xmax = (12, -4, 5)
+        nbins, xmin, xmax = (22, 30, 185)
         hm_res = pg.histogram(
             x_f32,
             weights=w_f32,
@@ -111,7 +115,7 @@ class TestFixedNoFlowDensity:
         assert np.allclose(hm_res[0], np_res[0])
 
     def test_fixed_noflow_f64f32(self):
-        nbins, xmin, xmax = (12, -2, 1)
+        nbins, xmin, xmax = (22, 50, 150)
         hm_res = pg.histogram(
             x_f64,
             weights=w_f32,
@@ -126,7 +130,7 @@ class TestFixedNoFlowDensity:
         assert np.allclose(hm_res[0], np_res[0])
 
     def test_fixed_noflow_f64f64(self):
-        nbins, xmin, xmax = (12, -2, 3)
+        nbins, xmin, xmax = (40, 30, 170)
         hm_res = pg.histogram(
             x_f64,
             weights=w_f64,
@@ -141,7 +145,7 @@ class TestFixedNoFlowDensity:
         assert np.allclose(hm_res[0], np_res[0])
 
     def test_fixed_noflow_f32f64(self):
-        nbins, xmin, xmax = (12, -3, 3)
+        nbins, xmin, xmax = 25, 40, 180
         hm_res = pg.histogram(
             x_f32,
             weights=w_f64,
@@ -188,7 +192,7 @@ class TestFixedNoFlowDensity:
 
 class TestFixedFlow:
     def test_fixed_flow_f32f32(self):
-        nbins, xmin, xmax = (12, -3, 3)
+        nbins, xmin, xmax = 25, 40, 180
         hm_res = pg.histogram(
             x_f32, weights=w_f32, bins=nbins, range=(xmin, xmax), flow=True
         )
@@ -200,7 +204,7 @@ class TestFixedFlow:
         assert np.allclose(hm_res[0], np_res[0])
 
     def test_fixed_flow_f64f32(self):
-        nbins, xmin, xmax = (12, -3, 3)
+        nbins, xmin, xmax = 25, 40, 180
         hm_res = pg.histogram(
             x_f64, weights=w_f32, bins=nbins, range=(xmin, xmax), flow=True
         )
@@ -212,7 +216,7 @@ class TestFixedFlow:
         assert np.allclose(hm_res[0], np_res[0])
 
     def test_fixed_flow_f64f64(self):
-        nbins, xmin, xmax = (12, -3, 3)
+        nbins, xmin, xmax = 25, 40, 180
         hm_res = pg.histogram(
             x_f64, weights=w_f64, bins=nbins, range=(xmin, xmax), flow=True
         )
@@ -225,7 +229,7 @@ class TestFixedFlow:
 
     def test_fixed_flow_except(self):
         x = x_f64.astype(np.int16)
-        nbins, xmin, xmax = (15, -2.1, 3.2)
+        nbins, xmin, xmax = (3, 1.5, 4.5)
         with pytest.raises(TypeError) as excinfo:
             hm_res = pg.histogram(
                 x, weights=w_f64, bins=nbins, range=(xmin, xmax), flow=True
@@ -239,7 +243,7 @@ class TestFixedFlow:
         assert str(excinfo.value) == "dtype of input arrays unsupported"
 
     def test_fixed_flow_f32f64(self):
-        nbins, xmin, xmax = (12, -3, 3)
+        nbins, xmin, xmax = 25, 40, 180
         hm_res = pg.histogram(
             x_f32, weights=w_f64, bins=nbins, range=(xmin, xmax), flow=True
         )
@@ -263,7 +267,7 @@ class TestFixedFlow:
         assert np.allclose(hm_res[0], np_res[0])
 
     def test_fixed_flow_ui32f32(self):
-        nbins, xmin, xmax = (4, -0.5, 3.5)
+        nbins, xmin, xmax = (3, 1.5, 4.5)
         hm_res = pg.histogram(
             x_ui32, weights=w_f32, bins=nbins, range=(xmin, xmax), flow=True
         )
@@ -277,61 +281,61 @@ class TestFixedFlow:
 
 class TestVarNoFlow:
     def test_var_noflow_f32f32(self):
-        edges = np.array([-2, -1.2, -0.8, -0.1, 1.0, 2.5, 3.0])
+        edges = np.array([30, 40, 50, 60, 70, 90, 110, 130, 160, 200, 250.0])
         hm_res = pg.histogram(x_f32, weights=w_f32, bins=edges, flow=False)
         np_res = np.histogram(x_f32, bins=edges, weights=w_f32)
         assert np.allclose(hm_res[0], np_res[0], rtol=1.0e-03, atol=1.0e-05)
 
     def test_var_noflow_f64f32(self):
-        edges = np.array([-2, -1.2, -0.8, -0.1, 1.0, 2.5, 3.0])
+        edges = np.array([30, 40, 50, 60, 70, 90, 110, 130, 160, 200, 250.0])
         hm_res = pg.histogram(x_f64, weights=w_f32, bins=edges, flow=False)
         np_res = np.histogram(x_f64, bins=edges, weights=w_f32)
         assert np.allclose(hm_res[0], np_res[0], rtol=1.0e-03, atol=1.0e-05)
 
     def test_var_noflow_f64f64(self):
-        edges = np.array([-2, -1.2, -0.8, -0.1, 1.0, 2.5, 3.0])
+        edges = np.array([30, 40, 50, 60, 70, 90, 110, 130, 160, 200, 250.0])
         hm_res = pg.histogram(x_f64, weights=w_f64, bins=edges, flow=False)
         np_res = np.histogram(x_f64, bins=edges, weights=w_f64)
         assert np.allclose(hm_res[0], np_res[0])
 
     def test_var_noflow_f32f64(self):
-        edges = np.array([-2, -1.2, -0.8, -0.1, 1.0, 2.5, 3.0])
+        edges = np.array([30, 40, 50, 60, 70, 90, 110, 130, 160, 200, 250.0])
         hm_res = pg.histogram(x_f32, weights=w_f64, bins=edges, flow=False)
         np_res = np.histogram(x_f32, bins=edges, weights=w_f64)
         assert np.allclose(hm_res[0], np_res[0])
 
     def test_var_noflow_ui32f64(self):
-        edges = np.array([1.1, 2.2, 3.3, 4.4])
+        edges = np.array([-0.5, 1.5, 2.5, 4.5])
         hm_res = pg.histogram(x_ui32, weights=w_f64, bins=edges, flow=False)
         np_res = np.histogram(x_ui32, bins=edges, weights=w_f64)
         assert np.allclose(hm_res[0], np_res[0])
 
     def test_var_noflow_ui32f32(self):
-        edges = np.array([-0.1, 1.1, 2.2, 3.3, 4.4])
+        edges = np.array([-0.5, 1.5, 2.5, 4.5])
         hm_res = pg.histogram(x_ui32, weights=w_f32, bins=edges, flow=False)
         np_res = np.histogram(x_ui32, bins=edges, weights=w_f32)
         assert np.allclose(hm_res[0], np_res[0], rtol=1.0e-03, atol=1.0e-05)
 
     def test_var_noflow_f32f32_lu(self):
-        edges = np.linspace(-2.0, 2.0, 18)
+        edges = np.linspace(30, 155, 25)
         hm_res = pg.histogram(x_f32, weights=w_f32, bins=edges, flow=False)
         np_res = np.histogram(x_f32, bins=edges, weights=w_f32)
         assert np.allclose(hm_res[0], np_res[0], rtol=1.0e-03, atol=1.0e-05)
 
     def test_var_noflow_f64f32_lu(self):
-        edges = np.linspace(-2.0, 2.0, 18)
+        edges = np.linspace(30, 155, 25)
         hm_res = pg.histogram(x_f64, weights=w_f32, bins=edges, flow=False)
         np_res = np.histogram(x_f64, bins=edges, weights=w_f32)
         assert np.allclose(hm_res[0], np_res[0], rtol=1.0e-03, atol=1.0e-05)
 
     def test_var_noflow_f64f64_lu(self):
-        edges = np.linspace(-2.0, 2.0, 18)
+        edges = np.linspace(30, 155, 25)
         hm_res = pg.histogram(x_f64, weights=w_f64, bins=edges, flow=False)
         np_res = np.histogram(x_f64, bins=edges, weights=w_f64)
         assert np.allclose(hm_res[0], np_res[0])
 
     def test_var_noflow_f32f64_lu(self):
-        edges = np.linspace(-2.0, 2.0, 18)
+        edges = np.linspace(30, 155, 25)
         hm_res = pg.histogram(x_f32, weights=w_f64, bins=edges, flow=False)
         np_res = np.histogram(x_f32, bins=edges, weights=w_f64)
         assert np.allclose(hm_res[0], np_res[0])
@@ -340,7 +344,7 @@ class TestVarNoFlow:
 
 class TestVarNoFlowDensity:
     def test_var_noflow_f32f32(self):
-        edges = np.array([-2, -1.2, -0.8, -0.1, 1.0, 2.5, 3.0])
+        edges = np.array([30, 40, 50, 60, 70, 90, 110, 130, 160, 200, 250.0])
         hm_res = pg.histogram(
             x_f32, weights=w_f32, bins=edges, density=True, flow=False
         )
@@ -348,7 +352,7 @@ class TestVarNoFlowDensity:
         assert np.allclose(hm_res[0], np_res[0], rtol=1.0e-03, atol=1.0e-05)
 
     def test_var_noflow_f64f32(self):
-        edges = np.array([-2, -1.2, -0.8, -0.1, 1.0, 2.5, 3.0])
+        edges = np.array([30, 40, 50, 60, 70, 90, 110, 130, 160, 200, 250.0])
         hm_res = pg.histogram(
             x_f64, weights=w_f32, bins=edges, density=True, flow=False
         )
@@ -356,7 +360,7 @@ class TestVarNoFlowDensity:
         assert np.allclose(hm_res[0], np_res[0], rtol=1.0e-03, atol=1.0e-05)
 
     def test_var_noflow_f64f64(self):
-        edges = np.array([-2, -1.2, -0.8, -0.1, 1.0, 2.5, 3.0])
+        edges = np.array([30, 40, 50, 60, 70, 90, 110, 130, 160, 200, 250.0])
         hm_res = pg.histogram(
             x_f64, weights=w_f64, bins=edges, density=True, flow=False
         )
@@ -364,7 +368,7 @@ class TestVarNoFlowDensity:
         assert np.allclose(hm_res[0], np_res[0])
 
     def test_var_noflow_f32f64(self):
-        edges = np.array([-2, -1.2, -0.8, -0.1, 1.0, 2.5, 3.0])
+        edges = np.array([30, 40, 50, 60, 70, 90, 110, 130, 160, 200, 250.0])
         hm_res = pg.histogram(
             x_f32, weights=w_f64, bins=edges, density=True, flow=False
         )
@@ -372,7 +376,7 @@ class TestVarNoFlowDensity:
         assert np.allclose(hm_res[0], np_res[0])
 
     def test_var_noflow_ui32f64(self):
-        edges = np.array([1.1, 2.2, 3.3, 4.4])
+        edges = np.array([-0.5, 1.5, 2.5, 4.5])
         hm_res = pg.histogram(
             x_ui32, weights=w_f64, bins=edges, density=True, flow=False
         )
@@ -380,7 +384,7 @@ class TestVarNoFlowDensity:
         assert np.allclose(hm_res[0], np_res[0])
 
     def test_var_noflow_ui32f32(self):
-        edges = np.array([-0.1, 1.1, 2.2, 3.3, 4.4])
+        edges = np.array([-0.5, 1.5, 2.5, 4.5])
         hm_res = pg.histogram(
             x_ui32, weights=w_f32, bins=edges, density=True, flow=False
         )
@@ -390,7 +394,7 @@ class TestVarNoFlowDensity:
 
 class TestVarFlow:
     def test_var_flow_f32f32(self):
-        edges = np.array([-2, -1.2, -0.8, -0.1, 1.0, 2.5, 3.0])
+        edges = np.array([30, 40, 50, 60, 70, 90, 110, 130, 160, 200, 250.0])
         hm_res = pg.histogram(x_f32, weights=w_f32, bins=edges, flow=True)
         np_res = np.histogram(x_f32, bins=edges, weights=w_f32)
         underflow = np.sum(w_f32[x_f32 < edges[0]])
@@ -400,7 +404,7 @@ class TestVarFlow:
         assert np.allclose(hm_res[0], np_res[0], rtol=1.0e-03, atol=1.0e-05)
 
     def test_var_flow_f64f32(self):
-        edges = np.array([-2, -1.2, -0.8, -0.1, 1.0, 2.5, 3.0])
+        edges = np.array([30, 40, 50, 60, 70, 90, 110, 130, 160, 200, 250.0])
         hm_res = pg.histogram(x_f64, weights=w_f32, bins=edges, flow=True)
         np_res = np.histogram(x_f64, bins=edges, weights=w_f32)
         underflow = np.sum(w_f32[x_f64 < edges[0]])
@@ -410,7 +414,7 @@ class TestVarFlow:
         assert np.allclose(hm_res[0], np_res[0], rtol=1.0e-03, atol=1.0e-05)
 
     def test_var_flow_except(self):
-        edges = np.array([-2, -1.2, -0.8, -0.1, 1.0, 2.5, 3.0])
+        edges = np.array([30, 40, 50, 60, 70, 90, 110, 130, 160, 200, 250.0])
         x = x_f64.astype(np.int16)
         with pytest.raises(TypeError) as excinfo:
             hm_res = pg.histogram(x, weights=w_f64, bins=edges, flow=True)
@@ -421,7 +425,7 @@ class TestVarFlow:
         assert str(excinfo.value) == "dtype of input arrays unsupported"
 
     def test_var_flow_f64f64(self):
-        edges = np.array([-2, -1.2, -0.8, -0.1, 1.0, 2.5, 3.0])
+        edges = np.array([30, 40, 50, 60, 70, 90, 110, 130, 160, 200, 250.0])
         hm_res = pg.histogram(x_f64, weights=w_f64, bins=edges, flow=True)
         np_res = np.histogram(x_f64, bins=edges, weights=w_f64)
         underflow = np.sum(w_f64[x_f64 < edges[0]])
@@ -431,7 +435,7 @@ class TestVarFlow:
         assert np.allclose(hm_res[0], np_res[0])
 
     def test_var_flow_f32f64(self):
-        edges = np.array([-2, -1.2, -0.8, -0.1, 1.0, 2.5, 3.0])
+        edges = np.array([30, 40, 50, 60, 70, 90, 110, 130, 160, 200, 250.0])
         hm_res = pg.histogram(x_f32, weights=w_f64, bins=edges, flow=True)
         np_res = np.histogram(x_f32, bins=edges, weights=w_f64)
         underflow = np.sum(w_f64[x_f32 < edges[0]])
@@ -441,7 +445,7 @@ class TestVarFlow:
         assert np.allclose(hm_res[0], np_res[0])
 
     def test_var_flow_ui32f64(self):
-        edges = np.array([1.1, 2.2, 3.3, 4.4])
+        edges = np.array([-0.5, 1.5, 2.5, 4.5])
         hm_res = pg.histogram(x_ui32, weights=w_f64, bins=edges, flow=True)
         np_res = np.histogram(x_ui32, bins=edges, weights=w_f64)
         underflow = np.sum(w_f64[x_ui32 < edges[0]])
@@ -451,7 +455,7 @@ class TestVarFlow:
         assert np.allclose(hm_res[0], np_res[0])
 
     def test_var_flow_ui32f32(self):
-        edges = np.array([-0.1, 1.1, 2.2, 3.3, 4.4])
+        edges = np.array([-0.5, 1.5, 2.5, 4.5])
         hm_res = pg.histogram(x_ui32, weights=w_f32, bins=edges, flow=True)
         np_res = np.histogram(x_ui32, bins=edges, weights=w_f32)
         underflow = np.sum(w_f32[x_ui32 < edges[0]])
@@ -462,11 +466,11 @@ class TestVarFlow:
 
 
 class TestMutiWeight:
-    x_f32 = np.random.randn(10000).astype(np.float32)
-    x_f64 = np.random.randn(10000).astype(np.float64)
-    w_f32 = np.abs(np.random.randn(x_f32.shape[0], 13)).astype(np.float32) + 1
-    w_f64 = np.abs(np.random.randn(x_f64.shape[0], 13)).astype(np.float64) + 1
-    edges = np.unique(np.around(np.random.randn(32), 1))
+    x_f64 = test_data["data_f64"]
+    x_f32 = x_f64.astype(np.float32)
+    w_f32 = np.array([np.random.uniform(0.5, 1.5, x_f32.shape[0]) for i in range(13)]).T
+    w_f64 = w_f32.astype(np.float64)
+    edges = np.array([30, 40, 50, 60, 70, 90, 110, 130, 160, 200, 250.0])
 
     def test_fixed_mw_f32f32(self):
         nbins, xmin, xmax = (34, -3, 3)
