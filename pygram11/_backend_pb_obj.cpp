@@ -1,18 +1,37 @@
-#ifndef PYGRAM11_OBJ_H
-#define PYGRAM11_OBJ_H
+// MIT License
+
+// Copyright (c) 2019 Douglas Davis
+
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
 
 // local
-#include "_utils.hpp"
+#include "_helpers.hpp"
 
 // pybind
 #include <pybind11/pybind11.h>
+#include <pybind11/numpy.h>
 
 // STL
 #include <vector>
 
-#ifdef PYGRAMUSEOMP
+// OpenMP
 #include <omp.h>
-#endif
 
 namespace py = pybind11;
 
@@ -85,13 +104,22 @@ inline void histogram1d::calc_error() {
 
 template <typename TD, typename TW>
 inline void histogram1d::fill(std::size_t N, const TD* data, const TW* weights) {
-#pragma omp parallel if (N > 1000)
+#pragma omp parallel
   {
     std::vector<double> counts_ot(m_nbins + 2, 0.0);
     std::vector<double> variance_ot(m_nbins + 2, 0.0);
 #pragma omp for nowait
     for (std::size_t i = 0; i < N; ++i) {
-      auto bin = pygram11::detail::get_bin(data[i], m_norm, {m_nbins, m_xmin, m_xmax});
+      std::size_t bin;
+      if (data[i] < m_xmin) {
+        bin = 0;
+      }
+      if (data[i] >= m_xmax) {
+        bin = m_nbins + 1;
+      }
+      else {
+        bin = 1 + pygram11::helpers::get_bin(data[i], m_nbins, m_xmin, m_norm);
+      }
       auto weight = static_cast<double>(weights[i]);
       counts_ot[bin] += weight;
       variance_ot[bin] += weight * weight;
@@ -110,12 +138,21 @@ inline void histogram1d::fill(std::size_t N, const TD* data, const TW* weights) 
 
 template <typename TD>
 inline void histogram1d::fill(std::size_t N, const TD* data) {
-#pragma omp parallel if (N > 1000)
+#pragma omp parallel
   {
     std::vector<std::size_t> counts_ot(m_nbins + 2, 0);
 #pragma omp for nowait
     for (std::size_t i = 0; i < N; ++i) {
-      auto bin = pygram11::detail::get_bin(data[i], m_norm, {m_nbins, m_xmin, m_xmax});
+      std::size_t bin;
+      if (data[i] < m_xmin) {
+        bin = 0;
+      }
+      if (data[i] >= m_xmax) {
+        bin = m_nbins + 1;
+      }
+      else {
+        bin = 1 + pygram11::helpers::get_bin(data[i], m_nbins, m_xmin, m_norm);
+      }
       counts_ot[bin]++;
     }
 #pragma omp critical
@@ -211,9 +248,7 @@ void setup_histogram1d(py::module& m, const char* cname) {
           py::return_value_policy::move);
 }
 
-PYBIND11_MODULE(_obj, m) {
+PYBIND11_MODULE(_CPP_PB_OBJ, m) {
   m.doc() = "Object oriented pygram11 code";
-  setup_histogram1d(m, "_histogram1d");
+  setup_histogram1d(m, "_Histogram1D");
 }
-
-#endif

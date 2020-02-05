@@ -3,8 +3,8 @@
 [![Actions Status](https://github.com/douglasdavis/pygram11/workflows/Linux/macOS/badge.svg)](https://github.com/douglasdavis/pygram11/actions)
 [![builds.sr.ht status](https://builds.sr.ht/~ddavis/pygram11.svg)](https://builds.sr.ht/~ddavis/pygram11?)
 [![Documentation Status](https://readthedocs.org/projects/pygram11/badge/?version=latest)](https://pygram11.readthedocs.io/en/latest/?badge=latest)
+
 ![](https://img.shields.io/pypi/pyversions/pygram11.svg?colorB=blue&style=flat)
-![PyPI - Wheel](https://img.shields.io/pypi/wheel/pygram11?color=blue)
 [![PyPI version](https://img.shields.io/pypi/v/pygram11.svg?colorB=486b87&style=flat)](https://pypi.org/project/pygram11/)
 [![Conda Forge](https://img.shields.io/conda/vn/conda-forge/pygram11.svg?colorB=486b87&style=flat)](https://anaconda.org/conda-forge/pygram11)
 
@@ -15,16 +15,14 @@ Simple and fast histogramming in Python accelerated with
 `pygram11` provides fast functions for calculating histograms (and the
 variance in each bin). The API is very simple; documentation can be
 [found here](https://pygram11.readthedocs.io/) (you'll also find [some
-benchmarks](https://pygram11.readthedocs.io/en/stable/purpose.html#some-benchmarks)
+benchmarks](https://pygram11.readthedocs.io/en/stable/bench.html)
 there).
-
-**Note**: the last version of pygram11 supporting Python 2 is
-[0.5.2](https://github.com/douglasdavis/pygram11/releases/tag/0.5.2).
 
 ## Installing
 
-pygram11 only requires [NumPy](https://www.numpy.org/). To build from
-source you'll need a C++ compiler with C++11 support.
+Using pygram11 only requires [NumPy](https://www.numpy.org/). To build
+and install from source you'll need NumPy pre-installed and a compiler
+with support for C++11 and OpenMP.
 
 ### From PyPI
 
@@ -57,31 +55,24 @@ conda install nomkl ## sometimes necessary fix (macOS only)
 
 ### From Source
 
+When installing from source you'll need NumPy pre-installed and
+OpenMP. If you are using a relatively modern GCC release on Linux then
+you probably don't have to worry about the OpenMP dependency. If you
+are on macOS, you'll probably want to install `libomp` from Homebrew.
+
 ```none
+pip install numpy
 pip install git+https://github.com/douglasdavis/pygram11.git@master
 ```
 
-To ensure OpenMP acceleration in a build from source, read the OpenMP
-section of the docs. If you are using a relatively modern GCC release
-on Linux then you probably don't have to worry about any extra
-steps/dependencies. If you are on macOS, you'll probably want to
-install `libomp` from Homebrew.
-
-**Note**: For releases older than v0.5, when building from source or
-PyPI, `pybind11` was required to be explicitly installed before
-`pygram11` (because `setup.py` used `pybind11` to determine include
-directories). Starting with v0.5 `pybind11` is bundled as a git
-submodule for installations from source.
-
 ## In Action
 
-A histogram (with fixed bin width) of weighted data in one dimension,
-accelerated with OpenMP:
+A histogram (with fixed bin width) of weighted data in one dimension:
 
 ```python
 >>> x = np.random.randn(10000)
 >>> w = np.random.uniform(0.8, 1.2, 10000)
->>> h, staterr = pygram11.histogram(x, bins=40, range=(-4, 4), weights=w, omp=True)
+>>> h, staterr = pygram11.histogram(x, bins=40, range=(-4, 4), weights=w)
 ```
 
 A histogram with fixed bin width which saves the under and overflow in
@@ -90,7 +81,7 @@ to the absence of weights):
 
 ```python
 >>> x = np.random.randn(1000000)
->>> h, __ = pygram11.histogram(x, bins=20, range=(-3, 3), flow=True, omp=True)
+>>> h, __ = pygram11.histogram(x, bins=20, range=(-3, 3), flow=True)
 ```
 
 A histogram in two dimensions with variable width bins:
@@ -113,7 +104,7 @@ interpreted as a NumPy array):
 ...                         "weight_c" : np.random.rand(10000)})
 >>> data = np.random.randn(10000)
 >>> count, err = pygram11.histogram(data, bins=20, range=(-3, 3),
-...                                 weights=weights, flow=True, omp=True)
+...                                 weights=weights, flow=True)
 >>> count_df = pd.DataFrame(count, columns=weights.columns)
 >>> err_df = pd.DataFrame(err, columns=weights.columns)
 ```

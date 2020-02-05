@@ -1,97 +1,119 @@
+# MIT License
+
+# Copyright (c) 2019 Douglas Davis
+
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
 import codecs
 import glob
 import os
 import re
-import setuptools
+import pathlib
 import subprocess
 import sys
 import tempfile
 
-from setuptools import setup, Extension
-from setuptools.command.build_ext import build_ext
+import setuptools
+from setuptools import setup
+from setuptools.extension import Extension
 
 
-ext_modules = [
-    Extension(
-        "pygram11._core",
-        [os.path.join("pygram11", "_core.cpp")],
-        include_dirs=["extern/pybind11/include",],
-        language="c++",
-    ),
-    Extension(
-        "pygram11._obj",
-        [os.path.join("pygram11", "_obj.cpp")],
-        include_dirs=["extern/pybind11/include",],
-        language="c++",
-    ),
-]
-
-
-def has_flag(compiler, flagname):
-    """
-    Return a bool indicating whether a flag name is supported on
-    the specified compiler.
-    """
+def has_flag(compiler, flag):
+    """check if compiler has compatibility with the flag"""
     with tempfile.NamedTemporaryFile("w", suffix=".cpp") as f:
-        f.write("int main (int argc, char **argv) { return 0; }")
+        f.write("int main (int argc, char** argv) { return 0; }")
         try:
-            compiler.compile([f.name], extra_postargs=[flagname])
+            compiler.compile([f.name], extra_postargs=[flag])
         except setuptools.distutils.errors.CompileError:
             return False
     return True
 
 
-CCODE = """
-#include <omp.h>
-#include <stdio.h>
-int main(void) {
-  #pragma omp parallel
-  printf("nthreads=%d\\n", omp_get_num_threads());
-  return 0;
-}
-"""
-
-
-def has_omp():
-    """Check if omp available"""
-    has_omp = False
-
-    ## for conda-forge
-    prefixEnviron = os.getenv("PREFIX")
-
-    c_compiler = setuptools.distutils.ccompiler.new_compiler()
-    setuptools.distutils.sysconfig.customize_compiler(c_compiler)
-
-    linkflags, compflags = [], []
-    if sys.platform.startswith("darwin"):
-        if prefixEnviron is not None:
-            linkflags += ["-Wl,-rpath,{}/lib".format(prefixEnviron)]
-        compflags += ["-Xpreprocessor", "-fopenmp"]
-        linkflags += ["-lomp"]
+def get_cpp_std_flag():
+    compiler = setuptools.distutils.ccompiler.new_compiler()
+    setuptools.distutils.sysconfig.customize_compiler(compiler)
+    if has_flag(compiler, "-std=c++14"):
+        return "-std=c++14"
+    elif has_flag(compiler, "-std=c++11"):
+        return "-std=c++11"
     else:
-        compflags += ["-fopenmp"]
-        linkflags += ["-lgomp"]
+        raise RuntimeError("C++11 (or later) compatible compiler required")
 
+
+def get_compile_flags(is_cpp=False):
+    """get the compile flags"""
+    if is_cpp:
+        cpp_std = get_cpp_std_flag()
+    cflags = ["-Wall", "-Wextra"]
+    debug_env = os.getenv("PYGRAM11_DEBUG")
+    if debug_env is None:
+        cflags += ["-g0"]
+    else:
+        cflags += ["-g"]
+    if sys.platform.startswith("darwin"):
+        if is_cpp:
+            cflags += ["-fvisibility=hidden", "-stdlib=libc++", cpp_std]
+        cflags += ["-Xpreprocessor", "-fopenmp"]
+    else:
+        if is_cpp:
+            cflags += ["-fvisibility=hidden", cpp_std]
+        cflags += ["-fopenmp"]
+    return cflags
+
+
+def get_link_flags(is_cpp=False):
+    envPREFIX = os.getenv("PREFIX")
+    lflags = []
+    if sys.platform.startswith("darwin"):
+        if envPREFIX is not None:
+            lflags += ["-Wl,-rpath,{}/lib".format(prefixEnviron)]
+        lflags += ["-lomp"]
+    else:
+        lflags += ["-lgomp"]
+    return lflags
+
+
+def has_openmp():
+    test_code = """
+    #include <omp.h>
+    #include <stdio.h>
+    int main() {
+      #pragma omp parallel
+      printf("nthreads=%d\\n", omp_get_num_threads());
+      return 0;
+    }
+    """
+    has_omp = False
+    compiler = setuptools.distutils.ccompiler.new_compiler()
+    setuptools.distutils.sysconfig.customize_compiler(compiler)
+    cflags = get_compile_flags()
+    lflags = get_link_flags()
     tmp_dir = tempfile.mkdtemp()
-    start_dir = os.path.abspath(".")
-
+    start_dir = pathlib.PosixPath.cwd()
     try:
         os.chdir(tmp_dir)
         with open("test_openmp.c", "w") as f:
-            f.write(CCODE)
-
-        os.mkdir("objects")
-        c_compiler.compile(
-            ["test_openmp.c"],
-            output_dir="objects",
-            extra_preargs=["-I/usr/local/include"]
-            if sys.platform.startswith("darwin")
-            else None,
-            extra_postargs=compflags,
-        )
-        objects = glob.glob(os.path.join("objects", "*" + c_compiler.obj_extension))
-        c_compiler.link_executable(objects, "test_openmp", extra_postargs=linkflags)
-
+            f.write(test_code)
+        os.mkdir("obj")
+        compiler.compile(["test_openmp.c"], output_dir="obj", extra_postargs=cflags)
+        objs = glob.glob(os.path.join("obj", "*{}".format(compiler.obj_extension)))
+        compiler.link_executable(objs, "test_openmp", extra_postargs=lflags)
         output = subprocess.check_output("./test_openmp")
         output = output.decode(sys.stdout.encoding or "utf-8").splitlines()
         if "nthreads=" in output[0]:
@@ -99,77 +121,61 @@ def has_omp():
             if len(output) == nthreads:
                 has_omp = True
             else:
-                print(
-                    "Unexpected number of lines from output of test OpenMP "
-                    "program (output was {0})".format(output)
-                )
                 has_omp = False
         else:
-            print(
-                "Unexpected output from test OpenMP "
-                "program (output was {0})".format(output)
-            )
             has_omp = False
-
-        has_omp = True
-
-    except (setuptools.distutils.errors.CompileError, setuptools.distutils.errors.LinkError):
+    except (
+        setuptools.distutils.errors.CompileError,
+        setuptools.distutils.errors.LinkError,
+    ):
         has_omp = False
-
     finally:
         os.chdir(start_dir)
 
     return has_omp
 
 
-def cpp_std_flag(compiler):
-    """
-    Return the -std=c++[11/14] compiler flag.
-
-    c++14 prefered over c++11.
-    """
-    if has_flag(compiler, "-std=c++14"):
-        return "-std=c++14"
-    elif has_flag(compiler, "-std=c++11"):
-        return "-std=c++11"
-    else:
-        raise RuntimeError("C++11 supporting compiler required")
-
-
-class BuildExt(build_ext):
-    """A custom build extension for adding compiler-specific options."""
-
-    c_opts = []
-
-    if sys.platform.startswith("darwin"):
-        c_opts += ["-stdlib=libc++", "-mmacosx-version-min=10.9"]
-
-    def build_extensions(self):
-        use_omp = has_omp()
-        ## for conda-forge
-        prefixEnviron = os.getenv("PREFIX")
-
-        if use_omp:
-            if sys.platform.startswith("darwin"):
-                self.c_opts.append("-Xpreprocessor")
-            self.c_opts.append("-fopenmp")
-            self.c_opts.append("-DPYGRAMUSEOMP")
-
-        self.c_opts.append(cpp_std_flag(self.compiler))
-        if has_flag(self.compiler, "-fvisibility=hidden"):
-            self.c_opts.append("-fvisibility=hidden")
-        for ext in self.extensions:
-            ext.extra_compile_args = self.c_opts
-            if use_omp:
-                if sys.platform.startswith("darwin"):
-                    if prefixEnviron is not None:
-                        ext.extra_link_args.append(
-                            "-Wl,-rpath,{}/lib".format(prefixEnviron)
-                        )
-                    ext.extra_link_args.append("-lomp")
-                else:
-                    ext.extra_link_args.append("-lgomp")
-        build_ext.build_extensions(self)
+def get_extensions():
+    c_cflags = get_compile_flags()
+    c_lflags = get_link_flags()
+    cpp_cflags = get_compile_flags(is_cpp=True)
+    cpp_lflags = get_link_flags(is_cpp=True)
+    extenmods = []
+    extenmods += [
+        Extension(
+            "pygram11._CPP",
+            [os.path.join("pygram11", "_backend.cpp")],
+            language="c++",
+            include_dirs=[numpy.get_include()],
+            extra_compile_args=cpp_cflags,
+            extra_link_args=cpp_lflags,
+        ),
+        Extension(
+            "pygram11._CPP_PB",
+            [os.path.join("pygram11", "_backend_pb.cpp")],
+            language="c++",
+            include_dirs=["extern/pybind11/include"],
+            extra_compile_args=cpp_cflags,
+            extra_link_args=cpp_lflags,
+        ),
+        Extension(
+            "pygram11._CPP_CPP_OBJ",
+            [os.path.join("pygram11", "_backend_pb_obj.cpp")],
+            language="c++",
+            include_dirs=["extern/pybind11/include"],
+            extra_compile_args=cpp_cflags,
+            extra_link_args=cpp_lflags,
+        ),
+        Extension(
+            "pygram11._CPP_PB_2D",
+            [os.path.join("pygram11", "_backend_pb_2d.cpp")],
+            language="c++",
+            include_dirs=["extern/pybind11/include"],
+            extra_compile_args=cpp_cflags,
+            extra_link_args=cpp_lflags,
+        ),
+    ]
+    return extenmods
 
 
 def read_files(*parts):
@@ -178,7 +184,7 @@ def read_files(*parts):
         return fp.read()
 
 
-def find_version(*file_paths):
+def get_version(*file_paths):
     version_file = read_files(*file_paths)
     version_match = re.search(r"^__version__ = ['\"]([^'\"]*)['\"]", version_file, re.M)
     if version_match:
@@ -187,14 +193,40 @@ def find_version(*file_paths):
 
 
 def get_readme():
-    here = os.path.abspath(os.path.dirname(__file__))
-    with open(os.path.join(here, "README.md"), "rb") as f:
+    project_root = pathlib.PosixPath(__file__).parent
+    with (project_root / "README.md").open("rb") as f:
         return f.read().decode("utf-8")
 
 
+def get_requirements():
+    project_root = pathlib.PosixPath(__file__).parent
+    with (project_root / "requirements.txt").open("r") as f:
+        requirements = f.read().splitlines()
+
+
+try:
+    import numpy
+except ImportError:
+    sys.exit(
+        "\n"
+        "*******************************************************\n"
+        "* NumPy is required to use pygram11's setup.py script *\n"
+        "*******************************************************"
+    )
+
+if not has_openmp():
+    sys.exit(
+        "\n"
+        "****************************************************\n"
+        "* OpenMP not available, aborting installation.     *\n"
+        "* On macOS you can install `libomp` with Homebrew. *\n"
+        "* On Linux check your GCC installation.            *\n"
+        "****************************************************"
+    )
+
 setup(
     name="pygram11",
-    version=find_version("pygram11", "__init__.py"),
+    version=get_version("pygram11", "__init__.py"),
     author="Doug Davis",
     author_email="ddavis@ddavis.io",
     url="https://github.com/douglasdavis/pygram11",
@@ -202,9 +234,8 @@ setup(
     long_description=get_readme(),
     long_description_content_type="text/markdown",
     packages=["pygram11"],
-    ext_modules=ext_modules,
-    install_requires=["numpy>=1.14"],
-    cmdclass={"build_ext": BuildExt},
+    ext_modules=get_extensions(),
+    install_requires=get_requirements(),
     python_requires=">=3.6",
     test_suite="tests",
     tests_require=["pytest>=4.0"],
@@ -216,6 +247,9 @@ setup(
         "Programming Language :: Python :: 3.8",
         "Programming Language :: C++",
         "Operating System :: Unix",
+        "Operating System :: MacOS",
+        "Operating System :: POSIX",
+        "Operating System :: POSIX :: Linux",
         "License :: OSI Approved :: MIT License",
         "Development Status :: 5 - Production/Stable",
         "Intended Audience :: Science/Research",
