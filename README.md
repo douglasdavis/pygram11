@@ -5,7 +5,6 @@
 [![Documentation Status](https://readthedocs.org/projects/pygram11/badge/?version=latest)](https://pygram11.readthedocs.io/en/latest/?badge=latest)
 
 ![](https://img.shields.io/pypi/pyversions/pygram11.svg?colorB=blue&style=flat)
-![PyPI - Wheel](https://img.shields.io/pypi/wheel/pygram11?color=blue)
 [![PyPI version](https://img.shields.io/pypi/v/pygram11.svg?colorB=486b87&style=flat)](https://pypi.org/project/pygram11/)
 [![Conda Forge](https://img.shields.io/conda/vn/conda-forge/pygram11.svg?colorB=486b87&style=flat)](https://anaconda.org/conda-forge/pygram11)
 
@@ -16,7 +15,7 @@ Simple and fast histogramming in Python accelerated with
 `pygram11` provides fast functions for calculating histograms (and the
 variance in each bin). The API is very simple; documentation can be
 [found here](https://pygram11.readthedocs.io/) (you'll also find [some
-benchmarks](https://pygram11.readthedocs.io/en/stable/purpose.html#some-benchmarks)
+benchmarks](https://pygram11.readthedocs.io/en/stable/bench.html)
 there).
 
 ## Installing
