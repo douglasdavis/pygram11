@@ -38,7 +38,7 @@ from ._CPP_PB_2D import (
 )
 
 
-__version__ = "0.7.0.dev0"
+__version__ = "0.7.0"
 version_info = tuple(__version__.split("."))
 
 
