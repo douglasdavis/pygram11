@@ -2,6 +2,7 @@ include pygram11/*.hpp
 include tests/*.py
 include tests/data/*.npz
 include LICENSE
+include requirements.txt
 
 graft extern/pybind11/include
 
