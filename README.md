@@ -72,16 +72,15 @@ A histogram (with fixed bin width) of weighted data in one dimension:
 ```python
 >>> x = np.random.randn(10000)
 >>> w = np.random.uniform(0.8, 1.2, 10000)
->>> h, staterr = pygram11.histogram(x, bins=40, range=(-4, 4), weights=w)
+>>> h, err = pygram11.histogram(x, bins=40, range=(-4, 4), weights=w)
 ```
 
 A histogram with fixed bin width which saves the under and overflow in
-the first and last bins (using `__` to catch the `None` returned due
-to the absence of weights):
+the first and last bins:
 
 ```python
 >>> x = np.random.randn(1000000)
->>> h, __ = pygram11.histogram(x, bins=20, range=(-3, 3), flow=True)
+>>> h, err = pygram11.histogram(x, bins=20, range=(-3, 3), flow=True)
 ```
 
 A histogram in two dimensions with variable width bins:
@@ -91,7 +90,7 @@ A histogram in two dimensions with variable width bins:
 >>> y = np.random.randn(10000)
 >>> xbins = [-2.0, -1.0, -0.5, 1.5, 2.0]
 >>> ybins = [-3.0, -1.5, -0.1, 0.8, 2.0]
->>> h, __ = pygram11.histogram2d(x, y, bins=[xbins, ybins])
+>>> h, err = pygram11.histogram2d(x, y, bins=[xbins, ybins])
 ```
 
 Histogramming multiple weight variations for the same data, then
