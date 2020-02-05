@@ -17,13 +17,13 @@ tasks:
     eval "$(pyenv init -)"
     cd pygram11
     pyenv shell 3.8.0
-    pip install pip pytest setuptools -U
+    pip install pip pytest setuptools numpy -U
     pip install .
     pyenv shell 3.7.5
-    pip install pip pytest setuptools -U
+    pip install pip pytest setuptools numpy -U
     pip install .
     pyenv shell 3.6.9
-    pip install pip pytest setuptools -U
+    pip install pip pytest setuptools numpy -U
     pip install .
 - test36: |
     export PATH=$HOME/.pyenv/bin:$PATH
