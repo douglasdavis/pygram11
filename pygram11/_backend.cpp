@@ -79,7 +79,7 @@ inline void fixed_fill_include_flow(const T1* x, const T2* w, T2* counts, T2* va
                                     std::size_t nbins, double xmin, double xmax,
                                     double norm) {
   Py_BEGIN_ALLOW_THREADS;
-#pragma omp parallel if (nx > 10000)
+#pragma omp parallel
   {
     std::vector<T2> counts_ot(nbins, 0.0);
     std::vector<T2> vars_ot(nbins, 0.0);
@@ -106,7 +106,7 @@ inline void fixed_fill_exclude_flow(const T1* x, const T2* w, T2* counts, T2* va
                                     std::size_t nbins, double xmin, double xmax,
                                     double norm) {
   Py_BEGIN_ALLOW_THREADS;
-#pragma omp parallel if (nx > 10000)
+#pragma omp parallel
   {
     std::vector<T2> counts_ot(nbins, 0.0);
     std::vector<T2> vars_ot(nbins, 0.0);
@@ -141,7 +141,7 @@ inline void var_fill_include_flow(const T1* x, const T2* w, T2* counts, T2* vars
                                   const std::vector<T3>& edges) {
   std::size_t nbins = static_cast<int>(edges.size()) - 1;
   Py_BEGIN_ALLOW_THREADS;
-#pragma omp parallel if (nx > 1000)
+#pragma omp parallel
   {
     std::vector<T2> counts_ot(nbins, 0.0);
     std::vector<T2> vars_ot(nbins, 0.0);
@@ -168,7 +168,7 @@ inline void var_fill_exclude_flow(const T1* x, const T2* w, T2* counts, T2* vars
                                   const std::vector<T3>& edges) {
   std::size_t nbins = static_cast<int>(edges.size()) - 1;
   Py_BEGIN_ALLOW_THREADS;
-#pragma omp parallel if (nx > 1000)
+#pragma omp parallel
   {
     std::vector<T2> counts_ot(nbins, 0.0);
     std::vector<T2> vars_ot(nbins, 0.0);

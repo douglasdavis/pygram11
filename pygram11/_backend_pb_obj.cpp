@@ -104,7 +104,7 @@ inline void histogram1d::calc_error() {
 
 template <typename TD, typename TW>
 inline void histogram1d::fill(std::size_t N, const TD* data, const TW* weights) {
-#pragma omp parallel if (N > 1000)
+#pragma omp parallel
   {
     std::vector<double> counts_ot(m_nbins + 2, 0.0);
     std::vector<double> variance_ot(m_nbins + 2, 0.0);
@@ -138,7 +138,7 @@ inline void histogram1d::fill(std::size_t N, const TD* data, const TW* weights) 
 
 template <typename TD>
 inline void histogram1d::fill(std::size_t N, const TD* data) {
-#pragma omp parallel if (N > 1000)
+#pragma omp parallel
   {
     std::vector<std::size_t> counts_ot(m_nbins + 2, 0);
 #pragma omp for nowait

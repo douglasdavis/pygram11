@@ -48,7 +48,7 @@ py::tuple f1dmw(const py::array_t<T1>& x, const py::array_t<T2>& w, std::size_t 
   auto w_proxy = w.template unchecked<2>();
 
   if (flow) {
-#pragma omp parallel if (ndata > 1000)
+#pragma omp parallel
     {
       std::vector<std::vector<T2>> counts_ot;
       std::vector<std::vector<T2>> vars_ot;
@@ -76,7 +76,7 @@ py::tuple f1dmw(const py::array_t<T1>& x, const py::array_t<T2>& w, std::size_t 
   }
 
   else {
-#pragma omp parallel if (ndata > 1000)
+#pragma omp parallel
     {
       std::vector<std::vector<T2>> counts_ot;
       std::vector<std::vector<T2>> vars_ot;
@@ -134,7 +134,7 @@ py::tuple v1dmw(const py::array_t<T1>& x, const py::array_t<T2>& w,
   auto w_proxy = w.template unchecked<2>();
 
   if (flow) {
-#pragma omp parallel if (ndata > 1000)
+#pragma omp parallel
     {
       std::vector<std::vector<T2>> counts_ot;
       std::vector<std::vector<T2>> vars_ot;
@@ -162,7 +162,7 @@ py::tuple v1dmw(const py::array_t<T1>& x, const py::array_t<T2>& w,
   }
 
   else {
-#pragma omp parallel if (ndata > 1000)
+#pragma omp parallel
     {
       std::vector<std::vector<T2>> counts_ot;
       std::vector<std::vector<T2>> vars_ot;
