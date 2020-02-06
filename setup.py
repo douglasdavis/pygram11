@@ -82,7 +82,7 @@ def get_link_flags(is_cpp=False):
     lflags = []
     if sys.platform.startswith("darwin"):
         if envPREFIX is not None:
-            lflags += ["-Wl,-rpath,{}/lib".format(prefixEnviron)]
+            lflags += ["-Wl,-rpath,{}/lib".format(envPREFIX)]
         lflags += ["-lomp"]
     else:
         lflags += ["-lgomp"]
