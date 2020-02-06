@@ -114,10 +114,7 @@ inline void fixed_fill_exclude_flow(const T1* x, const T2* w, T2* counts, T2* va
     T2 weight;
 #pragma omp for nowait
     for (long i = 0; i < nx; ++i) {
-      if (x[i] < xmin) {
-        continue;
-      }
-      else if (x[i] >= xmax) {
+      if (x[i] < xmin || x[i] >= xmax)  {
         continue;
       }
       else {
@@ -176,10 +173,7 @@ inline void var_fill_exclude_flow(const T1* x, const T2* w, T2* counts, T2* vars
     T2 weight;
 #pragma omp for nowait
     for (long i = 0; i < nx; ++i) {
-      if (x[i] < edges.front()) {
-        continue;
-      }
-      else if (x[i] >= edges.back()) {
+      if (x[i] < edges.front() || x[i] >= edges.back()) {
         continue;
       }
       else {
