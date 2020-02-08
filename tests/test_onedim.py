@@ -39,6 +39,9 @@ x_i32 = x_ui32.astype(np.int32)
 w_f32 = test_data["weights_f32"] * 0.5
 w_f64 = w_f32.astype(np.float64)
 
+x_f32_snx = np.random.choice(x_f32, 1234)
+w_f32_snx = np.random.choice(w_f32, 1234)
+
 
 class TestMisc:
     def test_omp_get_max_threads(self):
@@ -95,7 +98,17 @@ class TestFixedNoFlow:
             x_ui32, weights=w_f32, bins=nbins, range=(xmin, xmax), flow=False
         )
         np_res = np.histogram(x_ui32, bins=nbins, range=(xmin, xmax), weights=w_f32)
-        assert np.allclose(hm_res[0], np_res[0],)
+        assert np.allclose(hm_res[0], np_res[0])
+
+    def test_fixed_flow_f32f32_snx(self):
+        nbins, xmin, xmax = 25, 40, 180
+        hm_res = pg.histogram(
+            x_f32_snx, weights=w_f32_snx, bins=nbins, range=(xmin, xmax), flow=False
+        )
+        np_res = np.histogram(
+            x_f32_snx, bins=nbins, range=(xmin, xmax), weights=w_f32_snx
+        )
+        assert np.allclose(hm_res[0], np_res[0])
 
 
 class TestFixedNoFlowDensity:
@@ -189,6 +202,21 @@ class TestFixedNoFlowDensity:
         )
         assert np.allclose(hm_res[0], np_res[0],)
 
+    def test_fixed_noflow_f32f32_snx(self):
+        nbins, xmin, xmax = 25, 40, 180
+        hm_res = pg.histogram(
+            x_f32_snx,
+            weights=w_f32_snx,
+            bins=nbins,
+            range=(xmin, xmax),
+            density=True,
+            flow=False,
+        )
+        np_res = np.histogram(
+            x_f32_snx, bins=nbins, range=(xmin, xmax), weights=w_f32_snx, density=True
+        )
+        assert np.allclose(hm_res[0], np_res[0])
+
 
 class TestFixedFlow:
     def test_fixed_flow_f32f32(self):
@@ -278,6 +306,20 @@ class TestFixedFlow:
         np_res[0][-1] += overflow
         assert np.allclose(hm_res[0], np_res[0], rtol=1.0e-03, atol=1.0e-05)
 
+    def test_fixed_flow_f32f32_snx(self):
+        nbins, xmin, xmax = 25, 40, 180
+        hm_res = pg.histogram(
+            x_f32_snx, weights=w_f32_snx, bins=nbins, range=(xmin, xmax), flow=True
+        )
+        np_res = np.histogram(
+            x_f32_snx, bins=nbins, range=(xmin, xmax), weights=w_f32_snx
+        )
+        underflow = np.sum(w_f32_snx[x_f32_snx < xmin])
+        overflow = np.sum(w_f32_snx[x_f32_snx > xmax])
+        np_res[0][0] += underflow
+        np_res[0][-1] += overflow
+        assert np.allclose(hm_res[0], np_res[0])
+
 
 class TestVarNoFlow:
     def test_var_noflow_f32f32(self):
@@ -340,6 +382,11 @@ class TestVarNoFlow:
         np_res = np.histogram(x_f32, bins=edges, weights=w_f64)
         assert np.allclose(hm_res[0], np_res[0])
 
+    def test_var_noflow_f32f32_snx(self):
+        edges = np.array([30, 40, 50, 60, 70, 90, 110, 130, 160, 200, 250.0])
+        hm_res = pg.histogram(x_f32_snx, weights=w_f32_snx, bins=edges, flow=False)
+        np_res = np.histogram(x_f32_snx, bins=edges, weights=w_f32_snx)
+        assert np.allclose(hm_res[0], np_res[0], rtol=1.0e-03, atol=1.0e-05)
 
 
 class TestVarNoFlowDensity:
@@ -389,6 +436,14 @@ class TestVarNoFlowDensity:
             x_ui32, weights=w_f32, bins=edges, density=True, flow=False
         )
         np_res = np.histogram(x_ui32, bins=edges, weights=w_f32, density=True)
+        assert np.allclose(hm_res[0], np_res[0], rtol=1.0e-03, atol=1.0e-05)
+
+    def test_var_noflow_f32f32_snx(self):
+        edges = np.array([30, 40, 50, 60, 70, 90, 110, 130, 160, 200, 250.0])
+        hm_res = pg.histogram(
+            x_f32_snx, weights=w_f32_snx, bins=edges, flow=False, density=True
+        )
+        np_res = np.histogram(x_f32_snx, bins=edges, weights=w_f32_snx, density=True)
         assert np.allclose(hm_res[0], np_res[0], rtol=1.0e-03, atol=1.0e-05)
 
 
@@ -464,6 +519,16 @@ class TestVarFlow:
         np_res[0][-1] += overflow
         assert np.allclose(hm_res[0], np_res[0], rtol=1.0e-03, atol=1.0e-05)
 
+    def test_var_flow_f32f32_snx(self):
+        edges = np.array([30, 40, 50, 60, 70, 90, 110, 130, 160, 200, 250.0])
+        hm_res = pg.histogram(x_f32_snx, weights=w_f32_snx, bins=edges, flow=True)
+        np_res = np.histogram(x_f32_snx, bins=edges, weights=w_f32_snx)
+        underflow = np.sum(w_f32_snx[x_f32_snx < edges[0]])
+        overflow = np.sum(w_f32_snx[x_f32_snx > edges[-1]])
+        np_res[0][0] += underflow
+        np_res[0][-1] += overflow
+        assert np.allclose(hm_res[0], np_res[0], rtol=1.0e-03, atol=1.0e-05)
+
 
 class TestMutiWeight:
     x_f64 = test_data["data_f64"]
@@ -502,8 +567,10 @@ class TestMutiWeight:
         )
         for i in range(self.w_f32.shape[1]):
             hm_res_i = hm_res_n.T[i]
-            np_res_i, __ = np.histogram(self.x_f32, weights=self.w_f32.T[i], bins=self.edges)
-            #assert np.allclose(np.around(hm_res_i, 2), np.around(np_res_i, 2))
+            np_res_i, __ = np.histogram(
+                self.x_f32, weights=self.w_f32.T[i], bins=self.edges
+            )
+            # assert np.allclose(np.around(hm_res_i, 2), np.around(np_res_i, 2))
             np.testing.assert_allclose(hm_res_i, np_res_i, rtol=1.0e-3)
 
     def test_var_mw_f64f64(self):
@@ -512,7 +579,9 @@ class TestMutiWeight:
         )
         for i in range(self.w_f64.shape[1]):
             hm_res_i = hm_res_n.T[i]
-            np_res_i, __ = np.histogram(self.x_f64, weights=self.w_f64.T[i], bins=self.edges)
+            np_res_i, __ = np.histogram(
+                self.x_f64, weights=self.w_f64.T[i], bins=self.edges
+            )
             assert np.allclose(hm_res_i, np_res_i)
 
     def test_var_mw_f32f32_lu(self):
@@ -522,8 +591,10 @@ class TestMutiWeight:
         )
         for i in range(self.w_f32.shape[1]):
             hm_res_i = hm_res_n.T[i]
-            np_res_i, __ = np.histogram(self.x_f32, weights=self.w_f32.T[i], bins=fedges)
-            #assert np.allclose(np.around(hm_res_i, 2), np.around(np_res_i, 2))
+            np_res_i, __ = np.histogram(
+                self.x_f32, weights=self.w_f32.T[i], bins=fedges
+            )
+            # assert np.allclose(np.around(hm_res_i, 2), np.around(np_res_i, 2))
             np.testing.assert_allclose(hm_res_i, np_res_i, rtol=1.0e-3)
 
     def test_var_mw_f64f64_lu(self):
@@ -533,5 +604,7 @@ class TestMutiWeight:
         )
         for i in range(self.w_f64.shape[1]):
             hm_res_i = hm_res_n.T[i]
-            np_res_i, __ = np.histogram(self.x_f64, weights=self.w_f64.T[i], bins=fedges)
+            np_res_i, __ = np.histogram(
+                self.x_f64, weights=self.w_f64.T[i], bins=fedges
+            )
             assert np.allclose(hm_res_i, np_res_i)

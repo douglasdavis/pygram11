@@ -75,6 +75,61 @@ enum class Status {
 };
 
 template <typename T1, typename T2>
+inline void fixed_serial_fill_include_flow(const T1* x, const T2* w, T2* counts, T2* vars,
+                                           long nx, std::size_t nbins, double xmin,
+                                           double xmax, double norm) {
+  for (long i = 0; i < nx; ++i) {
+    auto bin = pygram11::helpers::get_bin(x[i], nbins, xmin, xmax, norm);
+    counts[bin] += w[i];
+    vars[bin] += w[i] * w[i];
+  }
+  return;
+}
+
+template <typename T1, typename T2>
+inline void fixed_serial_fill_exclude_flow(const T1* x, const T2* w, T2* counts, T2* vars,
+                                           long nx, std::size_t nbins, double xmin,
+                                           double xmax, double norm) {
+  for (long i = 0; i < nx; ++i) {
+    if (x[i] < xmin || x[i] >= xmax) {
+      continue;
+    }
+    else {
+      auto bin = pygram11::helpers::get_bin(x[i], nbins, xmin, norm);
+      counts[bin] += w[i];
+      vars[bin] += w[i] * w[i];
+    }
+  }
+  return;
+}
+
+template <typename T1, typename T2, typename T3>
+inline void var_serial_fill_include_flow(const T1* x, const T2* w, T2* counts, T2* vars,
+                                         long nx, const std::vector<T3>& edges) {
+  std::size_t nbins = static_cast<int>(edges.size()) - 1;
+  for (long i = 0; i < nx; ++i) {
+    auto bin = pygram11::helpers::get_bin(x[i], nbins, edges);
+    counts[bin] += w[i];
+    vars[bin] += w[i] * w[i];
+  }
+}
+
+template <typename T1, typename T2, typename T3>
+inline void var_serial_fill_exclude_flow(const T1* x, const T2* w, T2* counts, T2* vars,
+                                         long nx, const std::vector<T3>& edges) {
+  for (long i = 0; i < nx; ++i) {
+    if (x[i] < edges.front() || x[i] >= edges.back()) {
+      continue;
+    }
+    else {
+      auto bin = pygram11::helpers::get_bin(x[i], edges);
+      counts[bin] += w[i];
+      vars[bin] += w[i] * w[i];
+    }
+  }
+}
+
+template <typename T1, typename T2>
 inline void fixed_fill_include_flow(const T1* x, const T2* w, T2* counts, T2* vars, long nx,
                                     std::size_t nbins, double xmin, double xmax,
                                     double norm) {
@@ -114,7 +169,7 @@ inline void fixed_fill_exclude_flow(const T1* x, const T2* w, T2* counts, T2* va
     T2 weight;
 #pragma omp for nowait
     for (long i = 0; i < nx; ++i) {
-      if (x[i] < xmin || x[i] >= xmax)  {
+      if (x[i] < xmin || x[i] >= xmax) {
         continue;
       }
       else {
@@ -195,20 +250,34 @@ inline void var_fill_exclude_flow(const T1* x, const T2* w, T2* counts, T2* vars
 #define FILL_CALL_FIXED(IS1, IS2, T1, T2, suffix)                                         \
   do {                                                                                    \
     if (x_is_##IS1 && w_is_##IS2) {                                                       \
-      fixed_fill_##suffix<T1, T2>((const T1*)PyArray_DATA(x), (const T2*)PyArray_DATA(w), \
-                                  (T2*)PyArray_DATA(c), (T2*)PyArray_DATA(v), nx, nbins,  \
-                                  xmin, xmax, norm);                                      \
+      if (nx < 5000) {                                                                    \
+        fixed_serial_fill_##suffix<T1, T2>(                                               \
+            (const T1*)PyArray_DATA(x), (const T2*)PyArray_DATA(w), (T2*)PyArray_DATA(c), \
+            (T2*)PyArray_DATA(v), nx, nbins, xmin, xmax, norm);                           \
+      }                                                                                   \
+      else {                                                                              \
+        fixed_fill_##suffix<T1, T2>((const T1*)PyArray_DATA(x),                           \
+                                    (const T2*)PyArray_DATA(w), (T2*)PyArray_DATA(c),     \
+                                    (T2*)PyArray_DATA(v), nx, nbins, xmin, xmax, norm);   \
+      }                                                                                   \
       return Status::SUCCESS;                                                             \
     }                                                                                     \
   } while (0)
 
-#define FILL_CALL_VAR(IS1, IS2, T1, T2, suffix)                                         \
-  do {                                                                                  \
-    if (x_is_##IS1 && w_is_##IS2) {                                                     \
-      var_fill_##suffix<T1, T2>((const T1*)PyArray_DATA(x), (const T2*)PyArray_DATA(w), \
-                                (T2*)PyArray_DATA(c), (T2*)PyArray_DATA(v), nx, edges); \
-      return Status::SUCCESS;                                                           \
-    }                                                                                   \
+#define FILL_CALL_VAR(IS1, IS2, T1, T2, suffix)                                            \
+  do {                                                                                     \
+    if (x_is_##IS1 && w_is_##IS2) {                                                        \
+      if (nx < 10000) {                                                                    \
+        var_serial_fill_##suffix<T1, T2>((const T1*)PyArray_DATA(x),                       \
+                                         (const T2*)PyArray_DATA(w), (T2*)PyArray_DATA(c), \
+                                         (T2*)PyArray_DATA(v), nx, edges);                 \
+      }                                                                                    \
+      else {                                                                               \
+        var_fill_##suffix<T1, T2>((const T1*)PyArray_DATA(x), (const T2*)PyArray_DATA(w),  \
+                                  (T2*)PyArray_DATA(c), (T2*)PyArray_DATA(v), nx, edges);  \
+      }                                                                                    \
+      return Status::SUCCESS;                                                              \
+    }                                                                                      \
   } while (0)
 
 #define CHECK_TYPES                                                                  \
