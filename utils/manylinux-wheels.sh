@@ -2,7 +2,7 @@
 
 ## This script will build manylinux2010 x86_64 wheels; it should be
 ## executed from the root project directory while inside a
-## manylinux2010 docker container
+## manylinux{2010,2014} docker container
 
 set -e -x
 
@@ -17,12 +17,10 @@ for py in "${pys[@]}"; do
     $py -m pip wheel .
 done
 
-whls=(pygram11*.whl)
+whls=(pygram11*linux*.whl)
 
 /opt/python/cp37-cp37m/bin/python -m pip install twine auditwheel
 
 for whl in "${whls[@]}"; do
     /opt/python/cp37-cp37m/bin/python -m auditwheel repair $whl
 done
-
-rm -rf *.whl

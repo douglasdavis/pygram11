@@ -16,7 +16,7 @@ for py in "${pys[@]}"; do
     $py -m pip wheel .
 done
 
-whls=(pygram11*.whl)
+whls=(pygram11*macos*.whl)
 
 for whl in "${whls[@]}"; do
     /Library/Frameworks/Python.framework/Versions/3.7/bin/delocate-wheel $whl
