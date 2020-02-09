@@ -87,8 +87,9 @@ py::tuple f1dmw(const py::array_t<T1>& x, const py::array_t<T2>& w, std::size_t 
 #pragma omp for nowait
       for (std::size_t i = 0; i < ndata; i++) {
         T1 x_i = x_proxy(i);
-        if (x_i < xmin) continue;
-        if (x_i >= xmax) continue;
+        if (x_i < xmin || x_i >= xmax) {
+          continue;
+        }
         auto bin = pygram11::helpers::get_bin(x_proxy(i), nbins, xmin, norm);
         for (std::size_t j = 0; j < nweightvars; j++) {
           T2 weight = w_proxy(i, j);
@@ -173,8 +174,9 @@ py::tuple v1dmw(const py::array_t<T1>& x, const py::array_t<T2>& w,
 #pragma omp for nowait
       for (std::size_t i = 0; i < ndata; i++) {
         T1 x_i = x_proxy(i);
-        if (x_i < edges_v.front()) continue;
-        if (x_i >= edges_v.back()) continue;
+        if (x_i < edges_v.front() || x_i >= edges_v.back()) {
+          continue;
+        }
         auto bin = pygram11::helpers::get_bin(x_proxy(i), edges_v);
         for (std::size_t j = 0; j < nweightvars; j++) {
           T2 weight = w_proxy(i, j);

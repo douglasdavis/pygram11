@@ -20,18 +20,102 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+// Local
+#include "_helpers.hpp"
+
+// OpenMP
+#include <omp.h>
+
 // pybind11
 #include <pybind11/numpy.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
-namespace py = pybind11;
 
-#include <omp.h>
-
+// C++
 #include <algorithm>
 #include <cstdint>
 #include <cstring>
 #include <vector>
+
+namespace py = pybind11;
+
+template <typename T1, typename T2, typename T3>
+py::tuple f2dw(const py::array_t<T1>& x, const py::array_t<T2>& y, const py::array_t<T3>& w,
+               std::size_t nbinsx, double xmin, double xmax, std::size_t nbinsy,
+               double ymin, double ymax, bool flow, bool as_err) {
+  std::size_t ndata = static_cast<std::size_t>(x.shape(0));
+  double normx = 1.0 / (xmax - xmin);
+  double normy = 1.0 / (ymax - ymin);
+  py::array_t<T3> counts({nbinsx, nbinsy});
+  py::array_t<T3> vars({nbinsx, nbinsy});
+  std::memset(counts.mutable_data(), 0, sizeof(T3) * nbinsx * nbinsy);
+  std::memset(vars.mutable_data(), 0, sizeof(T3) * nbinsx * nbinsy);
+  auto counts_proxy = counts.mutable_data();
+  auto vars_proxy =vars.mutable_data();
+  auto x_proxy = x.template unchecked<1>();
+  auto y_proxy = y.template unchecked<1>();
+  auto w_proxy = w.template unchecked<1>();
+
+  if (flow) {
+#pragma omp parallel
+    {
+      std::vector<T3> counts_ot(nbinsx * nbinsy, 0.0);
+      std::vector<T3> vars_ot(nbinsx * nbinsy, 0.0);
+      T3 weight;
+      std::size_t xbin, ybin, bin;
+#pragma omp for nowait
+      for (std::size_t i = 0; i < ndata; i++) {
+        xbin = pygram11::helpers::get_bin(x_proxy(i), nbinsx, xmin, xmax, normx);
+        ybin = pygram11::helpers::get_bin(y_proxy(i), nbinsy, ymin, ymax, normy);
+        bin = ybin + nbinsy * xbin;
+        weight = w_proxy(i);
+        counts_ot[bin] += weight;
+        vars_ot[bin] += weight * weight;
+      }
+#pragma omp critical
+      for (std::size_t i = 0; i < (nbinsx * nbinsy); i++) {
+        counts_proxy[i] += counts_ot[i];
+        vars_proxy[i] += vars_ot[i];
+      }
+    }
+  }
+
+  else {
+#pragma omp parallel
+    {
+      std::vector<T3> counts_ot(nbinsx * nbinsy, 0.0);
+      std::vector<T3> vars_ot(nbinsx * nbinsy, 0.0);
+      T3 weight;
+      T1 x_i;
+      T2 y_i;
+      std::size_t xbin, ybin, bin;
+#pragma omp for nowait
+      for (std::size_t i = 0; i < ndata; i++) {
+        x_i = x_proxy(i);
+        y_i = y_proxy(i);
+        if (x_i < xmin || x_i >= xmax) continue;
+        if (y_i < ymin || y_i >= ymax) continue;
+        xbin = pygram11::helpers::get_bin(x_i, nbinsx, xmin, normx);
+        ybin = pygram11::helpers::get_bin(y_i, nbinsy, ymin, normy);
+        bin = ybin + nbinsy * xbin;
+        weight = w_proxy(i);
+        counts_ot[bin] += weight;
+        vars_ot[bin] += weight * weight;
+      }
+#pragma omp critical
+      for (std::size_t i = 0; i < (nbinsx * nbinsy); i++) {
+        counts_proxy[i] += counts_ot[i];
+        vars_proxy[i] += vars_ot[i];
+      }
+    }
+  }
+
+  if (as_err) {
+    pygram11::helpers::array_sqrt(vars.mutable_data(), nbinsx * nbinsy);
+  }
+
+  return py::make_tuple(counts, vars);
+}
 
 namespace pygram11 {
 namespace detail {
@@ -328,6 +412,8 @@ py::tuple var2d_weighted(py::array_t<T> x, py::array_t<T> y, py::array_t<T> w,
 PYBIND11_MODULE(_CPP_PB_2D, m) {
   m.doc() = "legacy 2D pygram11 histogramming code";
 
+  using namespace pybind11::literals;
+
   m.def("_fix2d_f8", &fix2d<double>);
   m.def("_fix2d_f4", &fix2d<float>);
   m.def("_fix2d_weighted_f8", &fix2d_weighted<double>);
@@ -336,4 +422,29 @@ PYBIND11_MODULE(_CPP_PB_2D, m) {
   m.def("_var2d_f4", &var2d<float>);
   m.def("_var2d_weighted_f8", &var2d_weighted<double>);
   m.def("_var2d_weighted_f4", &var2d_weighted<float>);
+
+  m.def("_f2dw", &f2dw<double, double, double>, "x"_a.noconvert(), "y"_a.noconvert(),
+        "weights"_a.noconvert(), "nbinsx"_a, "xmin"_a, "xmax"_a, "nbinsy"_a, "ymin"_a,
+        "ymax"_a, "flow"_a, "as_err"_a);
+  m.def("_f2dw", &f2dw<float, double, double>, "x"_a.noconvert(), "y"_a.noconvert(),
+        "weights"_a.noconvert(), "nbinsx"_a, "xmin"_a, "xmax"_a, "nbinsy"_a, "ymin"_a,
+        "ymax"_a, "flow"_a, "as_err"_a);
+  m.def("_f2dw", &f2dw<double, float, double>, "x"_a.noconvert(), "y"_a.noconvert(),
+        "weights"_a.noconvert(), "nbinsx"_a, "xmin"_a, "xmax"_a, "nbinsy"_a, "ymin"_a,
+        "ymax"_a, "flow"_a, "as_err"_a);
+  m.def("_f2dw", &f2dw<double, double, float>, "x"_a.noconvert(), "y"_a.noconvert(),
+        "weights"_a.noconvert(), "nbinsx"_a, "xmin"_a, "xmax"_a, "nbinsy"_a, "ymin"_a,
+        "ymax"_a, "flow"_a, "as_err"_a);
+  m.def("_f2dw", &f2dw<float, float, float>, "x"_a.noconvert(), "y"_a.noconvert(),
+        "weights"_a.noconvert(), "nbinsx"_a, "xmin"_a, "xmax"_a, "nbinsy"_a, "ymin"_a,
+        "ymax"_a, "flow"_a, "as_err"_a);
+  m.def("_f2dw", &f2dw<double, float, float>, "x"_a.noconvert(), "y"_a.noconvert(),
+        "weights"_a.noconvert(), "nbinsx"_a, "xmin"_a, "xmax"_a, "nbinsy"_a, "ymin"_a,
+        "ymax"_a, "flow"_a, "as_err"_a);
+  m.def("_f2dw", &f2dw<float, double, float>, "x"_a.noconvert(), "y"_a.noconvert(),
+        "weights"_a.noconvert(), "nbinsx"_a, "xmin"_a, "xmax"_a, "nbinsy"_a, "ymin"_a,
+        "ymax"_a, "flow"_a, "as_err"_a);
+  m.def("_f2dw", &f2dw<float, float, double>, "x"_a.noconvert(), "y"_a.noconvert(),
+        "weights"_a.noconvert(), "nbinsx"_a, "xmin"_a, "xmax"_a, "nbinsy"_a, "ymin"_a,
+        "ymax"_a, "flow"_a, "as_err"_a);
 }
