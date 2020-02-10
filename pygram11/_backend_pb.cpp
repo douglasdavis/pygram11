@@ -202,7 +202,7 @@ py::tuple v1dmw(const py::array_t<T1>& x, const py::array_t<T2>& w,
 }
 
 PYBIND11_MODULE(_CPP_PB, m) {
-  m.doc() = "pybind11 backend";
+  m.doc() = "pygram11's pybind11 based 1D backend";
 
   using namespace pybind11::literals;
 

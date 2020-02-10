@@ -52,7 +52,7 @@ static PyMethodDef module_methods[] = {{"_f1dw", f1dw, METH_VARARGS, ""},
 
 static struct PyModuleDef moduledef = {PyModuleDef_HEAD_INIT,
                                        "_CPP",
-                                       "Backend C++ module",
+                                       "pygram11's C API based 1D backend",
                                        -1,
                                        module_methods,
                                        NULL,
