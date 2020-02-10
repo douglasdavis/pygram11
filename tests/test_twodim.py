@@ -26,10 +26,10 @@ import pygram11 as pg
 
 
 def test_fix2d():
-    x = np.random.randn(5000)
-    y = np.random.randn(5000)
+    x = np.random.randn(12345)
+    y = np.random.randn(12345)
     bins = 25
-    w = np.random.uniform(0.2, 0.5, 5000)
+    w = np.random.uniform(0.2, 0.5, 12345)
 
     pygram_h, __ = pg.fix2d(x, y, bins=bins, range=((-3, 3), (-2, 2)))
     numpy_h, __, __ = np.histogram2d(
@@ -47,11 +47,11 @@ def test_fix2d():
 
 
 def test_var2d():
-    x = np.random.randn(5000)
-    y = np.random.randn(5000)
+    x = np.random.randn(12345)
+    y = np.random.randn(12345)
     xbins = [-1.2, -1, 0.2, 0.7, 1.5, 2.1]
     ybins = [-1.1, -1, 0.1, 0.8, 1.2, 2.2]
-    w = np.random.uniform(0.25, 1, 5000)
+    w = np.random.uniform(0.25, 1, 12345)
 
     pygram_h, __ = pg.var2d(x, y, xbins, ybins)
     numpy_h, __, __ = np.histogram2d(x, y, bins=[xbins, ybins])
@@ -63,10 +63,10 @@ def test_var2d():
 
 
 def test_numpyAPI_fix2d():
-    x = np.random.randn(5000)
-    y = np.random.randn(5000)
+    x = np.random.randn(12345)
+    y = np.random.randn(12345)
     bins = 25
-    w = np.random.uniform(0.2, 0.5, 5000)
+    w = np.random.uniform(0.2, 0.5, 12345)
 
     pygram_h, __ = pg.histogram2d(x, y, bins=bins, range=((-3, 3), (-2, 2)))
     numpy_h, __, __ = np.histogram2d(x, y, bins=bins, range=((-3, 3), (-2, 2)))
@@ -82,11 +82,11 @@ def test_numpyAPI_fix2d():
 
 
 def test_numpyAPI_var2d():
-    x = np.random.randn(5000)
-    y = np.random.randn(5000)
+    x = np.random.randn(12345)
+    y = np.random.randn(12345)
     xbins = [-1.2, -1, 0.2, 0.7, 1.5, 2.1]
     ybins = [-1.1, -1, 0.1, 0.8, 1.2, 2.2]
-    w = np.random.uniform(0.25, 1, 5000)
+    w = np.random.uniform(0.25, 1, 12345)
 
     pygram_h, __ = pg.histogram2d(x, y, bins=[xbins, ybins])
     numpy_h, __, __ = np.histogram2d(x, y, bins=[xbins, ybins])

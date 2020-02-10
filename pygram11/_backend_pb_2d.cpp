@@ -40,12 +40,80 @@
 namespace py = pybind11;
 
 template <typename TX, typename TY, typename TW>
+static void fixed_serial_fill(const TX* x, const TY* y, const TW* w, TW* counts, TW* vars,
+                              std::size_t ndata, std::size_t nbinsx, double xmin,
+                              double xmax, std::size_t nbinsy, double ymin, double ymax,
+                              bool flow) {
+  TW weight;
+  std::size_t xbin, ybin, bin;
+  double normx = 1.0 / (xmax - xmin);
+  double normy = 1.0 / (ymax - ymin);
+  if (flow) {
+    for (std::size_t i = 0; i < ndata; i++) {
+      xbin = pygram11::helpers::get_bin(x[i], nbinsx, xmin, xmax, normx);
+      ybin = pygram11::helpers::get_bin(y[i], nbinsy, ymin, ymax, normy);
+      weight = w[i];
+      bin = ybin + nbinsy * xbin;
+      counts[bin] += weight;
+      vars[bin] += weight * weight;
+    }
+  }
+  else {
+    for (std::size_t i = 0; i < ndata; i++) {
+      if (x[i] < xmin || x[i] >= xmax || y[i] < ymin || y[i] >= ymax) {
+        continue;
+      }
+      xbin = pygram11::helpers::get_bin(x[i], nbinsx, xmin, normx);
+      ybin = pygram11::helpers::get_bin(y[i], nbinsy, ymin, normy);
+      weight = w[i];
+      bin = ybin + nbinsy * xbin;
+      counts[bin] += weight;
+      vars[bin] += weight * weight;
+    }
+  }
+}
+
+template <typename TX, typename TY, typename TW>
+static void variable_serial_fill(const TX* x, const TY* y, const TW* w, TW* counts,
+                                 TW* vars, std::size_t ndata,
+                                 const std::vector<double>& xedges,
+                                 const std::vector<double>& yedges, bool flow) {
+  TW weight;
+  std::size_t xbin, ybin, bin;
+  std::size_t nbinsx = xedges.size() - 1;
+  std::size_t nbinsy = yedges.size() - 1;
+
+  if (flow) {
+    for (std::size_t i = 0; i < ndata; i++) {
+      xbin = pygram11::helpers::get_bin(x[i], nbinsx, xedges);
+      ybin = pygram11::helpers::get_bin(y[i], nbinsy, yedges);
+      bin = ybin + nbinsy * xbin;
+      weight = w[i];
+      counts[bin] += weight;
+      vars[bin] += weight * weight;
+    }
+  }
+  else {
+    for (std::size_t i = 0; i < ndata; i++) {
+      if (x[i] < xedges.front() || x[i] >= xedges.back() || y[i] < yedges.front() ||
+          y[i] >= yedges.back()) {
+        continue;
+      }
+      xbin = pygram11::helpers::get_bin(x[i], xedges);
+      ybin = pygram11::helpers::get_bin(y[i], yedges);
+      bin = ybin + nbinsy * xbin;
+      weight = w[i];
+      counts[bin] += weight;
+      vars[bin] += weight * weight;
+    }
+  }
+}
+
+template <typename TX, typename TY, typename TW>
 py::tuple f2dw(const py::array_t<TX>& x, const py::array_t<TY>& y, const py::array_t<TW>& w,
                std::size_t nbinsx, double xmin, double xmax, std::size_t nbinsy,
                double ymin, double ymax, bool flow, bool as_err) {
   std::size_t ndata = static_cast<std::size_t>(x.shape(0));
-  double normx = 1.0 / (xmax - xmin);
-  double normy = 1.0 / (ymax - ymin);
   py::array_t<TW> counts({nbinsx, nbinsy});
   py::array_t<TW> vars({nbinsx, nbinsy});
   std::memset(counts.mutable_data(), 0, sizeof(TW) * nbinsx * nbinsy);
@@ -56,56 +124,63 @@ py::tuple f2dw(const py::array_t<TX>& x, const py::array_t<TY>& y, const py::arr
   auto y_proxy = y.data();
   auto w_proxy = w.data();
 
-  if (flow) {
-#pragma omp parallel
-    {
-      std::vector<TW> counts_ot(nbinsx * nbinsy, 0.0);
-      std::vector<TW> vars_ot(nbinsx * nbinsy, 0.0);
-      TW weight;
-      std::size_t xbin, ybin, bin;
-#pragma omp for nowait
-      for (std::size_t i = 0; i < ndata; i++) {
-        xbin = pygram11::helpers::get_bin(x_proxy[i], nbinsx, xmin, xmax, normx);
-        ybin = pygram11::helpers::get_bin(y_proxy[i], nbinsy, ymin, ymax, normy);
-        bin = ybin + nbinsy * xbin;
-        weight = w_proxy[i];
-        counts_ot[bin] += weight;
-        vars_ot[bin] += weight * weight;
-      }
-#pragma omp critical
-      for (std::size_t i = 0; i < (nbinsx * nbinsy); i++) {
-        counts_proxy[i] += counts_ot[i];
-        vars_proxy[i] += vars_ot[i];
-      }
-    }
+  if (ndata < 5000) {
+    fixed_serial_fill(x_proxy, y_proxy, w_proxy, counts_proxy, vars_proxy, ndata, nbinsx,
+                      xmin, xmax, nbinsy, ymin, ymax, flow);
   }
 
   else {
+    double normx = 1.0 / (xmax - xmin);
+    double normy = 1.0 / (ymax - ymin);
+    if (flow) {
 #pragma omp parallel
-    {
-      std::vector<TW> counts_ot(nbinsx * nbinsy, 0.0);
-      std::vector<TW> vars_ot(nbinsx * nbinsy, 0.0);
-      TW weight;
-      TX x_i;
-      TY y_i;
-      std::size_t xbin, ybin, bin;
+      {
+        std::vector<TW> counts_ot(nbinsx * nbinsy, 0.0);
+        std::vector<TW> vars_ot(nbinsx * nbinsy, 0.0);
+        TW weight;
+        std::size_t xbin, ybin, bin;
 #pragma omp for nowait
-      for (std::size_t i = 0; i < ndata; i++) {
-        x_i = x_proxy[i];
-        y_i = y_proxy[i];
-        if (x_i < xmin || x_i >= xmax) continue;
-        if (y_i < ymin || y_i >= ymax) continue;
-        xbin = pygram11::helpers::get_bin(x_i, nbinsx, xmin, normx);
-        ybin = pygram11::helpers::get_bin(y_i, nbinsy, ymin, normy);
-        bin = ybin + nbinsy * xbin;
-        weight = w_proxy[i];
-        counts_ot[bin] += weight;
-        vars_ot[bin] += weight * weight;
-      }
+        for (std::size_t i = 0; i < ndata; i++) {
+          xbin = pygram11::helpers::get_bin(x_proxy[i], nbinsx, xmin, xmax, normx);
+          ybin = pygram11::helpers::get_bin(y_proxy[i], nbinsy, ymin, ymax, normy);
+          bin = ybin + nbinsy * xbin;
+          weight = w_proxy[i];
+          counts_ot[bin] += weight;
+          vars_ot[bin] += weight * weight;
+        }
 #pragma omp critical
-      for (std::size_t i = 0; i < (nbinsx * nbinsy); i++) {
-        counts_proxy[i] += counts_ot[i];
-        vars_proxy[i] += vars_ot[i];
+        for (std::size_t i = 0; i < (nbinsx * nbinsy); i++) {
+          counts_proxy[i] += counts_ot[i];
+          vars_proxy[i] += vars_ot[i];
+        }
+      }
+    }
+
+    else {
+#pragma omp parallel
+      {
+        std::vector<TW> counts_ot(nbinsx * nbinsy, 0.0);
+        std::vector<TW> vars_ot(nbinsx * nbinsy, 0.0);
+        TW weight;
+        std::size_t xbin, ybin, bin;
+#pragma omp for nowait
+        for (std::size_t i = 0; i < ndata; i++) {
+          if (x_proxy[i] < xmin || x_proxy[i] >= xmax || y_proxy[i] < ymin ||
+              y_proxy[i] >= ymax) {
+            continue;
+          }
+          xbin = pygram11::helpers::get_bin(x_proxy[i], nbinsx, xmin, normx);
+          ybin = pygram11::helpers::get_bin(y_proxy[i], nbinsy, ymin, normy);
+          bin = ybin + nbinsy * xbin;
+          weight = w_proxy[i];
+          counts_ot[bin] += weight;
+          vars_ot[bin] += weight * weight;
+        }
+#pragma omp critical
+        for (std::size_t i = 0; i < (nbinsx * nbinsy); i++) {
+          counts_proxy[i] += counts_ot[i];
+          vars_proxy[i] += vars_ot[i];
+        }
       }
     }
   }
@@ -123,8 +198,8 @@ py::tuple v2dw(const py::array_t<TX>& x, const py::array_t<TY>& y, const py::arr
                const py::array_t<double, py::array::c_style | py::array::forcecast>& yedges,
                bool flow, bool as_err) {
   std::size_t ndata = static_cast<std::size_t>(x.shape(0));
-  std::size_t nbinsx = static_cast<std::size_t>(xedges.shape(0) - 1);
-  std::size_t nbinsy = static_cast<std::size_t>(yedges.shape(0) - 1);
+  std::size_t nbinsx = static_cast<std::size_t>(xedges.shape(0)) - 1;
+  std::size_t nbinsy = static_cast<std::size_t>(yedges.shape(0)) - 1;
   std::vector<double> xedges_v(nbinsx + 1);
   std::vector<double> yedges_v(nbinsy + 1);
   xedges_v.assign(xedges.data(), xedges.data() + (nbinsx + 1));
@@ -140,60 +215,63 @@ py::tuple v2dw(const py::array_t<TX>& x, const py::array_t<TY>& y, const py::arr
   auto y_proxy = y.data();
   auto w_proxy = w.data();
 
-  if (flow) {
-#pragma omp parallel
-    {
-      std::vector<TW> counts_ot(nbinsx * nbinsy, 0.0);
-      std::vector<TW> vars_ot(nbinsx * nbinsy, 0.0);
-      TW weight;
-      std::size_t xbin, ybin, bin;
-#pragma omp for nowait
-      for (std::size_t i = 0; i < ndata; i++) {
-        xbin = pygram11::helpers::get_bin(x_proxy[i], nbinsx, xedges_v);
-        ybin = pygram11::helpers::get_bin(y_proxy[i], nbinsy, yedges_v);
-        bin = ybin + nbinsy * xbin;
-        weight = w_proxy[i];
-        counts_ot[bin] += weight;
-        vars_ot[bin] += weight * weight;
-      }
-#pragma omp critical
-      for (std::size_t i = 0; i < (nbinsx * nbinsy); i++) {
-        counts_proxy[i] += counts_ot[i];
-        vars_proxy[i] += vars_ot[i];
-      }
-    }
+  if (ndata < 10000) {
+    variable_serial_fill(x_proxy, y_proxy, w_proxy, counts_proxy, vars_proxy, ndata,
+                         xedges_v, yedges_v, flow);
   }
-
   else {
+    if (flow) {
 #pragma omp parallel
-    {
-      std::vector<TW> counts_ot(nbinsx * nbinsy, 0.0);
-      std::vector<TW> vars_ot(nbinsx * nbinsy, 0.0);
-      TW weight;
-      TX x_i;
-      TY y_i;
-      std::size_t xbin, ybin, bin;
+      {
+        std::vector<TW> counts_ot(nbinsx * nbinsy, 0.0);
+        std::vector<TW> vars_ot(nbinsx * nbinsy, 0.0);
+        TW weight;
+        std::size_t xbin, ybin, bin;
 #pragma omp for nowait
-      for (std::size_t i = 0; i < ndata; i++) {
-        x_i = x_proxy[i];
-        y_i = y_proxy[i];
-        if (x_i < xedges_v.front() || x_i >= xedges_v.back()) continue;
-        if (y_i < yedges_v.front() || y_i >= yedges_v.back()) continue;
-        xbin = pygram11::helpers::get_bin(x_i, xedges_v);
-        ybin = pygram11::helpers::get_bin(y_i, yedges_v);
-        bin = ybin + nbinsy * xbin;
-        weight = w_proxy[i];
-        counts_ot[bin] += weight;
-        vars_ot[bin] += weight * weight;
-      }
+        for (std::size_t i = 0; i < ndata; i++) {
+          xbin = pygram11::helpers::get_bin(x_proxy[i], nbinsx, xedges_v);
+          ybin = pygram11::helpers::get_bin(y_proxy[i], nbinsy, yedges_v);
+          bin = ybin + nbinsy * xbin;
+          weight = w_proxy[i];
+          counts_ot[bin] += weight;
+          vars_ot[bin] += weight * weight;
+        }
 #pragma omp critical
-      for (std::size_t i = 0; i < (nbinsx * nbinsy); i++) {
-        counts_proxy[i] += counts_ot[i];
-        vars_proxy[i] += vars_ot[i];
+        for (std::size_t i = 0; i < (nbinsx * nbinsy); i++) {
+          counts_proxy[i] += counts_ot[i];
+          vars_proxy[i] += vars_ot[i];
+        }
+      }
+    }
+
+    else {
+#pragma omp parallel
+      {
+        std::vector<TW> counts_ot(nbinsx * nbinsy, 0.0);
+        std::vector<TW> vars_ot(nbinsx * nbinsy, 0.0);
+        TW weight;
+        std::size_t xbin, ybin, bin;
+#pragma omp for nowait
+        for (std::size_t i = 0; i < ndata; i++) {
+          if (x_proxy[i] < xedges_v.front() || x_proxy[i] >= xedges_v.back() ||
+              y_proxy[i] < yedges_v.front() || y_proxy[i] >= yedges_v.back()) {
+            continue;
+          }
+          xbin = pygram11::helpers::get_bin(x_proxy[i], xedges_v);
+          ybin = pygram11::helpers::get_bin(y_proxy[i], yedges_v);
+          bin = ybin + nbinsy * xbin;
+          weight = w_proxy[i];
+          counts_ot[bin] += weight;
+          vars_ot[bin] += weight * weight;
+        }
+#pragma omp critical
+        for (std::size_t i = 0; i < (nbinsx * nbinsy); i++) {
+          counts_proxy[i] += counts_ot[i];
+          vars_proxy[i] += vars_ot[i];
+        }
       }
     }
   }
-
   if (as_err) {
     pygram11::helpers::array_sqrt(vars.mutable_data(), nbinsx * nbinsy);
   }
