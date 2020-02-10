@@ -350,15 +350,15 @@ def fix2d(x, y, bins=10, range=None, weights=None, omp=None):
        axis limits to histogram over in the form [(xmin, xmax), (ymin, ymax)]
     weights : array_like, optional
        weight for each :math:`(x_i, y_i)` pair.
-    omp : bool
-       use OpenMP if available
+    omp : None
+        a deprecated argument.
 
     Returns
     -------
     :obj:`numpy.ndarray`
        bin counts (heights)
     :obj:`numpy.ndarray`
-       Poisson uncertainty on counts (``None`` if weights are absent)
+       Poisson uncertainty on counts
 
     Examples
     --------
@@ -372,8 +372,7 @@ def fix2d(x, y, bins=10, range=None, weights=None, omp=None):
     The same data, now histogrammed weighted (via ``w``) & accelerated
     with OpenMP.
 
-    >>> h, err = fix2d(x, y, bins=(20, 10), range=((0, 100), (0, 50)),
-    ...                weights=w, omp=True)
+    >>> h, err = fix2d(x, y, bins=(20, 10), range=((0, 100), (0, 50)), weights=w)
 
     """
     _deprecation_check(omp)
@@ -414,15 +413,15 @@ def var2d(x, y, xbins, ybins, weights=None, omp=None):
        bin edges for the ``y`` dimension
     weights : array_like, optional
        weights for each :math:`(x_i, y_i)` pair.
-    omp : bool
-       use OpenMP if available
+    omp : None
+        a deprecated argument.
 
     Returns
     -------
     :obj:`numpy.ndarray`
        bin counts (heights)
     :obj:`numpy.ndarray`
-       Poisson uncertainty on counts (``None`` if weights are absent)
+       Poisson uncertainty on counts
 
     Examples
     --------
@@ -485,15 +484,15 @@ def histogram2d(x, y, bins=10, range=None, weights=None, omp=None):
        An array of weights associated to each element :math:`(x_i, y_i)` pair.
        Each pair of the the data will contribute its associated weight to the
        bin count.
-    omp: bool
-       Use OpenMP if available
+    omp : None
+        a deprecated argument.
 
     Returns
     -------
     :obj:`numpy.ndarray`:
         bin counts (heights)
     :obj:`numpy.ndarray`:
-        Poisson uncertainty on each bin count (``None`` if weights are absent)
+        Poisson uncertainty on each bin count
 
     """
     _deprecation_check(omp)
