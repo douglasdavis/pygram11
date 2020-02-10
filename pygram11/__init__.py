@@ -26,16 +26,7 @@ import numbers
 
 from ._CPP import _f1dw, _v1dw, _omp_get_max_threads
 from ._CPP_PB import _f1dmw, _v1dmw
-from ._CPP_PB_2D import (
-    _fix2d_f4,
-    _fix2d_f8,
-    _fix2d_weighted_f4,
-    _fix2d_weighted_f8,
-    _var2d_f4,
-    _var2d_f8,
-    _var2d_weighted_f4,
-    _var2d_weighted_f8,
-)
+from ._CPP_PB_2D import _f2dw, _v2dw
 
 
 __version__ = "0.7.3.dev0"
@@ -328,7 +319,9 @@ def histogram(
         if weights is not None:
             if weights.shape != x.shape:
                 return fix1dmw(x, weights, bins=bins, range=range, flow=flow)
-        return fix1d(x, weights=weights, bins=bins, range=range, density=density, flow=flow)
+        return fix1d(
+            x, weights=weights, bins=bins, range=range, density=density, flow=flow
+        )
 
     # variable bins
     else:
@@ -388,12 +381,10 @@ def fix2d(x, y, bins=10, range=None, weights=None, omp=None):
     y = np.ascontiguousarray(y)
     if x.shape != y.shape:
         raise ValueError("x and y must be the same shape")
-
-    weighted_func = _fix2d_weighted_f8
-    unweight_func = _fix2d_f8
-    if x.dtype == np.float32 and y.dtype == np.float32:
-        weighted_func = _fix2d_weighted_f4
-        unweight_func = _fix2d_f4
+    if weights is None:
+        weights = np.ones_like(x, dtype=np.float64)
+    else:
+        weights = np.ascontiguousarray(weights)
 
     if isinstance(bins, numbers.Integral):
         nx = ny = bins
@@ -404,15 +395,7 @@ def fix2d(x, y, bins=10, range=None, weights=None, omp=None):
         range = [(x.min(), x.max()), (y.min(), y.max())]
     (xmin, xmax), (ymin, ymax) = range
 
-    if weights is not None:
-        weights = np.ascontiguousarray(weights)
-        if weights.shape != x.shape:
-            raise ValueError("weights must be the same shape as the data")
-        count, sumw2 = weighted_func(x, y, weights, nx, xmin, xmax, ny, ymin, ymax)
-        return (count, np.sqrt(sumw2))
-    else:
-        count = unweight_func(x, y, nx, xmin, xmax, ny, ymin, ymax)
-        return (count, None)
+    return _f2dw(x, y, weights, nx, xmin, xmax, ny, ymin, ymax, False, True)
 
 
 def var2d(x, y, xbins, ybins, weights=None, omp=None):
@@ -463,21 +446,12 @@ def var2d(x, y, xbins, ybins, weights=None, omp=None):
     if not np.all(ybins[1:] >= ybins[:-1]):
         raise ValueError("ybins sequence must monotonically increase")
 
-    weighted_func = _var2d_weighted_f8
-    unweight_func = _var2d_f8
-    if x.dtype == np.float32 and y.dtype == np.float32:
-        weighted_func = _var2d_weighted_f4
-        unweight_func = _var2d_f4
-
-    if weights is not None:
-        weights = np.ascontiguousarray(weights)
-        if weights.shape != x.shape:
-            raise ValueError("weights must be the same shape as data")
-        count, sumw2 = weighted_func(x, y, weights, xbins, ybins)
-        return (count, np.sqrt(sumw2))
+    if weights is None:
+        weights = np.ones_like(x, dtype=np.float64)
     else:
-        count = unweight_func(x, y, xbins, ybins)
-        return (count, None)
+        weights = np.ascontiguousarray(weights)
+
+    return _v2dw(x, y, weights, xbins, ybins, False, True)
 
 
 def histogram2d(x, y, bins=10, range=None, weights=None, omp=None):

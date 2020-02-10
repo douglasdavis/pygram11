@@ -39,36 +39,36 @@
 
 namespace py = pybind11;
 
-template <typename T1, typename T2, typename T3>
-py::tuple f2dw(const py::array_t<T1>& x, const py::array_t<T2>& y, const py::array_t<T3>& w,
+template <typename TX, typename TY, typename TW>
+py::tuple f2dw(const py::array_t<TX>& x, const py::array_t<TY>& y, const py::array_t<TW>& w,
                std::size_t nbinsx, double xmin, double xmax, std::size_t nbinsy,
                double ymin, double ymax, bool flow, bool as_err) {
   std::size_t ndata = static_cast<std::size_t>(x.shape(0));
   double normx = 1.0 / (xmax - xmin);
   double normy = 1.0 / (ymax - ymin);
-  py::array_t<T3> counts({nbinsx, nbinsy});
-  py::array_t<T3> vars({nbinsx, nbinsy});
-  std::memset(counts.mutable_data(), 0, sizeof(T3) * nbinsx * nbinsy);
-  std::memset(vars.mutable_data(), 0, sizeof(T3) * nbinsx * nbinsy);
+  py::array_t<TW> counts({nbinsx, nbinsy});
+  py::array_t<TW> vars({nbinsx, nbinsy});
+  std::memset(counts.mutable_data(), 0, sizeof(TW) * nbinsx * nbinsy);
+  std::memset(vars.mutable_data(), 0, sizeof(TW) * nbinsx * nbinsy);
   auto counts_proxy = counts.mutable_data();
-  auto vars_proxy =vars.mutable_data();
-  auto x_proxy = x.template unchecked<1>();
-  auto y_proxy = y.template unchecked<1>();
-  auto w_proxy = w.template unchecked<1>();
+  auto vars_proxy = vars.mutable_data();
+  auto x_proxy = x.data();
+  auto y_proxy = y.data();
+  auto w_proxy = w.data();
 
   if (flow) {
 #pragma omp parallel
     {
-      std::vector<T3> counts_ot(nbinsx * nbinsy, 0.0);
-      std::vector<T3> vars_ot(nbinsx * nbinsy, 0.0);
-      T3 weight;
+      std::vector<TW> counts_ot(nbinsx * nbinsy, 0.0);
+      std::vector<TW> vars_ot(nbinsx * nbinsy, 0.0);
+      TW weight;
       std::size_t xbin, ybin, bin;
 #pragma omp for nowait
       for (std::size_t i = 0; i < ndata; i++) {
-        xbin = pygram11::helpers::get_bin(x_proxy(i), nbinsx, xmin, xmax, normx);
-        ybin = pygram11::helpers::get_bin(y_proxy(i), nbinsy, ymin, ymax, normy);
+        xbin = pygram11::helpers::get_bin(x_proxy[i], nbinsx, xmin, xmax, normx);
+        ybin = pygram11::helpers::get_bin(y_proxy[i], nbinsy, ymin, ymax, normy);
         bin = ybin + nbinsy * xbin;
-        weight = w_proxy(i);
+        weight = w_proxy[i];
         counts_ot[bin] += weight;
         vars_ot[bin] += weight * weight;
       }
@@ -83,22 +83,22 @@ py::tuple f2dw(const py::array_t<T1>& x, const py::array_t<T2>& y, const py::arr
   else {
 #pragma omp parallel
     {
-      std::vector<T3> counts_ot(nbinsx * nbinsy, 0.0);
-      std::vector<T3> vars_ot(nbinsx * nbinsy, 0.0);
-      T3 weight;
-      T1 x_i;
-      T2 y_i;
+      std::vector<TW> counts_ot(nbinsx * nbinsy, 0.0);
+      std::vector<TW> vars_ot(nbinsx * nbinsy, 0.0);
+      TW weight;
+      TX x_i;
+      TY y_i;
       std::size_t xbin, ybin, bin;
 #pragma omp for nowait
       for (std::size_t i = 0; i < ndata; i++) {
-        x_i = x_proxy(i);
-        y_i = y_proxy(i);
+        x_i = x_proxy[i];
+        y_i = y_proxy[i];
         if (x_i < xmin || x_i >= xmax) continue;
         if (y_i < ymin || y_i >= ymax) continue;
         xbin = pygram11::helpers::get_bin(x_i, nbinsx, xmin, normx);
         ybin = pygram11::helpers::get_bin(y_i, nbinsy, ymin, normy);
         bin = ybin + nbinsy * xbin;
-        weight = w_proxy(i);
+        weight = w_proxy[i];
         counts_ot[bin] += weight;
         vars_ot[bin] += weight * weight;
       }
@@ -117,311 +117,94 @@ py::tuple f2dw(const py::array_t<T1>& x, const py::array_t<T2>& y, const py::arr
   return py::make_tuple(counts, vars);
 }
 
-namespace pygram11 {
-namespace detail {
+template <typename TX, typename TY, typename TW>
+py::tuple v2dw(const py::array_t<TX>& x, const py::array_t<TY>& y, const py::array_t<TW>& w,
+               const py::array_t<double, py::array::c_style | py::array::forcecast>& xedges,
+               const py::array_t<double, py::array::c_style | py::array::forcecast>& yedges,
+               bool flow, bool as_err) {
+  std::size_t ndata = static_cast<std::size_t>(x.shape(0));
+  std::size_t nbinsx = static_cast<std::size_t>(xedges.shape(0) - 1);
+  std::size_t nbinsy = static_cast<std::size_t>(yedges.shape(0) - 1);
+  std::vector<double> xedges_v(nbinsx + 1);
+  std::vector<double> yedges_v(nbinsy + 1);
+  xedges_v.assign(xedges.data(), xedges.data() + (nbinsx + 1));
+  yedges_v.assign(yedges.data(), yedges.data() + (nbinsy + 1));
 
-/// makes function calls cleaner
-struct bindef_t {
-  std::size_t nbins;
-  double xmin;
-  double xmax;
-};
+  py::array_t<TW> counts({nbinsx, nbinsy});
+  py::array_t<TW> vars({nbinsx, nbinsy});
+  std::memset(counts.mutable_data(), 0, sizeof(TW) * nbinsx * nbinsy);
+  std::memset(vars.mutable_data(), 0, sizeof(TW) * nbinsx * nbinsy);
+  auto counts_proxy = counts.mutable_data();
+  auto vars_proxy = vars.mutable_data();
+  auto x_proxy = x.data();
+  auto y_proxy = y.data();
+  auto w_proxy = w.data();
 
-/// a binary search function for filling variable bin width histograms
-template <class FItr, class T>
-inline typename FItr::difference_type find_bin(FItr first, FItr last, const T v) {
-  auto lb_result = std::lower_bound(first, last, v);
-  if (lb_result != last && v == *lb_result) {
-    return std::distance(first, lb_result);
+  if (flow) {
+#pragma omp parallel
+    {
+      std::vector<TW> counts_ot(nbinsx * nbinsy, 0.0);
+      std::vector<TW> vars_ot(nbinsx * nbinsy, 0.0);
+      TW weight;
+      std::size_t xbin, ybin, bin;
+#pragma omp for nowait
+      for (std::size_t i = 0; i < ndata; i++) {
+        xbin = pygram11::helpers::get_bin(x_proxy[i], nbinsx, xedges_v);
+        ybin = pygram11::helpers::get_bin(y_proxy[i], nbinsy, yedges_v);
+        bin = ybin + nbinsy * xbin;
+        weight = w_proxy[i];
+        counts_ot[bin] += weight;
+        vars_ot[bin] += weight * weight;
+      }
+#pragma omp critical
+      for (std::size_t i = 0; i < (nbinsx * nbinsy); i++) {
+        counts_proxy[i] += counts_ot[i];
+        vars_proxy[i] += vars_ot[i];
+      }
+    }
   }
+
   else {
-    return std::distance(first, lb_result - 1);
-  }
-}
-
-template <typename T>
-inline std::size_t get_bin(const T x, const double norm, const bindef_t bindef) {
-  if (x < bindef.xmin) {
-    return 0;
-  }
-  else if (x > bindef.xmax) {
-    return bindef.nbins + 1;
-  }
-  else {
-    return static_cast<std::size_t>((x - bindef.xmin) * norm * bindef.nbins) + 1;
-  }
-}
-
-template <typename T>
-inline std::size_t get_bin(const T x, std::vector<T>& edges) {
-  if (x < edges[0]) {
-    return std::size_t(0);
-  }
-  else if (x > edges.back()) {
-    return edges.size();
-  }
-  else {
-    return static_cast<std::size_t>(find_bin(std::begin(edges), std::end(edges), x)) + 1;
-  }
-}
-
-/// fill a fixed bin width weighted 2d histogram
-template <typename T>
-void fill(T* count, T* sumw2, const T x, const T y, const T weight, const T normx,
-          const int nbinsx, const T xmin, const T xmax, const T normy, const int nbinsy,
-          const T ymin, const T ymax) {
-  if (!(x >= xmin && x < xmax)) return;
-  if (!(y >= ymin && y < ymax)) return;
-  std::size_t xbinId = static_cast<std::size_t>((x - xmin) * normx * nbinsx);
-  std::size_t ybinId = static_cast<std::size_t>((y - ymin) * normy * nbinsy);
-  count[ybinId + nbinsy * xbinId] += weight;
-  sumw2[ybinId + nbinsy * xbinId] += weight * weight;
-}
-
-/// fill a fixed bin width unweighted 2d histogram
-template <typename T>
-void fill(std::int64_t* count, const T x, const T y, const T normx, const int nbinsx,
-          const T xmin, const T xmax, const T normy, const int nbinsy, const T ymin,
-          const T ymax) {
-  if (!(x >= xmin && x < xmax)) return;
-  if (!(y >= ymin && y < ymax)) return;
-  std::size_t xbinId = static_cast<std::size_t>((x - xmin) * normx * nbinsx);
-  std::size_t ybinId = static_cast<std::size_t>((y - ymin) * normy * nbinsy);
-  count[ybinId + nbinsy * xbinId]++;
-}
-
-/// fill a variable bin width weighted 2d histogram
-template <typename T>
-void fill(T* count, T* sumw2, const T x, const T y, const T weight, const int nbinsx,
-          const std::vector<T>& xedges, const int nbinsy, const std::vector<T>& yedges) {
-  if (!(x >= xedges[0] && x < xedges[nbinsx])) return;
-  if (!(y >= yedges[0] && y < yedges[nbinsy])) return;
-  std::size_t xbinId = find_bin(std::begin(xedges), std::end(xedges), x);
-  std::size_t ybinId = find_bin(std::begin(yedges), std::end(yedges), y);
-  count[ybinId + nbinsy * xbinId] += weight;
-  sumw2[ybinId + nbinsy * xbinId] += weight * weight;
-}
-
-/// fill a variable bin width unweighted 2d histogram
-template <typename T>
-void fill(std::int64_t* count, const T x, const T y, const int nbinsx,
-          const std::vector<T>& xedges, const int nbinsy, const std::vector<T>& yedges) {
-  if (!(x >= xedges[0] && x < xedges[nbinsx])) return;
-  if (!(y >= yedges[0] && y < yedges[nbinsy])) return;
-  std::size_t xbinId = find_bin(std::begin(xedges), std::end(xedges), x);
-  std::size_t ybinId = find_bin(std::begin(yedges), std::end(yedges), y);
-  count[ybinId + nbinsy * xbinId]++;
-}
-
-}  // namespace detail
-}  // namespace pygram11
-
-template <typename T>
-void c_fix2d_weighted(const T* x, const T* y, const T* weights, T* count, T* sumw2,
-                      const std::size_t n, const int nbinsx, const T xmin, const T xmax,
-                      const int nbinsy, const T ymin, const T ymax) {
-  const int nbins = nbinsx * nbinsy;
-  const T normx = 1.0 / (xmax - xmin);
-  const T normy = 1.0 / (ymax - ymin);
-  memset(count, 0, sizeof(T) * nbins);
-  memset(sumw2, 0, sizeof(T) * nbins);
-
 #pragma omp parallel
-  {
-    std::unique_ptr<T[]> count_priv(new T[nbins]);
-    std::unique_ptr<T[]> sumw2_priv(new T[nbins]);
-    memset(count_priv.get(), 0, sizeof(T) * nbins);
-    memset(sumw2_priv.get(), 0, sizeof(T) * nbins);
-
+    {
+      std::vector<TW> counts_ot(nbinsx * nbinsy, 0.0);
+      std::vector<TW> vars_ot(nbinsx * nbinsy, 0.0);
+      TW weight;
+      TX x_i;
+      TY y_i;
+      std::size_t xbin, ybin, bin;
 #pragma omp for nowait
-    for (std::size_t i = 0; i < n; i++) {
-      pygram11::detail::fill(count_priv.get(), sumw2_priv.get(), x[i], y[i], weights[i],
-                             normx, nbinsx, xmin, xmax, normy, nbinsy, ymin, ymax);
-    }
-
+      for (std::size_t i = 0; i < ndata; i++) {
+        x_i = x_proxy[i];
+        y_i = y_proxy[i];
+        if (x_i < xedges_v.front() || x_i >= xedges_v.back()) continue;
+        if (y_i < yedges_v.front() || y_i >= yedges_v.back()) continue;
+        xbin = pygram11::helpers::get_bin(x_i, xedges_v);
+        ybin = pygram11::helpers::get_bin(y_i, yedges_v);
+        bin = ybin + nbinsy * xbin;
+        weight = w_proxy[i];
+        counts_ot[bin] += weight;
+        vars_ot[bin] += weight * weight;
+      }
 #pragma omp critical
-    for (int i = 0; i < nbins; i++) {
-      count[i] += count_priv[i];
-      sumw2[i] += sumw2_priv[i];
+      for (std::size_t i = 0; i < (nbinsx * nbinsy); i++) {
+        counts_proxy[i] += counts_ot[i];
+        vars_proxy[i] += vars_ot[i];
+      }
     }
   }
-}
 
-template <typename T>
-void c_fix2d(const T* x, const T* y, std::int64_t* count, const std::size_t n,
-             const int nbinsx, const T xmin, const T xmax, const int nbinsy, const T ymin,
-             const T ymax) {
-  const int nbins = nbinsx * nbinsy;
-  const T normx = 1.0 / (xmax - xmin);
-  const T normy = 1.0 / (ymax - ymin);
-  memset(count, 0, sizeof(std::int64_t) * nbins);
-
-#pragma omp parallel
-  {
-    std::unique_ptr<std::int64_t[]> count_priv(new std::int64_t[nbins]);
-    memset(count_priv.get(), 0, sizeof(std::int64_t) * nbins);
-
-#pragma omp for nowait
-    for (std::size_t i = 0; i < n; i++) {
-      pygram11::detail::fill(count_priv.get(), x[i], y[i], normx, nbinsx, xmin, xmax, normy,
-                             nbinsy, ymin, ymax);
-    }
-
-#pragma omp critical
-    for (int i = 0; i < nbins; i++) {
-      count[i] += count_priv[i];
-    }
+  if (as_err) {
+    pygram11::helpers::array_sqrt(vars.mutable_data(), nbinsx * nbinsy);
   }
-}
 
-///////////////////////////////////////////////////////////
-///////////////////////////// non-fixed (variable) ////////
-///////////////////////////////////////////////////////////
-
-template <typename T>
-void c_var2d(const T* x, const T* y, std::int64_t* count, const std::size_t n,
-             const int nbinsx, const int nbinsy, const std::vector<T>& xedges,
-             const std::vector<T>& yedges) {
-  const int nbins = nbinsx * nbinsy;
-  memset(count, 0, sizeof(std::int64_t) * nbins);
-
-#pragma omp parallel
-  {
-    std::unique_ptr<std::int64_t[]> count_priv(new std::int64_t[nbins]);
-    memset(count_priv.get(), 0, sizeof(std::int64_t) * nbins);
-
-#pragma omp for nowait
-    for (std::size_t i = 0; i < n; i++) {
-      pygram11::detail::fill(count_priv.get(), x[i], y[i], nbinsx, xedges, nbinsy, yedges);
-    }
-
-#pragma omp critical
-    for (int i = 0; i < nbins; i++) {
-      count[i] += count_priv[i];
-    }
-  }
-}
-
-template <typename T>
-void c_var2d_weighted(const T* x, const T* y, const T* weights, T* count, T* sumw2,
-                      const std::size_t n, const int nbinsx, const int nbinsy,
-                      const std::vector<T>& xedges, const std::vector<T>& yedges) {
-  const int nbins = nbinsx * nbinsy;
-  memset(count, 0, sizeof(T) * nbins);
-  memset(sumw2, 0, sizeof(T) * nbins);
-
-#pragma omp parallel
-  {
-    std::unique_ptr<T[]> count_priv(new T[nbins]);
-    std::unique_ptr<T[]> sumw2_priv(new T[nbins]);
-    memset(count_priv.get(), 0, sizeof(T) * nbins);
-    memset(sumw2_priv.get(), 0, sizeof(T) * nbins);
-
-#pragma omp for nowait
-    for (std::size_t i = 0; i < n; i++) {
-      pygram11::detail::fill(count_priv.get(), sumw2_priv.get(), x[i], y[i], weights[i],
-                             nbinsx, xedges, nbinsy, yedges);
-    }
-
-#pragma omp critical
-    for (int i = 0; i < nbins; i++) {
-      count[i] += count_priv[i];
-      sumw2[i] += sumw2_priv[i];
-    }
-  }
-}
-
-template <typename T>
-py::array_t<T> fix2d(py::array_t<T> x, py::array_t<T> y, int nbinsx, T xmin, T xmax,
-                     int nbinsy, T ymin, T ymax) {
-  auto result_count = py::array_t<std::int64_t>({nbinsx, nbinsy});
-  std::int64_t* result_count_ptr = result_count.mutable_data();
-  std::size_t ndata = static_cast<std::size_t>(x.size());
-
-  c_fix2d<T>(x.data(), y.data(), result_count_ptr, ndata, nbinsx, xmin, xmax, nbinsy, ymin,
-             ymax);
-  return result_count;
-}
-
-template <typename T>
-py::tuple fix2d_weighted(py::array_t<T> x, py::array_t<T> y, py::array_t<T> w, int nbinsx,
-                         T xmin, T xmax, int nbinsy, T ymin, T ymax) {
-  auto result_count = py::array_t<T>({nbinsx, nbinsy});
-  auto result_sumw2 = py::array_t<T>({nbinsx, nbinsy});
-  T* result_count_ptr = result_count.mutable_data();
-  T* result_sumw2_ptr = result_sumw2.mutable_data();
-  std::size_t ndata = static_cast<std::size_t>(x.size());
-  py::list listing;
-
-  c_fix2d_weighted<T>(x.data(), y.data(), w.data(), result_count_ptr, result_sumw2_ptr,
-                      ndata, nbinsx, xmin, xmax, nbinsy, ymin, ymax);
-  listing.append(result_count);
-  listing.append(result_sumw2);
-  return py::cast<py::tuple>(listing);
-}
-
-template <typename T>
-py::array_t<T> var2d(py::array_t<T> x, py::array_t<T> y, py::array_t<T> xedges,
-                     py::array_t<T> yedges) {
-  std::size_t xedges_len = static_cast<std::size_t>(xedges.size());
-  std::size_t yedges_len = static_cast<std::size_t>(yedges.size());
-  const T* xedges_ptr = xedges.data();
-  const T* yedges_ptr = yedges.data();
-  std::vector<T> xedges_vec(xedges_ptr, xedges_ptr + xedges_len);
-  std::vector<T> yedges_vec(yedges_ptr, yedges_ptr + yedges_len);
-
-  std::size_t ndata = static_cast<std::size_t>(x.size());
-  int nbinsx = xedges_len - 1;
-  int nbinsy = yedges_len - 1;
-
-  auto result_count = py::array_t<std::int64_t>({nbinsx, nbinsy});
-  std::int64_t* result_count_ptr = result_count.mutable_data();
-
-  c_var2d<T>(x.data(), y.data(), result_count_ptr, ndata, nbinsx, nbinsy, xedges_vec,
-             yedges_vec);
-  return result_count;
-}
-
-template <typename T>
-py::tuple var2d_weighted(py::array_t<T> x, py::array_t<T> y, py::array_t<T> w,
-                         py::array_t<T> xedges, py::array_t<T> yedges) {
-  std::size_t xedges_len = static_cast<std::size_t>(xedges.size());
-  std::size_t yedges_len = static_cast<std::size_t>(yedges.size());
-  const T* xedges_ptr = xedges.data();
-  const T* yedges_ptr = yedges.data();
-  std::vector<T> xedges_vec(xedges_ptr, xedges_ptr + xedges_len);
-  std::vector<T> yedges_vec(yedges_ptr, yedges_ptr + yedges_len);
-
-  std::size_t ndata = static_cast<std::size_t>(x.size());
-  int nbinsx = xedges_len - 1;
-  int nbinsy = yedges_len - 1;
-
-  auto result_count = py::array_t<T>({nbinsx, nbinsy});
-  auto result_sumw2 = py::array_t<T>({nbinsx, nbinsy});
-  T* result_count_ptr = result_count.mutable_data();
-  T* result_sumw2_ptr = result_sumw2.mutable_data();
-  py::list listing;
-
-  c_var2d_weighted<T>(x.data(), y.data(), w.data(), result_count_ptr, result_sumw2_ptr,
-                      ndata, nbinsx, nbinsy, xedges_vec, yedges_vec);
-  listing.append(result_count);
-  listing.append(result_sumw2);
-  return py::cast<py::tuple>(listing);
+  return py::make_tuple(counts, vars);
 }
 
 PYBIND11_MODULE(_CPP_PB_2D, m) {
-  m.doc() = "legacy 2D pygram11 histogramming code";
+  m.doc() = "pygram11's pybind11 based 2D backend";
 
   using namespace pybind11::literals;
-
-  m.def("_fix2d_f8", &fix2d<double>);
-  m.def("_fix2d_f4", &fix2d<float>);
-  m.def("_fix2d_weighted_f8", &fix2d_weighted<double>);
-  m.def("_fix2d_weighted_f4", &fix2d_weighted<float>);
-  m.def("_var2d_f8", &var2d<double>);
-  m.def("_var2d_f4", &var2d<float>);
-  m.def("_var2d_weighted_f8", &var2d_weighted<double>);
-  m.def("_var2d_weighted_f4", &var2d_weighted<float>);
 
   m.def("_f2dw", &f2dw<double, double, double>, "x"_a.noconvert(), "y"_a.noconvert(),
         "weights"_a.noconvert(), "nbinsx"_a, "xmin"_a, "xmax"_a, "nbinsy"_a, "ymin"_a,
@@ -447,4 +230,21 @@ PYBIND11_MODULE(_CPP_PB_2D, m) {
   m.def("_f2dw", &f2dw<float, float, double>, "x"_a.noconvert(), "y"_a.noconvert(),
         "weights"_a.noconvert(), "nbinsx"_a, "xmin"_a, "xmax"_a, "nbinsy"_a, "ymin"_a,
         "ymax"_a, "flow"_a, "as_err"_a);
+
+  m.def("_v2dw", &v2dw<double, double, double>, "x"_a.noconvert(), "y"_a.noconvert(),
+        "weights"_a.noconvert(), "xedges"_a, "yedges"_a, "flow"_a, "as_err"_a);
+  m.def("_v2dw", &v2dw<float, double, double>, "x"_a.noconvert(), "y"_a.noconvert(),
+        "weights"_a.noconvert(), "xedges"_a, "yedges"_a, "flow"_a, "as_err"_a);
+  m.def("_v2dw", &v2dw<double, float, double>, "x"_a.noconvert(), "y"_a.noconvert(),
+        "weights"_a.noconvert(), "xedges"_a, "yedges"_a, "flow"_a, "as_err"_a);
+  m.def("_v2dw", &v2dw<double, double, float>, "x"_a.noconvert(), "y"_a.noconvert(),
+        "weights"_a.noconvert(), "xedges"_a, "yedges"_a, "flow"_a, "as_err"_a);
+  m.def("_v2dw", &v2dw<float, float, float>, "x"_a.noconvert(), "y"_a.noconvert(),
+        "weights"_a.noconvert(), "xedges"_a, "yedges"_a, "flow"_a, "as_err"_a);
+  m.def("_v2dw", &v2dw<double, float, float>, "x"_a.noconvert(), "y"_a.noconvert(),
+        "weights"_a.noconvert(), "xedges"_a, "yedges"_a, "flow"_a, "as_err"_a);
+  m.def("_v2dw", &v2dw<float, double, float>, "x"_a.noconvert(), "y"_a.noconvert(),
+        "weights"_a.noconvert(), "xedges"_a, "yedges"_a, "flow"_a, "as_err"_a);
+  m.def("_v2dw", &v2dw<float, float, double>, "x"_a.noconvert(), "y"_a.noconvert(),
+        "weights"_a.noconvert(), "xedges"_a, "yedges"_a, "flow"_a, "as_err"_a);
 }
