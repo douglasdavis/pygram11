@@ -29,7 +29,7 @@ from ._CPP_PB import _f1dmw, _v1dmw
 from ._CPP_PB_2D import _f2dw, _v2dw
 
 
-__version__ = "0.7.3"
+__version__ = "0.7.4.dev0"
 version_info = tuple(__version__.split("."))
 
 
