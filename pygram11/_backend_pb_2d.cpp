@@ -124,7 +124,7 @@ py::tuple f2dw(const py::array_t<TX>& x, const py::array_t<TY>& y, const py::arr
   auto y_proxy = y.data();
   auto w_proxy = w.data();
 
-  if (ndata < 5000) {
+  if (ndata < 10000) {
     fixed_serial_fill(x_proxy, y_proxy, w_proxy, counts_proxy, vars_proxy, ndata, nbinsx,
                       xmin, xmax, nbinsy, ymin, ymax, flow);
   }
@@ -215,7 +215,7 @@ py::tuple v2dw(const py::array_t<TX>& x, const py::array_t<TY>& y, const py::arr
   auto y_proxy = y.data();
   auto w_proxy = w.data();
 
-  if (ndata < 10000) {
+  if (ndata < 5000) {
     variable_serial_fill(x_proxy, y_proxy, w_proxy, counts_proxy, vars_proxy, ndata,
                          xedges_v, yedges_v, flow);
   }
