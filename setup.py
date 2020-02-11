@@ -251,7 +251,7 @@ setup(
         "Operating System :: POSIX",
         "Operating System :: POSIX :: Linux",
         "License :: OSI Approved :: MIT License",
-        "Development Status :: 5 - Production/Stable",
+        "Development Status :: 4 - Beta",
         "Intended Audience :: Science/Research",
     ],
 )
