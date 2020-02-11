@@ -41,9 +41,8 @@ namespace py = pybind11;
 
 template <typename TX, typename TY, typename TW>
 static void fixed_serial_fill(const TX* x, const TY* y, const TW* w, TW* counts, TW* vars,
-                              std::size_t ndata, std::size_t nbinsx, TX xmin,
-                              TX xmax, std::size_t nbinsy, TY ymin, TY ymax,
-                              bool flow) {
+                              std::size_t ndata, std::size_t nbinsx, TX xmin, TX xmax,
+                              std::size_t nbinsy, TY ymin, TY ymax, bool flow) {
   TW weight;
   std::size_t xbin, ybin, bin;
   TX normx = 1.0 / (xmax - xmin);
@@ -75,8 +74,7 @@ static void fixed_serial_fill(const TX* x, const TY* y, const TW* w, TW* counts,
 
 template <typename TX, typename TY, typename TW>
 static void variable_serial_fill(const TX* x, const TY* y, const TW* w, TW* counts,
-                                 TW* vars, std::size_t ndata,
-                                 const std::vector<TX>& xedges,
+                                 TW* vars, std::size_t ndata, const std::vector<TX>& xedges,
                                  const std::vector<TY>& yedges, bool flow) {
   TW weight;
   std::size_t xbin, ybin, bin;
@@ -111,8 +109,8 @@ static void variable_serial_fill(const TX* x, const TY* y, const TW* w, TW* coun
 
 template <typename TX, typename TY, typename TW>
 py::tuple f2dw(const py::array_t<TX>& x, const py::array_t<TY>& y, const py::array_t<TW>& w,
-               std::size_t nbinsx, TX xmin, TX xmax, std::size_t nbinsy,
-               TY ymin, TY ymax, bool flow, bool as_err) {
+               std::size_t nbinsx, TX xmin, TX xmax, std::size_t nbinsy, TY ymin, TY ymax,
+               bool flow, bool as_err) {
   std::size_t ndata = static_cast<std::size_t>(x.shape(0));
   py::array_t<TW> counts({nbinsx, nbinsy});
   py::array_t<TW> vars({nbinsx, nbinsy});
