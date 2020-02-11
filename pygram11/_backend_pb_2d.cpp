@@ -41,13 +41,13 @@ namespace py = pybind11;
 
 template <typename TX, typename TY, typename TW>
 static void fixed_serial_fill(const TX* x, const TY* y, const TW* w, TW* counts, TW* vars,
-                              std::size_t ndata, std::size_t nbinsx, double xmin,
-                              double xmax, std::size_t nbinsy, double ymin, double ymax,
+                              std::size_t ndata, std::size_t nbinsx, TX xmin,
+                              TX xmax, std::size_t nbinsy, TY ymin, TY ymax,
                               bool flow) {
   TW weight;
   std::size_t xbin, ybin, bin;
-  double normx = 1.0 / (xmax - xmin);
-  double normy = 1.0 / (ymax - ymin);
+  TX normx = 1.0 / (xmax - xmin);
+  TY normy = 1.0 / (ymax - ymin);
   if (flow) {
     for (std::size_t i = 0; i < ndata; i++) {
       xbin = pygram11::helpers::get_bin(x[i], nbinsx, xmin, xmax, normx);
@@ -76,8 +76,8 @@ static void fixed_serial_fill(const TX* x, const TY* y, const TW* w, TW* counts,
 template <typename TX, typename TY, typename TW>
 static void variable_serial_fill(const TX* x, const TY* y, const TW* w, TW* counts,
                                  TW* vars, std::size_t ndata,
-                                 const std::vector<double>& xedges,
-                                 const std::vector<double>& yedges, bool flow) {
+                                 const std::vector<TX>& xedges,
+                                 const std::vector<TY>& yedges, bool flow) {
   TW weight;
   std::size_t xbin, ybin, bin;
   std::size_t nbinsx = xedges.size() - 1;
@@ -111,8 +111,8 @@ static void variable_serial_fill(const TX* x, const TY* y, const TW* w, TW* coun
 
 template <typename TX, typename TY, typename TW>
 py::tuple f2dw(const py::array_t<TX>& x, const py::array_t<TY>& y, const py::array_t<TW>& w,
-               std::size_t nbinsx, double xmin, double xmax, std::size_t nbinsy,
-               double ymin, double ymax, bool flow, bool as_err) {
+               std::size_t nbinsx, TX xmin, TX xmax, std::size_t nbinsy,
+               TY ymin, TY ymax, bool flow, bool as_err) {
   std::size_t ndata = static_cast<std::size_t>(x.shape(0));
   py::array_t<TW> counts({nbinsx, nbinsy});
   py::array_t<TW> vars({nbinsx, nbinsy});
@@ -130,8 +130,8 @@ py::tuple f2dw(const py::array_t<TX>& x, const py::array_t<TY>& y, const py::arr
   }
 
   else {
-    double normx = 1.0 / (xmax - xmin);
-    double normy = 1.0 / (ymax - ymin);
+    TX normx = 1.0 / (xmax - xmin);
+    TY normy = 1.0 / (ymax - ymin);
     if (flow) {
 #pragma omp parallel
       {
@@ -194,14 +194,14 @@ py::tuple f2dw(const py::array_t<TX>& x, const py::array_t<TY>& y, const py::arr
 
 template <typename TX, typename TY, typename TW>
 py::tuple v2dw(const py::array_t<TX>& x, const py::array_t<TY>& y, const py::array_t<TW>& w,
-               const py::array_t<double, py::array::c_style | py::array::forcecast>& xedges,
-               const py::array_t<double, py::array::c_style | py::array::forcecast>& yedges,
+               const py::array_t<TX, py::array::c_style | py::array::forcecast>& xedges,
+               const py::array_t<TY, py::array::c_style | py::array::forcecast>& yedges,
                bool flow, bool as_err) {
   std::size_t ndata = static_cast<std::size_t>(x.shape(0));
   std::size_t nbinsx = static_cast<std::size_t>(xedges.shape(0)) - 1;
   std::size_t nbinsy = static_cast<std::size_t>(yedges.shape(0)) - 1;
-  std::vector<double> xedges_v(nbinsx + 1);
-  std::vector<double> yedges_v(nbinsy + 1);
+  std::vector<TX> xedges_v(nbinsx + 1);
+  std::vector<TY> yedges_v(nbinsy + 1);
   xedges_v.assign(xedges.data(), xedges.data() + (nbinsx + 1));
   yedges_v.assign(yedges.data(), yedges.data() + (nbinsy + 1));
 
@@ -284,45 +284,21 @@ PYBIND11_MODULE(_CPP_PB_2D, m) {
 
   using namespace pybind11::literals;
 
-  m.def("_f2dw", &f2dw<double, double, double>, "x"_a.noconvert(), "y"_a.noconvert(),
-        "weights"_a.noconvert(), "nbinsx"_a, "xmin"_a, "xmax"_a, "nbinsy"_a, "ymin"_a,
-        "ymax"_a, "flow"_a, "as_err"_a);
-  m.def("_f2dw", &f2dw<float, double, double>, "x"_a.noconvert(), "y"_a.noconvert(),
-        "weights"_a.noconvert(), "nbinsx"_a, "xmin"_a, "xmax"_a, "nbinsy"_a, "ymin"_a,
-        "ymax"_a, "flow"_a, "as_err"_a);
-  m.def("_f2dw", &f2dw<double, float, double>, "x"_a.noconvert(), "y"_a.noconvert(),
-        "weights"_a.noconvert(), "nbinsx"_a, "xmin"_a, "xmax"_a, "nbinsy"_a, "ymin"_a,
-        "ymax"_a, "flow"_a, "as_err"_a);
-  m.def("_f2dw", &f2dw<double, double, float>, "x"_a.noconvert(), "y"_a.noconvert(),
-        "weights"_a.noconvert(), "nbinsx"_a, "xmin"_a, "xmax"_a, "nbinsy"_a, "ymin"_a,
-        "ymax"_a, "flow"_a, "as_err"_a);
-  m.def("_f2dw", &f2dw<float, float, float>, "x"_a.noconvert(), "y"_a.noconvert(),
-        "weights"_a.noconvert(), "nbinsx"_a, "xmin"_a, "xmax"_a, "nbinsy"_a, "ymin"_a,
-        "ymax"_a, "flow"_a, "as_err"_a);
-  m.def("_f2dw", &f2dw<double, float, float>, "x"_a.noconvert(), "y"_a.noconvert(),
-        "weights"_a.noconvert(), "nbinsx"_a, "xmin"_a, "xmax"_a, "nbinsy"_a, "ymin"_a,
-        "ymax"_a, "flow"_a, "as_err"_a);
-  m.def("_f2dw", &f2dw<float, double, float>, "x"_a.noconvert(), "y"_a.noconvert(),
-        "weights"_a.noconvert(), "nbinsx"_a, "xmin"_a, "xmax"_a, "nbinsy"_a, "ymin"_a,
-        "ymax"_a, "flow"_a, "as_err"_a);
-  m.def("_f2dw", &f2dw<float, float, double>, "x"_a.noconvert(), "y"_a.noconvert(),
-        "weights"_a.noconvert(), "nbinsx"_a, "xmin"_a, "xmax"_a, "nbinsy"_a, "ymin"_a,
-        "ymax"_a, "flow"_a, "as_err"_a);
+  m.def("_f2dw", &f2dw<double, double, double>);
+  m.def("_f2dw", &f2dw<float, float, float>);
+  m.def("_f2dw", &f2dw<double, double, float>);
+  m.def("_f2dw", &f2dw<double, float, double>);
+  m.def("_f2dw", &f2dw<float, double, double>);
+  m.def("_f2dw", &f2dw<float, float, double>);
+  m.def("_f2dw", &f2dw<float, double, float>);
+  m.def("_f2dw", &f2dw<double, float, float>);
 
-  m.def("_v2dw", &v2dw<double, double, double>, "x"_a.noconvert(), "y"_a.noconvert(),
-        "weights"_a.noconvert(), "xedges"_a, "yedges"_a, "flow"_a, "as_err"_a);
-  m.def("_v2dw", &v2dw<float, double, double>, "x"_a.noconvert(), "y"_a.noconvert(),
-        "weights"_a.noconvert(), "xedges"_a, "yedges"_a, "flow"_a, "as_err"_a);
-  m.def("_v2dw", &v2dw<double, float, double>, "x"_a.noconvert(), "y"_a.noconvert(),
-        "weights"_a.noconvert(), "xedges"_a, "yedges"_a, "flow"_a, "as_err"_a);
-  m.def("_v2dw", &v2dw<double, double, float>, "x"_a.noconvert(), "y"_a.noconvert(),
-        "weights"_a.noconvert(), "xedges"_a, "yedges"_a, "flow"_a, "as_err"_a);
-  m.def("_v2dw", &v2dw<float, float, float>, "x"_a.noconvert(), "y"_a.noconvert(),
-        "weights"_a.noconvert(), "xedges"_a, "yedges"_a, "flow"_a, "as_err"_a);
-  m.def("_v2dw", &v2dw<double, float, float>, "x"_a.noconvert(), "y"_a.noconvert(),
-        "weights"_a.noconvert(), "xedges"_a, "yedges"_a, "flow"_a, "as_err"_a);
-  m.def("_v2dw", &v2dw<float, double, float>, "x"_a.noconvert(), "y"_a.noconvert(),
-        "weights"_a.noconvert(), "xedges"_a, "yedges"_a, "flow"_a, "as_err"_a);
-  m.def("_v2dw", &v2dw<float, float, double>, "x"_a.noconvert(), "y"_a.noconvert(),
-        "weights"_a.noconvert(), "xedges"_a, "yedges"_a, "flow"_a, "as_err"_a);
+  m.def("_v2dw", &v2dw<double, double, double>);
+  m.def("_v2dw", &v2dw<float, float, float>);
+  m.def("_v2dw", &v2dw<double, double, float>);
+  m.def("_v2dw", &v2dw<double, float, double>);
+  m.def("_v2dw", &v2dw<float, double, double>);
+  m.def("_v2dw", &v2dw<float, float, double>);
+  m.def("_v2dw", &v2dw<float, double, float>);
+  m.def("_v2dw", &v2dw<double, float, float>);
 }
