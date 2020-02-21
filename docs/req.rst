@@ -4,30 +4,22 @@ Installation
 Requirements
 ------------
 
-The only requirement for pygram11 is NumPy_. All installation methods
-will ensure that ``numpy`` is installed. If you install binaries from
-conda-forge or PyPI, OpenMP acceleration is enabled.
+The only requirement to use pygram11 is NumPy_.  If you install
+binaries from conda-forge or PyPI, NumPy will be installed as a
+required dependency.
 
 Extras for Source Builds
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
 When building from source, all you need is a C++ compiler with C++11
-support. The ``setup.py`` script will test to see if OpenMP is
-available during compilation and linking of the backend extenstion
-module. Most Linux distributions with relatively modern GCC versions
-should provide OpenMP automatically (search the web to see how to
-install OpenMP from your distribution's package manager). On macOS
-you'll want to install ``libomp`` from Homebrew to use OpenMP with the
-Clang compiler shipped with macOS.
-
-You can use pygram11 without OpenMP, but you might want to try
-`fast-histogram <https://github.com/astrofrog/fast-histogram>`_ if you
-just need to compute fixed bin histograms (see `the benchmarks
-<purpose.html#some-benchmarks>`__). If you're here for variable width
-histograms or the sum-of-weights-squared first class citizenry or the
-multiple weight variation histograms - I think you'll still find
-pygram11 useful.
-
+support and a pre-existing NumPy installation. The ``setup.py`` script
+will test to see if OpenMP is available during compilation and linking
+of the backend extenstion module. If it's not available then the
+installation will crash. Most Linux distributions with modern GCC
+versions should provide OpenMP automatically (search the web to see
+how to install OpenMP from your distribution's package manager). On
+macOS you'll want to install ``libomp`` from Homebrew to use OpenMP
+with the Clang compiler shipped with macOS.
 
 Install Options
 ---------------
