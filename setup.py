@@ -1,17 +1,17 @@
 # MIT License
-
+#
 # Copyright (c) 2019 Douglas Davis
-
+#
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
 # in the Software without restriction, including without limitation the rights
 # to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 # copies of the Software, and to permit persons to whom the Software is
 # furnished to do so, subject to the following conditions:
-
+#
 # The above copyright notice and this permission notice shall be included in all
 # copies or substantial portions of the Software.
-
+#
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -143,15 +143,7 @@ def get_extensions():
     extenmods = []
     extenmods += [
         Extension(
-            "pygram11._CPP",
-            [os.path.join("pygram11", "_backend.cpp")],
-            language="c++",
-            include_dirs=[numpy.get_include()],
-            extra_compile_args=cpp_cflags,
-            extra_link_args=cpp_lflags,
-        ),
-        Extension(
-            "pygram11._CPP_PB",
+            "pygram11._backend1d",
             [os.path.join("pygram11", "_backend_pb.cpp")],
             language="c++",
             include_dirs=["extern/pybind11/include"],
@@ -159,15 +151,7 @@ def get_extensions():
             extra_link_args=cpp_lflags,
         ),
         Extension(
-            "pygram11._CPP_CPP_OBJ",
-            [os.path.join("pygram11", "_backend_pb_obj.cpp")],
-            language="c++",
-            include_dirs=["extern/pybind11/include"],
-            extra_compile_args=cpp_cflags,
-            extra_link_args=cpp_lflags,
-        ),
-        Extension(
-            "pygram11._CPP_PB_2D",
+            "pygram11._backend2d",
             [os.path.join("pygram11", "_backend_pb_2d.cpp")],
             language="c++",
             include_dirs=["extern/pybind11/include"],
@@ -203,16 +187,6 @@ def get_requirements():
     with (project_root / "requirements.txt").open("r") as f:
         requirements = f.read().splitlines()
 
-
-try:
-    import numpy
-except ImportError:
-    sys.exit(
-        "\n"
-        "*******************************************************\n"
-        "* NumPy is required to use pygram11's setup.py script *\n"
-        "*******************************************************"
-    )
 
 if not has_openmp():
     sys.exit(

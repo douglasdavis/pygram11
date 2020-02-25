@@ -1,17 +1,17 @@
 // MIT License
-
+//
 // Copyright (c) 2019 Douglas Davis
-
+//
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
 // in the Software without restriction, including without limitation the rights
 // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
-
+//
 // The above copyright notice and this permission notice shall be included in all
 // copies or substantial portions of the Software.
-
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -45,8 +45,8 @@ static void fixed_serial_fill(const TX* x, const TY* y, const TW* w, TW* counts,
                               std::size_t nbinsy, TY ymin, TY ymax, bool flow) {
   TW weight;
   std::size_t xbin, ybin, bin;
-  TX normx = 1.0 / (xmax - xmin);
-  TY normy = 1.0 / (ymax - ymin);
+  TX normx = nbinsx / (xmax - xmin);
+  TY normy = nbinsy / (ymax - ymin);
   if (flow) {
     for (std::size_t i = 0; i < ndata; i++) {
       xbin = pygram11::helpers::get_bin(x[i], nbinsx, xmin, xmax, normx);
@@ -62,8 +62,8 @@ static void fixed_serial_fill(const TX* x, const TY* y, const TW* w, TW* counts,
       if (x[i] < xmin || x[i] >= xmax || y[i] < ymin || y[i] >= ymax) {
         continue;
       }
-      xbin = pygram11::helpers::get_bin(x[i], nbinsx, xmin, normx);
-      ybin = pygram11::helpers::get_bin(y[i], nbinsy, ymin, normy);
+      xbin = pygram11::helpers::get_bin(x[i], xmin, normx);
+      ybin = pygram11::helpers::get_bin(y[i], ymin, normy);
       weight = w[i];
       bin = ybin + nbinsy * xbin;
       counts[bin] += weight;
@@ -122,14 +122,14 @@ py::tuple f2dw(const py::array_t<TX>& x, const py::array_t<TY>& y, const py::arr
   auto y_proxy = y.data();
   auto w_proxy = w.data();
 
-  if (ndata < 10000) {
+  if (ndata < 5000) {
     fixed_serial_fill(x_proxy, y_proxy, w_proxy, counts_proxy, vars_proxy, ndata, nbinsx,
                       xmin, xmax, nbinsy, ymin, ymax, flow);
   }
 
   else {
-    TX normx = 1.0 / (xmax - xmin);
-    TY normy = 1.0 / (ymax - ymin);
+    TX normx = nbinsx / (xmax - xmin);
+    TY normy = nbinsy / (ymax - ymin);
     if (flow) {
 #pragma omp parallel
       {
@@ -167,8 +167,8 @@ py::tuple f2dw(const py::array_t<TX>& x, const py::array_t<TY>& y, const py::arr
               y_proxy[i] >= ymax) {
             continue;
           }
-          xbin = pygram11::helpers::get_bin(x_proxy[i], nbinsx, xmin, normx);
-          ybin = pygram11::helpers::get_bin(y_proxy[i], nbinsy, ymin, normy);
+          xbin = pygram11::helpers::get_bin(x_proxy[i], xmin, normx);
+          ybin = pygram11::helpers::get_bin(y_proxy[i], ymin, normy);
           bin = ybin + nbinsy * xbin;
           weight = w_proxy[i];
           counts_ot[bin] += weight;
@@ -277,7 +277,7 @@ py::tuple v2dw(const py::array_t<TX>& x, const py::array_t<TY>& y, const py::arr
   return py::make_tuple(counts, vars);
 }
 
-PYBIND11_MODULE(_CPP_PB_2D, m) {
+PYBIND11_MODULE(_backend2d, m) {
   m.doc() = "pygram11's pybind11 based 2D backend";
 
   using namespace pybind11::literals;
