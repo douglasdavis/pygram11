@@ -24,12 +24,12 @@ import warnings
 import numpy as np
 import numbers
 
-from pygram11._backend1d import  _omp_get_max_threads
+from pygram11._backend1d import _omp_get_max_threads
 from pygram11._backend1d import _v1dw, _f1dw, _f1dmw, _v1dmw
 from pygram11._backend2d import _f2dw, _v2dw
 
 
-__version__ = "0.7.4.dev0"
+__version__ = "0.8.0"
 version_info = tuple(__version__.split("."))
 
 
@@ -54,11 +54,6 @@ def _likely_uniform_bins(edges):
     return max_close and min_close
 
 
-def _deprecation_check(omp):
-    if omp is not None:
-        warnings.warn("omp argument is deprecated; it does nothing", DeprecationWarning)
-
-
 def omp_get_max_threads():
     """Get the number of threads available to OpenMP.
 
@@ -75,7 +70,7 @@ def omp_get_max_threads():
     return _omp_get_max_threads()
 
 
-def fix1d(x, bins=10, range=None, weights=None, density=False, flow=False, omp=None):
+def fix1d(x, bins=10, range=None, weights=None, density=False, flow=False):
     """Calculate a histogram for one dimensional data with fixed bin widths
 
     Parameters
@@ -94,8 +89,6 @@ def fix1d(x, bins=10, range=None, weights=None, density=False, flow=False, omp=N
     flow : bool
         if ``True`` the under and overflow bin contents are added to the first
         and last bins, respectively
-    omp : None
-        a deprecated argument
 
     Returns
     -------
@@ -106,6 +99,7 @@ def fix1d(x, bins=10, range=None, weights=None, density=False, flow=False, omp=N
 
     Examples
     --------
+
     A histogram of ``x`` with 20 bins between 0 and 100.
 
     >>> h, __ = fix1d(x, bins=20, range=(0, 100))
@@ -116,7 +110,6 @@ def fix1d(x, bins=10, range=None, weights=None, density=False, flow=False, omp=N
     >>> h, h_err = fix1d(x, bins=20, range=(0, 100), weights=w)
 
     """
-    _deprecation_check(omp)
     x = np.ascontiguousarray(x)
     if weights is not None:
         weights = np.ascontiguousarray(weights)
@@ -133,7 +126,7 @@ def fix1d(x, bins=10, range=None, weights=None, density=False, flow=False, omp=N
     return _f1dw(x, weights, bins, start, stop, flow, density, True)
 
 
-def fix1dmw(x, weights, bins=10, range=None, flow=False, omp=None):
+def fix1dmw(x, weights, bins=10, range=None, flow=False):
     """Calculate fixed width 1D histograms with multiple weight variations
 
     Parameters
@@ -150,8 +143,6 @@ def fix1dmw(x, weights, bins=10, range=None, flow=False, omp=None):
     flow : bool
         if ``True`` the under and overflow bin contents are added to the first
         and last bins, respectively
-    omp : None
-         a deprecated argument
 
     Returns
     -------
@@ -162,18 +153,18 @@ def fix1dmw(x, weights, bins=10, range=None, flow=False, omp=None):
 
     Examples
     --------
+
     Multiple histograms of ``x`` with 50 bins between 0 and 100; using
     20 different weight variations:
 
     >>> x = np.random.randn(10000)
     >>> twenty_weights = np.random.rand(x.shape[0], 20)
-    >>> h, err = fix1dmw(x, w, bins=50, range=(-3, 3), omp=True)
+    >>> h, err = fix1dmw(x, w, bins=50, range=(-3, 3))
 
     ``h`` and ``err`` are now shape ``(50, 20)``. Each column
     represents the histogram of the data with the respective weight.
 
     """
-    _deprecation_check(omp)
     x = np.ascontiguousarray(x)
     weights = np.ascontiguousarray(weights)
     if not (weights.dtype == np.float32 or weights.dtype == np.float64):
@@ -187,7 +178,7 @@ def fix1dmw(x, weights, bins=10, range=None, flow=False, omp=None):
     return _f1dmw(x, weights, bins, start, stop, flow, True)
 
 
-def var1d(x, bins, weights=None, density=False, flow=False, omp=None):
+def var1d(x, bins, weights=None, density=False, flow=False):
     """Calculate a histogram for one dimensional data with variable bin widths
 
     Parameters
@@ -204,8 +195,6 @@ def var1d(x, bins, weights=None, density=False, flow=False, omp=None):
     flow : bool
         if ``True`` the under and overflow bin contents are added to the first
         and last bins, respectively
-    omp : None
-        a deprecated argument
 
     Returns
     -------
@@ -214,8 +203,16 @@ def var1d(x, bins, weights=None, density=False, flow=False, omp=None):
     :py:obj:`numpy.ndarray`
         the standard error of each bin count, :math:`\sqrt{\sum_i w_i^2}`
 
+    Examples
+    --------
+
+    A simple histogram with variable width bins:
+
+    >>> x = np.random.randn(10000)
+    >>> bin_edges = [-3.0, -2.5, -1.5, -0.25, 0.25, 2.0, 3.0]
+    >>> h, __ = var1d(x, bin_edges)
+
     """
-    _deprecation_check(omp)
     x = np.ascontiguousarray(x)
     if weights is not None:
         weights = np.ascontiguousarray(weights)
@@ -234,7 +231,7 @@ def var1d(x, bins, weights=None, density=False, flow=False, omp=None):
     return _v1dw(x, weights, bins, flow, density, True)
 
 
-def var1dmw(x, weights, bins, flow=False, omp=None):
+def var1dmw(x, weights, bins, flow=False):
     """Calculate variable width 1D histograms with multiple weight variations
 
     Parameters
@@ -252,8 +249,6 @@ def var1dmw(x, weights, bins, flow=False, omp=None):
     flow : bool
         if ``True`` the under and overflow bin contents are added to the first
         and last bins, respectively
-    omp : None
-        a deprecated argument
 
     Returns
     -------
@@ -261,9 +256,22 @@ def var1dmw(x, weights, bins, flow=False, omp=None):
         the bin counts
     :py:obj:`numpy.ndarray`
         the standard error of each bin count, :math:`\sqrt{\sum_i w_i^2}`
-    """
 
-    _deprecation_check(omp)
+    Examples
+    --------
+
+    Using three different weight variations:
+
+    >>> x = np.random.randn(10000)
+    >>> weights = np.abs(np.random.randn(x.shape[0], 3))
+    >>> bin_edges = [-3.0, -2.5, -1.5, -0.25, 0.25, 2.0, 3.0]
+    >>> h, err = var1dmw(x, weights, bin_edges)
+    >>> h.shape
+    (6, 3)
+    >>> err.shape
+    (6, 3)
+
+    """
     x = np.ascontiguousarray(x)
     weights = np.ascontiguousarray(weights)
     if not (weights.dtype == np.float32 or weights.dtype == np.float64):
@@ -279,9 +287,7 @@ def var1dmw(x, weights, bins, flow=False, omp=None):
     return _v1dmw(x, weights, bins, flow, True)
 
 
-def histogram(
-    x, bins=10, range=None, weights=None, density=False, flow=False, omp=None
-):
+def histogram(x, bins=10, range=None, weights=None, density=False, flow=False):
     """Calculate a histogram for one dimensional data.
 
     Parameters
@@ -302,8 +308,6 @@ def histogram(
         ignored.
     flow : bool
         if ``True``, include under/overflow in the first/last bins.
-    omp : None
-        a deprecated argument.
 
     Returns
     -------
@@ -311,6 +315,17 @@ def histogram(
         the bin counts
     :py:obj:`numpy.ndarray`
         the standard error of each bin count, :math:`\sqrt{\sum_i w_i^2}`
+
+    Examples
+    --------
+
+    A simple fixed width histogram:
+
+    >>> h, __ = histogram(x, bins=20, range=(0, 100))
+
+    And with variable width histograms and weights:
+
+    >>> h, err = histogram(x, bins=[-3, -2, -1.5, 1.5, 3.5], weights=w)
 
     """
 
@@ -333,9 +348,8 @@ def histogram(
         return var1d(x, weights=weights, bins=bins, density=density, flow=flow)
 
 
-def fix2d(x, y, bins=10, range=None, weights=None, omp=None):
-    """histogram the ``x``, ``y`` data with fixed (uniform) binning in
-    two dimensions over the ranges [xmin, xmax), [ymin, ymax).
+def fix2d(x, y, bins=10, range=None, weights=None):
+    """histogram the ``x``, ``y`` data with fixed (uniform) binning
 
     Parameters
     ----------
@@ -350,8 +364,6 @@ def fix2d(x, y, bins=10, range=None, weights=None, omp=None):
        axis limits to histogram over in the form [(xmin, xmax), (ymin, ymax)]
     weights : array_like, optional
        weight for each :math:`(x_i, y_i)` pair.
-    omp : None
-        a deprecated argument.
 
     Returns
     -------
@@ -369,13 +381,11 @@ def fix2d(x, y, bins=10, range=None, weights=None, omp=None):
 
     >>> h, __ = fix2d(x, y, bins=(20, 10), range=((0, 100), (0, 50)))
 
-    The same data, now histogrammed weighted (via ``w``) & accelerated
-    with OpenMP.
+    The same data, now histogrammed weighted (via ``w``):
 
     >>> h, err = fix2d(x, y, bins=(20, 10), range=((0, 100), (0, 50)), weights=w)
 
     """
-    _deprecation_check(omp)
     x = np.ascontiguousarray(x)
     y = np.ascontiguousarray(y)
     if x.shape != y.shape:
@@ -397,9 +407,8 @@ def fix2d(x, y, bins=10, range=None, weights=None, omp=None):
     return _f2dw(x, y, weights, nx, xmin, xmax, ny, ymin, ymax, False, True)
 
 
-def var2d(x, y, xbins, ybins, weights=None, omp=None):
-    """histogram the ``x`` and ``y`` data with variable width binning in
-    two dimensions over the range [xbins[0], xbins[-1]), [ybins[0], ybins[-1])
+def var2d(x, y, xbins, ybins, weights=None):
+    """Histogram the ``x`` and ``y`` data with variable width binning
 
     Parameters
     ----------
@@ -413,8 +422,6 @@ def var2d(x, y, xbins, ybins, weights=None, omp=None):
        bin edges for the ``y`` dimension
     weights : array_like, optional
        weights for each :math:`(x_i, y_i)` pair.
-    omp : None
-        a deprecated argument.
 
     Returns
     -------
@@ -425,15 +432,14 @@ def var2d(x, y, xbins, ybins, weights=None, omp=None):
 
     Examples
     --------
+
     A histogram of (``x``, ``y``) where the edges are defined by a
-    :func:`numpy.logspace` in both dimensions, accelerated with
-    OpenMP.
+    :func:`numpy.logspace` in both dimensions
 
     >>> bins = numpy.logspace(0.1, 1.0, 10, endpoint=True)
-    >>> h, __ = var2d(x, y, bins, bins, omp=True)
+    >>> h, __ = var2d(x, y, bins, bins)
 
     """
-    _deprecation_check(omp)
     x = np.ascontiguousarray(x)
     y = np.ascontiguousarray(y)
     if x.shape != y.shape:
@@ -453,8 +459,8 @@ def var2d(x, y, xbins, ybins, weights=None, omp=None):
     return _v2dw(x, y, weights, xbins, ybins, False, True)
 
 
-def histogram2d(x, y, bins=10, range=None, weights=None, omp=None):
-    """Compute the two-dimensional histogram for the data (``x``, ``y``).
+def histogram2d(x, y, bins=10, range=None, weights=None):
+    """Calculate the two-dimensional histogram for the data (``x``, ``y``).
 
     This function provides an API very simiar to
     :func:`numpy.histogram2d`. Keep in mind that the returns are
@@ -484,8 +490,6 @@ def histogram2d(x, y, bins=10, range=None, weights=None, omp=None):
        An array of weights associated to each element :math:`(x_i, y_i)` pair.
        Each pair of the the data will contribute its associated weight to the
        bin count.
-    omp : None
-        a deprecated argument.
 
     Returns
     -------
@@ -494,8 +498,12 @@ def histogram2d(x, y, bins=10, range=None, weights=None, omp=None):
     :obj:`numpy.ndarray`:
         Poisson uncertainty on each bin count
 
+    Examples
+    --------
+
+    >>> h, err = histogram2d(x, y, weights=w)
+
     """
-    _deprecation_check(omp)
     try:
         N = len(bins)
     except TypeError:
