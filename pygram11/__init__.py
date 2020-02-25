@@ -71,7 +71,7 @@ def omp_get_max_threads():
 
 
 def fix1d(x, bins=10, range=None, weights=None, density=False, flow=False):
-    """Calculate a histogram for one dimensional data with fixed bin widths
+    """Histogram the data with fixed (uniform) bin widths
 
     Parameters
     ----------
@@ -127,7 +127,7 @@ def fix1d(x, bins=10, range=None, weights=None, density=False, flow=False):
 
 
 def fix1dmw(x, weights, bins=10, range=None, flow=False):
-    """Calculate fixed width 1D histograms with multiple weight variations
+    """Histogram the data with multiple weight variations and fixed width bins
 
     Parameters
     ----------
@@ -179,7 +179,7 @@ def fix1dmw(x, weights, bins=10, range=None, flow=False):
 
 
 def var1d(x, bins, weights=None, density=False, flow=False):
-    """Calculate a histogram for one dimensional data with variable bin widths
+    """Histogram the data with variable bin widths
 
     Parameters
     ----------
@@ -232,7 +232,7 @@ def var1d(x, bins, weights=None, density=False, flow=False):
 
 
 def var1dmw(x, weights, bins, flow=False):
-    """Calculate variable width 1D histograms with multiple weight variations
+    """Histogram the data with multiple weight variations and variable width bins
 
     Parameters
     ----------
@@ -288,7 +288,7 @@ def var1dmw(x, weights, bins, flow=False):
 
 
 def histogram(x, bins=10, range=None, weights=None, density=False, flow=False):
-    """Calculate a histogram for one dimensional data.
+    """Histogram the data in one dimension
 
     Parameters
     ----------
@@ -349,7 +349,7 @@ def histogram(x, bins=10, range=None, weights=None, density=False, flow=False):
 
 
 def fix2d(x, y, bins=10, range=None, weights=None):
-    """histogram the ``x``, ``y`` data with fixed (uniform) binning
+    """Histogram the ``x``, ``y`` data with fixed (uniform) binning
 
     Parameters
     ----------
@@ -408,7 +408,7 @@ def fix2d(x, y, bins=10, range=None, weights=None):
 
 
 def var2d(x, y, xbins, ybins, weights=None):
-    """Histogram the ``x`` and ``y`` data with variable width binning
+    """Histogram the ``x``, ``y`` data with variable width binning
 
     Parameters
     ----------
@@ -460,7 +460,7 @@ def var2d(x, y, xbins, ybins, weights=None):
 
 
 def histogram2d(x, y, bins=10, range=None, weights=None):
-    """Calculate the two-dimensional histogram for the data (``x``, ``y``).
+    """Histogram the data in two dimensions
 
     This function provides an API very simiar to
     :func:`numpy.histogram2d`. Keep in mind that the returns are
