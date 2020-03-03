@@ -24,10 +24,11 @@
 #include "_helpers.hpp"
 
 // pybind
-#include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
+#include <pybind11/pybind11.h>
 
 // STL
+#include <iostream>
 #include <vector>
 
 // OpenMP
@@ -79,7 +80,7 @@ histogram1d::histogram1d(std::size_t nbins, double xmin, double xmax, bool flow)
   m_nbins = nbins;
   m_xmin = xmin;
   m_xmax = xmax;
-  m_norm = 1.0 / (xmax - xmin);
+  m_norm = m_nbins / (xmax - xmin);
   m_counts = std::vector<double>(nbins + 2, 0.0);
   m_variance = std::vector<double>(nbins + 2, 0.0);
   m_error = std::vector<double>(nbins + 2, 0.0);
@@ -114,11 +115,18 @@ inline void histogram1d::fill(std::size_t N, const TD* data, const TW* weights) 
       if (data[i] < m_xmin) {
         bin = 0;
       }
-      if (data[i] >= m_xmax) {
+      else if (data[i] >= m_xmax) {
         bin = m_nbins + 1;
       }
       else {
-        bin = 1 + pygram11::helpers::get_bin(data[i], m_nbins, m_xmin, m_norm);
+        bin = 1 + pygram11::helpers::get_bin(data[i], m_xmin, m_norm);
+      }
+      if (bin < 0) {
+        std::cout << "WUT1" << std::endl;
+      }
+      if (bin > (m_nbins + 1)) {
+        std::cout << "WUT2" << std::endl;
+        std::cout << bin << "   " << data[i] << std::endl;
       }
       auto weight = static_cast<double>(weights[i]);
       counts_ot[bin] += weight;
@@ -130,9 +138,11 @@ inline void histogram1d::fill(std::size_t N, const TD* data, const TW* weights) 
       m_variance[i] += variance_ot[i];
     }
   }
+  std::cout << "shifting flow" << std::endl;
   if (m_flow) {
     shift_flow();
   }
+  std::cout << "calcing error" << std::endl;
   calc_error();
 }
 
@@ -151,7 +161,7 @@ inline void histogram1d::fill(std::size_t N, const TD* data) {
         bin = m_nbins + 1;
       }
       else {
-        bin = 1 + pygram11::helpers::get_bin(data[i], m_nbins, m_xmin, m_norm);
+        bin = 1 + pygram11::helpers::get_bin(data[i], m_xmin, m_norm);
       }
       counts_ot[bin]++;
     }
@@ -229,26 +239,33 @@ void setup_histogram1d(py::module& m, const char* cname) {
       .def(
           "counts",
           [](const pygram11::histogram1d& h) -> py::array_t<double> {
-            return py::array_t<double>(h.nbins() + 2, h.counts());
+            auto arr = py::array_t<double>({h.nbins() + 2}, {sizeof(double)}, h.counts(),
+                                           py::cast(h.counts()));
+            arr.attr("flags").attr("writeable") = false;
+            return arr;
           },
           py::return_value_policy::move)
-
       .def(
           "error",
           [](const pygram11::histogram1d& h) -> py::array_t<double> {
-            return py::array_t<double>(h.nbins() + 2, h.error());
+            auto arr = py::array_t<double>({h.nbins() + 2}, {sizeof(double)}, h.error(),
+                                           py::cast(h.error()));
+            arr.attr("flags").attr("writeable") = false;
+            return arr;
           },
           py::return_value_policy::move)
-
       .def(
           "variance",
-          [](const pygram11::histogram1d& h) -> py::array_t<double> {
-            return py::array_t<double>(h.nbins() + 2, h.variance());
+          [](const pygram11::histogram1d& h) -> py::array {
+            auto arr = py::array_t<double>({h.nbins() + 2}, {sizeof(double)}, h.variance(),
+                                           py::cast(h.variance()));
+            arr.attr("flags").attr("writeable") = false;
+            return arr;
           },
           py::return_value_policy::move);
 }
 
-PYBIND11_MODULE(_CPP_PB_OBJ, m) {
+PYBIND11_MODULE(_backendobj, m) {
   m.doc() = "Object oriented pygram11 code";
   setup_histogram1d(m, "_Histogram1D");
 }
