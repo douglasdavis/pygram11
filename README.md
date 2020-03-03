@@ -102,8 +102,7 @@ interpreted as a NumPy array):
 ...                         "weight_b" : np.random.uniform(0.5, 0.8, 10000),
 ...                         "weight_c" : np.random.rand(10000)})
 >>> data = np.random.randn(10000)
->>> count, err = pygram11.histogram(data, bins=20, range=(-3, 3),
-...                                 weights=weights, flow=True)
+>>> count, err = pygram11.histogram(data, bins=20, range=(-3, 3), weights=weights, flow=True)
 >>> count_df = pd.DataFrame(count, columns=weights.columns)
 >>> err_df = pd.DataFrame(err, columns=weights.columns)
 ```
