@@ -209,7 +209,7 @@ setup(
     long_description_content_type="text/markdown",
     packages=["pygram11"],
     ext_modules=get_extensions(),
-    install_requires=get_requirements(),
+    install_requires=["numpy>=1.14"],
     python_requires=">=3.6",
     test_suite="tests",
     tests_require=["pytest>=4.0"],
