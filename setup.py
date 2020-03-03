@@ -182,12 +182,6 @@ def get_readme():
         return f.read().decode("utf-8")
 
 
-def get_requirements():
-    project_root = pathlib.PosixPath(__file__).parent
-    with (project_root / "requirements.txt").open("r") as f:
-        requirements = f.read().splitlines()
-
-
 if not has_openmp():
     sys.exit(
         "\n"
