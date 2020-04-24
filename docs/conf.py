@@ -21,7 +21,7 @@ import pygram11
 # -- Project information -----------------------------------------------------
 
 project = "pygram11"
-copyright = "2019, Doug Davis"
+copyright = "2020, Doug Davis"
 author = "Doug Davis"
 
 # The short X.Y version
@@ -46,6 +46,7 @@ extensions = [
     "sphinx.ext.intersphinx",
     "sphinx.ext.mathjax",
     "sphinx.ext.viewcode",
+    "pallets_sphinx_themes",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -82,18 +83,19 @@ autodoc_typehints = "none"
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
+html_theme = "click"
 # html_theme = "alabaster"
-html_theme = "sphinx_rtd_theme"
+# html_theme = "sphinx_rtd_theme"
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
 #
-html_theme_options = {
-    #"collapse_navigation": False,
-    "display_version": True,
-    "sticky_navigation": True,
-}
+# html_theme_options = {
+#     #"collapse_navigation": False,
+#     "display_version": True,
+#     "sticky_navigation": True,
+# }
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
