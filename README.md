@@ -21,8 +21,8 @@ there).
 ## Installing
 
 Using pygram11 only requires [NumPy](https://www.numpy.org/). To build
-and install from source you'll need NumPy pre-installed and a compiler
-with support for C++11 and OpenMP.
+and install from source you'll just need a compiler with support for
+C++11 and OpenMP.
 
 ### From PyPI
 
@@ -55,13 +55,13 @@ conda install nomkl ## sometimes necessary fix (macOS only)
 
 ### From Source
 
-When installing from source you'll need NumPy pre-installed and
-OpenMP. If you are using a relatively modern GCC release on Linux then
-you probably don't have to worry about the OpenMP dependency. If you
-are on macOS, you'll probably want to install `libomp` from Homebrew.
+All you need is a C++11 compiler and OpenMP. If you are using a
+relatively modern GCC release on Linux then you probably don't have to
+worry about the OpenMP dependency. If you are on macOS, you can
+install `libomp` from Homebrew. With those dependencies met, simply
+run:
 
 ```none
-pip install numpy
 pip install git+https://github.com/douglasdavis/pygram11.git@master
 ```
 

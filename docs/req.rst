@@ -12,14 +12,13 @@ Extras for Source Builds
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
 When building from source, all you need is a C++ compiler with C++11
-support and a pre-existing NumPy installation. The ``setup.py`` script
-will test to see if OpenMP is available during compilation and linking
-of the backend extenstion module. If it's not available then the
-installation will crash. Most Linux distributions with modern GCC
-versions should provide OpenMP automatically (search the web to see
-how to install OpenMP from your distribution's package manager). On
-macOS you'll want to install ``libomp`` from Homebrew to use OpenMP
-with the Clang compiler shipped with macOS.
+support. The ``setup.py`` script will test to see if OpenMP is
+available. If it's not, then the installation will abort. Most Linux
+distributions with modern GCC versions should provide OpenMP
+automatically (search the web to see how to install OpenMP from your
+distribution's package manager). On macOS you'll want to install
+``libomp`` from Homebrew to use OpenMP with the Clang compiler shipped
+by Apple.
 
 Install Options
 ---------------
