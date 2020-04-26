@@ -29,7 +29,7 @@ from pygram11._backend1d import _v1dw, _f1dw, _f1dmw, _v1dmw
 from pygram11._backend2d import _f2dw, _v2dw
 
 
-__version__ = "0.8.1.dev0"
+__version__ = "0.8.1"
 version_info = tuple(__version__.split("."))
 
 
