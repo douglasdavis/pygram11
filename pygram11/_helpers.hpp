@@ -41,7 +41,7 @@ namespace helpers {
 namespace py = pybind11;
 
 /// get the bin index for a fixed with histsgram with x potentially outside range
-  template <typename T1, typename T2, typename T3>
+template <typename T1, typename T2, typename T3>
 inline std::size_t get_bin(T1 x, T2 nbins, T3 xmin, T3 xmax, T3 norm) {
   if (x < xmin) {
     return 0;
@@ -53,7 +53,7 @@ inline std::size_t get_bin(T1 x, T2 nbins, T3 xmin, T3 xmax, T3 norm) {
 }
 
 /// get the bin index for a fixed with histogram assuming x in the range
-  template <typename T1, typename T2>
+template <typename T1, typename T2>
 inline std::size_t get_bin(T1 x, T2 xmin, T2 norm) {
   return static_cast<std::size_t>((x - xmin) * norm);
 }
