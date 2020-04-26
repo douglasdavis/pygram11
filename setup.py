@@ -144,7 +144,7 @@ def get_extensions():
     extenmods += [
         Extension(
             "pygram11._backend1d",
-            [os.path.join("pygram11", "_backend_pb.cpp")],
+            [os.path.join("pygram11", "_backend1d.cpp")],
             language="c++",
             include_dirs=["extern/pybind11/include"],
             extra_compile_args=cpp_cflags,
@@ -152,7 +152,7 @@ def get_extensions():
         ),
         Extension(
             "pygram11._backend2d",
-            [os.path.join("pygram11", "_backend_pb_2d.cpp")],
+            [os.path.join("pygram11", "_backend2d.cpp")],
             language="c++",
             include_dirs=["extern/pybind11/include"],
             extra_compile_args=cpp_cflags,
