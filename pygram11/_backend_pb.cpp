@@ -41,7 +41,7 @@ py::tuple f1dw(const py::array_t<T1, py::array::c_style | py::array::forcecast>&
   T2* counts_proxy = counts.mutable_data();
   T2* vars_proxy = vars.mutable_data();
   const T1* x_proxy = x.data();
-  const T2*  w_proxy = w.data();
+  const T2* w_proxy = w.data();
 
   if (ndata > 5000) {
     if (flow) {
