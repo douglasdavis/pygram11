@@ -71,40 +71,39 @@ def omp_get_max_threads():
 
 
 def fix1d(x, bins=10, range=None, weights=None, density=False, flow=False):
-    """Histogram the data with fixed (uniform) bin widths
+    """Histogram data with fixed (uniform) bin widths.
 
     Parameters
     ----------
     x : array_like
-        data to histogram
+        The data to histogram.
     bins : int
-        number of bins
+        The number of bins.
     range : (float, float), optional
-        axis limits to histogram over
+        The minimum and maximum of the histogram axis.
     weights : array_like, optional
-        weight for each element of ``x``.
+        The weights for each element of ``x``.
     density : bool
-        normalize histogram bins as value of PDF such that the integral
-        over the range is 1.
+        If True, normalize histogram bins as value of PDF such that
+        the integral over the range is one.
     flow : bool
-        if ``True`` the under and overflow bin contents are added to the first
-        and last bins, respectively
+        If True, the under and overflow bin contents are added to the
+        first and last bins, respectively.
 
     Returns
     -------
     :py:obj:`numpy.ndarray`
-        the bin counts
+        The bin counts.
     :py:obj:`numpy.ndarray`
-        the standard error of each bin count, :math:`\sqrt{\sum_i w_i^2}`
+        The standard error of each bin count, :math:`\sqrt{\sum_i w_i^2}`.
 
     Examples
     --------
-
-    A histogram of ``x`` with 20 bins between 0 and 100.
+    A histogram of ``x`` with 20 bins between 0 and 100:
 
     >>> h, __ = fix1d(x, bins=20, range=(0, 100))
 
-    The same data, now histogrammed weighted
+    The same data, now histogrammed with weights:
 
     >>> w = np.abs(np.random.randn(x.shape[0]))
     >>> h, h_err = fix1d(x, bins=20, range=(0, 100), weights=w)
@@ -132,28 +131,28 @@ def fix1dmw(x, weights, bins=10, range=None, flow=False):
     Parameters
     ----------
     x : array_like
-        data to histogram
+        The data to histogram.
     weights : array_like
-        weight variations for the elements of ``x``, first dimension
-        is the shape of ``x``, second dimension is the number of weights.
+        The weight variations for the elements of ``x``, first
+        dimension is the length of ``x``, second dimension is the
+        number of weights variations.
     bins : int
-        number of bins
+        The number of bins.
     range : (float, float), optional
-        axis limits to histogram over
+        The minimum and maximumm of the histogram axis.
     flow : bool
-        if ``True`` the under and overflow bin contents are added to the first
-        and last bins, respectively
+        If True, the under and overflow bin contents are added to the
+        first and last bins, respectively.
 
     Returns
     -------
     :py:obj:`numpy.ndarray`
-        the bin counts
+        The bin counts.
     :py:obj:`numpy.ndarray`
-        the standard error of each bin count, :math:`\sqrt{\sum_i w_i^2}`
+        The standard error of each bin count, :math:`\sqrt{\sum_i w_i^2}`.
 
     Examples
     --------
-
     Multiple histograms of ``x`` with 50 bins between 0 and 100; using
     20 different weight variations:
 
@@ -162,7 +161,7 @@ def fix1dmw(x, weights, bins=10, range=None, flow=False):
     >>> h, err = fix1dmw(x, w, bins=50, range=(-3, 3))
 
     ``h`` and ``err`` are now shape ``(50, 20)``. Each column
-    represents the histogram of the data with the respective weight.
+    represents the histogram of the data using its respective weight.
 
     """
     x = np.ascontiguousarray(x)
@@ -199,13 +198,12 @@ def var1d(x, bins, weights=None, density=False, flow=False):
     Returns
     -------
     :py:obj:`numpy.ndarray`
-        the bin counts
+        The bin counts.
     :py:obj:`numpy.ndarray`
-        the standard error of each bin count, :math:`\sqrt{\sum_i w_i^2}`
+        The standard error of each bin count, :math:`\sqrt{\sum_i w_i^2}`.
 
     Examples
     --------
-
     A simple histogram with variable width bins:
 
     >>> x = np.random.randn(10000)
@@ -253,13 +251,12 @@ def var1dmw(x, weights, bins, flow=False):
     Returns
     -------
     :py:obj:`numpy.ndarray`
-        the bin counts
+        The bin counts.
     :py:obj:`numpy.ndarray`
-        the standard error of each bin count, :math:`\sqrt{\sum_i w_i^2}`
+        The standard error of each bin count, :math:`\sqrt{\sum_i w_i^2}`.
 
     Examples
     --------
-
     Using three different weight variations:
 
     >>> x = np.random.randn(10000)
@@ -312,13 +309,12 @@ def histogram(x, bins=10, range=None, weights=None, density=False, flow=False):
     Returns
     -------
     :py:obj:`numpy.ndarray`
-        the bin counts
+        The bin counts.
     :py:obj:`numpy.ndarray`
-        the standard error of each bin count, :math:`\sqrt{\sum_i w_i^2}`
+        The standard error of each bin count, :math:`\sqrt{\sum_i w_i^2}`.
 
     Examples
     --------
-
     A simple fixed width histogram:
 
     >>> h, __ = histogram(x, bins=20, range=(0, 100))
@@ -367,17 +363,16 @@ def fix2d(x, y, bins=10, range=None, weights=None):
 
     Returns
     -------
-    :obj:`numpy.ndarray`
-       bin counts (heights)
-    :obj:`numpy.ndarray`
-       Poisson uncertainty on counts
+    :py:obj:`numpy.ndarray`
+        The bin counts.
+    :py:obj:`numpy.ndarray`
+        The standard error of each bin count, :math:`\sqrt{\sum_i w_i^2}`.
 
     Examples
     --------
-
     A histogram of (``x``, ``y``) with 20 bins between 0 and 100 in
     the ``x`` dimention and 10 bins between 0 and 50 in the ``y``
-    dimension.
+    dimension:
 
     >>> h, __ = fix2d(x, y, bins=(20, 10), range=((0, 100), (0, 50)))
 
@@ -425,16 +420,15 @@ def var2d(x, y, xbins, ybins, weights=None):
 
     Returns
     -------
-    :obj:`numpy.ndarray`
-       bin counts (heights)
-    :obj:`numpy.ndarray`
-       Poisson uncertainty on counts
+    :py:obj:`numpy.ndarray`
+        The bin counts.
+    :py:obj:`numpy.ndarray`
+        The standard error of each bin count, :math:`\sqrt{\sum_i w_i^2}`.
 
     Examples
     --------
-
     A histogram of (``x``, ``y``) where the edges are defined by a
-    :func:`numpy.logspace` in both dimensions
+    :func:`numpy.logspace` in both dimensions:
 
     >>> bins = numpy.logspace(0.1, 1.0, 10, endpoint=True)
     >>> h, __ = var2d(x, y, bins, bins)
@@ -493,14 +487,13 @@ def histogram2d(x, y, bins=10, range=None, weights=None):
 
     Returns
     -------
-    :obj:`numpy.ndarray`:
-        bin counts (heights)
-    :obj:`numpy.ndarray`:
-        Poisson uncertainty on each bin count
+    :py:obj:`numpy.ndarray`
+        The bin counts.
+    :py:obj:`numpy.ndarray`
+        The standard error of each bin count, :math:`\sqrt{\sum_i w_i^2}`.
 
     Examples
     --------
-
     >>> h, err = histogram2d(x, y, weights=w)
 
     """
