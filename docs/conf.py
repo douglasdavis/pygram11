@@ -24,10 +24,8 @@ project = "pygram11"
 copyright = "2020, Doug Davis"
 author = "Doug Davis"
 
-# The short X.Y version
-version = ".".join(pygram11.__version__.split(".")[:3])
 
-# The full version, including alpha/beta/rc tags
+version = pygram11.__version__
 release = pygram11.__version__
 
 # -- General configuration ---------------------------------------------------
