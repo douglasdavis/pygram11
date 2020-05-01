@@ -9,17 +9,17 @@ tasks:
     curl https://pyenv.run | bash
     export PATH=$HOME/.pyenv/bin:$PATH
     eval "$(pyenv init -)"
-    pyenv install 3.8.1
-    pyenv install 3.7.6
+    pyenv install 3.8.2
+    pyenv install 3.7.7
     pyenv install 3.6.9
 - build: |
     export PATH=$HOME/.pyenv/bin:$PATH
     eval "$(pyenv init -)"
     cd pygram11
-    pyenv shell 3.8.1
+    pyenv shell 3.8.2
     pip install pip pytest setuptools numpy -U
     pip install .
-    pyenv shell 3.7.6
+    pyenv shell 3.7.7
     pip install pip pytest setuptools numpy -U
     pip install .
     pyenv shell 3.6.9
@@ -35,13 +35,13 @@ tasks:
     export PATH=$HOME/.pyenv/bin:$PATH
     eval "$(pyenv init -)"
     cd pygram11
-    pyenv shell 3.7.6
+    pyenv shell 3.7.7
     pytest --ignore=extern
 - test38 : |
     export PATH=$HOME/.pyenv/bin:$PATH
     eval "$(pyenv init -)"
     cd pygram11
-    pyenv shell 3.8.1
+    pyenv shell 3.8.2
     pytest --ignore=extern
 triggers:
 - action: email
