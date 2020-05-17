@@ -1,26 +1,29 @@
+"""Simple and fast histogramming in Python."""
+
 # MIT License
 #
 # Copyright (c) 2020 Douglas Davis
 #
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
+# Permission is hereby granted, free of charge, to any person
+# obtaining a copy of this software and associated documentation files
+# (the "Software"), to deal in the Software without restriction,
+# including without limitation the rights to use, copy, modify, merge,
+# publish, distribute, sublicense, and/or sell copies of the Software,
+# and to permit persons to whom the Software is furnished to do so,
+# subject to the following conditions:
 #
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
+# The above copyright notice and this permission notice shall be
+# included in all copies or substantial portions of the Software.
 #
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+# NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS
+# BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+# ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+# CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import warnings
 import numpy as np
 import numbers
 
@@ -46,7 +49,7 @@ __all__ = [
 
 
 def _likely_uniform_bins(edges):
-    """Test if bin edges describe a set of fixed width bins"""
+    """Test if bin edges describe a set of fixed width bins."""
     diffs = np.ediff1d(edges)
     ones = np.ones_like(diffs)
     max_close = np.allclose(ones, diffs / np.amax(diffs))
@@ -71,12 +74,12 @@ def omp_get_max_threads():
 
 
 def fix1d(x, bins=10, range=None, weights=None, density=False, flow=False):
-    """Histogram data with fixed (uniform) bin widths.
+    r"""Histogram data with fixed (uniform) bin widths.
 
     Parameters
     ----------
     x : array_like
-        The data to histogram.
+        Data to histogram.
     bins : int
         The number of bins.
     range : (float, float), optional
@@ -95,7 +98,7 @@ def fix1d(x, bins=10, range=None, weights=None, density=False, flow=False):
     :py:obj:`numpy.ndarray`
         The bin counts.
     :py:obj:`numpy.ndarray`
-        The standard error of each bin count, :math:`\sqrt{\sum_i w_i^2}`.
+        The standard error of each bin count, :math:`\sqrt{\sum_i w_i^2}`. # noqa
 
     Examples
     --------
@@ -126,12 +129,12 @@ def fix1d(x, bins=10, range=None, weights=None, density=False, flow=False):
 
 
 def fix1dmw(x, weights, bins=10, range=None, flow=False):
-    """Histogram the data with multiple weight variations and fixed width bins
+    r"""Histogram data with multiple weight variations and fixed width bins.
 
     Parameters
     ----------
     x : array_like
-        The data to histogram.
+        data to histogram.
     weights : array_like
         The weight variations for the elements of ``x``, first
         dimension is the length of ``x``, second dimension is the
@@ -149,7 +152,7 @@ def fix1dmw(x, weights, bins=10, range=None, flow=False):
     :py:obj:`numpy.ndarray`
         The bin counts.
     :py:obj:`numpy.ndarray`
-        The standard error of each bin count, :math:`\sqrt{\sum_i w_i^2}`.
+        The standard error of each bin count, :math:`\sqrt{\sum_i w_i^2}`. # noqa
 
     Examples
     --------
@@ -178,7 +181,7 @@ def fix1dmw(x, weights, bins=10, range=None, flow=False):
 
 
 def var1d(x, bins, weights=None, density=False, flow=False):
-    """Histogram the data with variable bin widths
+    r"""Histogram data with variable bin widths.
 
     Parameters
     ----------
@@ -200,7 +203,7 @@ def var1d(x, bins, weights=None, density=False, flow=False):
     :py:obj:`numpy.ndarray`
         The bin counts.
     :py:obj:`numpy.ndarray`
-        The standard error of each bin count, :math:`\sqrt{\sum_i w_i^2}`.
+        The standard error of each bin count, :math:`\sqrt{\sum_i w_i^2}`. # noqa
 
     Examples
     --------
@@ -230,7 +233,7 @@ def var1d(x, bins, weights=None, density=False, flow=False):
 
 
 def var1dmw(x, weights, bins, flow=False):
-    """Histogram the data with multiple weight variations and variable width bins
+    r"""Histogram data with multiple weight variations and variable width bins.
 
     Parameters
     ----------
@@ -253,7 +256,7 @@ def var1dmw(x, weights, bins, flow=False):
     :py:obj:`numpy.ndarray`
         The bin counts.
     :py:obj:`numpy.ndarray`
-        The standard error of each bin count, :math:`\sqrt{\sum_i w_i^2}`.
+        The standard error of each bin count, :math:`\sqrt{\sum_i w_i^2}`. # noqa
 
     Examples
     --------
@@ -285,12 +288,12 @@ def var1dmw(x, weights, bins, flow=False):
 
 
 def histogram(x, bins=10, range=None, weights=None, density=False, flow=False):
-    """Histogram the data in one dimension
+    r"""Histogram data in one dimension.
 
     Parameters
     ----------
     x : array_like
-        the data to histogram.
+        data to histogram.
     bins : int or array_like
         if int: the number of bins; if array_like: the bin edges.
     range : tuple(float, float), optional
@@ -311,7 +314,7 @@ def histogram(x, bins=10, range=None, weights=None, density=False, flow=False):
     :py:obj:`numpy.ndarray`
         The bin counts.
     :py:obj:`numpy.ndarray`
-        The standard error of each bin count, :math:`\sqrt{\sum_i w_i^2}`.
+        The standard error of each bin count, :math:`\sqrt{\sum_i w_i^2}`. # noqa
 
     Examples
     --------
@@ -324,7 +327,6 @@ def histogram(x, bins=10, range=None, weights=None, density=False, flow=False):
     >>> h, err = histogram(x, bins=[-3, -2, -1.5, 1.5, 3.5], weights=w)
 
     """
-
     # fixed bins
     if isinstance(bins, numbers.Integral):
         if weights is not None:
@@ -345,7 +347,7 @@ def histogram(x, bins=10, range=None, weights=None, density=False, flow=False):
 
 
 def fix2d(x, y, bins=10, range=None, weights=None):
-    """Histogram the ``x``, ``y`` data with fixed (uniform) binning
+    r"""Histogram the ``x``, ``y`` data with fixed (uniform) binning.
 
     Parameters
     ----------
@@ -366,7 +368,7 @@ def fix2d(x, y, bins=10, range=None, weights=None):
     :py:obj:`numpy.ndarray`
         The bin counts.
     :py:obj:`numpy.ndarray`
-        The standard error of each bin count, :math:`\sqrt{\sum_i w_i^2}`.
+        The standard error of each bin count, :math:`\sqrt{\sum_i w_i^2}`. # noqa
 
     Examples
     --------
@@ -403,7 +405,7 @@ def fix2d(x, y, bins=10, range=None, weights=None):
 
 
 def var2d(x, y, xbins, ybins, weights=None):
-    """Histogram the ``x``, ``y`` data with variable width binning
+    r"""Histogram the ``x``, ``y`` data with variable width binning.
 
     Parameters
     ----------
@@ -423,7 +425,7 @@ def var2d(x, y, xbins, ybins, weights=None):
     :py:obj:`numpy.ndarray`
         The bin counts.
     :py:obj:`numpy.ndarray`
-        The standard error of each bin count, :math:`\sqrt{\sum_i w_i^2}`.
+        The standard error of each bin count, :math:`\sqrt{\sum_i w_i^2}`. # noqa
 
     Examples
     --------
@@ -454,7 +456,7 @@ def var2d(x, y, xbins, ybins, weights=None):
 
 
 def histogram2d(x, y, bins=10, range=None, weights=None):
-    """Histogram the data in two dimensions
+    r"""Histogram data in two dimensions.
 
     This function provides an API very simiar to
     :func:`numpy.histogram2d`. Keep in mind that the returns are
@@ -481,16 +483,16 @@ def histogram2d(x, y, bins=10, range=None, weights=None):
        is not integral, then this parameter is ignored. If None, the
        default is ``[[x.min(), x.max()], [y.min(), y.max()]]``.
     weights: array_like
-       An array of weights associated to each element :math:`(x_i, y_i)` pair.
-       Each pair of the the data will contribute its associated weight to the
-       bin count.
+       An array of weights associated to each element :math:`(x_i,
+       y_i)` pair.  Each pair of the data will contribute its
+       associated weight to the bin count.
 
     Returns
     -------
     :py:obj:`numpy.ndarray`
         The bin counts.
     :py:obj:`numpy.ndarray`
-        The standard error of each bin count, :math:`\sqrt{\sum_i w_i^2}`.
+        The standard error of each bin count, :math:`\sqrt{\sum_i w_i^2}`. # noqa
 
     Examples
     --------
