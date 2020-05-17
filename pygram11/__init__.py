@@ -98,7 +98,7 @@ def fix1d(x, bins=10, range=None, weights=None, density=False, flow=False):
     :py:obj:`numpy.ndarray`
         The bin counts.
     :py:obj:`numpy.ndarray`
-        The standard error of each bin count, :math:`\sqrt{\sum_i w_i^2}`. # noqa
+        The standard error of each bin count, :math:`\sqrt{\sum_i w_i^2}`.
 
     Examples
     --------
@@ -152,7 +152,7 @@ def fix1dmw(x, weights, bins=10, range=None, flow=False):
     :py:obj:`numpy.ndarray`
         The bin counts.
     :py:obj:`numpy.ndarray`
-        The standard error of each bin count, :math:`\sqrt{\sum_i w_i^2}`. # noqa
+        The standard error of each bin count, :math:`\sqrt{\sum_i w_i^2}`.
 
     Examples
     --------
@@ -203,7 +203,7 @@ def var1d(x, bins, weights=None, density=False, flow=False):
     :py:obj:`numpy.ndarray`
         The bin counts.
     :py:obj:`numpy.ndarray`
-        The standard error of each bin count, :math:`\sqrt{\sum_i w_i^2}`. # noqa
+        The standard error of each bin count, :math:`\sqrt{\sum_i w_i^2}`.
 
     Examples
     --------
@@ -256,7 +256,7 @@ def var1dmw(x, weights, bins, flow=False):
     :py:obj:`numpy.ndarray`
         The bin counts.
     :py:obj:`numpy.ndarray`
-        The standard error of each bin count, :math:`\sqrt{\sum_i w_i^2}`. # noqa
+        The standard error of each bin count, :math:`\sqrt{\sum_i w_i^2}`.
 
     Examples
     --------
@@ -314,7 +314,7 @@ def histogram(x, bins=10, range=None, weights=None, density=False, flow=False):
     :py:obj:`numpy.ndarray`
         The bin counts.
     :py:obj:`numpy.ndarray`
-        The standard error of each bin count, :math:`\sqrt{\sum_i w_i^2}`. # noqa
+        The standard error of each bin count, :math:`\sqrt{\sum_i w_i^2}`.
 
     Examples
     --------
@@ -368,7 +368,7 @@ def fix2d(x, y, bins=10, range=None, weights=None):
     :py:obj:`numpy.ndarray`
         The bin counts.
     :py:obj:`numpy.ndarray`
-        The standard error of each bin count, :math:`\sqrt{\sum_i w_i^2}`. # noqa
+        The standard error of each bin count, :math:`\sqrt{\sum_i w_i^2}`.
 
     Examples
     --------
@@ -425,7 +425,7 @@ def var2d(x, y, xbins, ybins, weights=None):
     :py:obj:`numpy.ndarray`
         The bin counts.
     :py:obj:`numpy.ndarray`
-        The standard error of each bin count, :math:`\sqrt{\sum_i w_i^2}`. # noqa
+        The standard error of each bin count, :math:`\sqrt{\sum_i w_i^2}`.
 
     Examples
     --------
@@ -492,7 +492,7 @@ def histogram2d(x, y, bins=10, range=None, weights=None):
     :py:obj:`numpy.ndarray`
         The bin counts.
     :py:obj:`numpy.ndarray`
-        The standard error of each bin count, :math:`\sqrt{\sum_i w_i^2}`. # noqa
+        The standard error of each bin count, :math:`\sqrt{\sum_i w_i^2}`.
 
     Examples
     --------
