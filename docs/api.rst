@@ -1,26 +1,14 @@
 API Reference
 =============
 
-.. currentmodule:: pygram11
+.. toctree::
+   :maxdepth: 1
 
-pygram11 Specific API
----------------------
-
-.. autofunction:: fix1d
-
-.. autofunction:: fix1dmw
-
-.. autofunction:: var1d
-
-.. autofunction:: var1dmw
-
-.. autofunction:: fix2d
-
-.. autofunction:: var2d
-
-NumPy-like API
---------------
-
-.. autofunction:: histogram
-
-.. autofunction:: histogram2d
+   api/fix1d.rst
+   api/fix1dmw.rst
+   api/fix2d.rst
+   api/var1d.rst
+   api/var1dmw.rst
+   api/var2d.rst
+   api/histogram.rst
+   api/histogram2d.rst

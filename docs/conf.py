@@ -76,6 +76,8 @@ pygments_style = "default"
 
 autodoc_typehints = "none"
 
+html_logo = "_static/logo.svg"
+
 # -- Options for HTML output -------------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
