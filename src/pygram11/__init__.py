@@ -32,7 +32,7 @@ from .histogram import fix1d, fix1dmw, var1d, var1dmw
 from .histogram import fix2d, var2d
 from .histogram import histogram, histogram2d
 
-__version__ = "0.8.3.dev0"
+__version__ = "0.9.0"
 version_info = tuple(__version__.split("."))
 
 
@@ -45,7 +45,7 @@ __all__ = [
     "var2d",
     "histogram",
     "histogram2d",
-    "omp_get_max_threads"
+    "omp_get_max_threads",
 ]
 
 
