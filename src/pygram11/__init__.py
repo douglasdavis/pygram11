@@ -45,7 +45,7 @@ __all__ = [
     "var2d",
     "histogram",
     "histogram2d",
-    "omp_get_max_threads()"
+    "omp_get_max_threads"
 ]
 
 
