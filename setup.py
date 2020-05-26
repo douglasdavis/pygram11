@@ -144,7 +144,7 @@ def get_extensions():
     extenmods += [
         Extension(
             "pygram11._backend1d",
-            [os.path.join("pygram11", "_backend1d.cpp")],
+            [os.path.join("src", "_backend1d.cpp")],
             language="c++",
             include_dirs=["extern/pybind11/include"],
             extra_compile_args=cpp_cflags,
@@ -152,7 +152,7 @@ def get_extensions():
         ),
         Extension(
             "pygram11._backend2d",
-            [os.path.join("pygram11", "_backend2d.cpp")],
+            [os.path.join("src", "_backend2d.cpp")],
             language="c++",
             include_dirs=["extern/pybind11/include"],
             extra_compile_args=cpp_cflags,
@@ -176,12 +176,6 @@ def get_version(*file_paths):
     raise RuntimeError("Unable to find version string.")
 
 
-def get_readme():
-    project_root = pathlib.PosixPath(__file__).parent
-    with (project_root / "README.md").open("rb") as f:
-        return f.read().decode("utf-8")
-
-
 if not has_openmp():
     sys.exit(
         "\n"
@@ -192,34 +186,9 @@ if not has_openmp():
         "****************************************************"
     )
 
+
 setup(
-    name="pygram11",
-    version=get_version("pygram11", "__init__.py"),
-    author="Doug Davis",
-    author_email="ddavis@ddavis.io",
-    url="https://github.com/douglasdavis/pygram11",
-    description="Fast histogramming in python built on pybind11 and OpenMP.",
-    long_description=get_readme(),
-    long_description_content_type="text/markdown",
-    packages=["pygram11"],
+    version=get_version("src", "pygram11", "__init__.py"),
     ext_modules=get_extensions(),
-    install_requires=["numpy"],
-    python_requires=">=3.6",
-    test_suite="tests",
-    tests_require=["pytest>=4.0"],
     zip_safe=False,
-    classifiers=[
-        "Programming Language :: Python :: 3 :: Only",
-        "Programming Language :: Python :: 3.6",
-        "Programming Language :: Python :: 3.7",
-        "Programming Language :: Python :: 3.8",
-        "Programming Language :: C++",
-        "Operating System :: Unix",
-        "Operating System :: MacOS",
-        "Operating System :: POSIX",
-        "Operating System :: POSIX :: Linux",
-        "License :: OSI Approved :: MIT License",
-        "Development Status :: 4 - Beta",
-        "Intended Audience :: Science/Research",
-    ],
 )
