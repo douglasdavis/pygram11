@@ -16,11 +16,11 @@ pys=(
 )
 
 for py in "${pys[@]}"; do
-    $py -m pip install pip setuptools numpy -U
+    $py -m pip install pip setuptools -U
     $py -m pip wheel .
 done
 
-whls=(pygram11*linux*.whl)
+whls=(pygram11*.whl)
 
 /opt/python/cp37-cp37m/bin/python -m pip install twine auditwheel
 

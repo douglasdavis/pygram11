@@ -12,7 +12,7 @@ pys=(
 )
 
 for py in "${pys[@]}"; do
-    $py -m pip install pip setuptools wheel twine delocate numpy -U
+    $py -m pip install pip setuptools wheel twine delocate -U
     $py -m pip wheel .
 done
 
