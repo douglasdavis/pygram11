@@ -1,4 +1,4 @@
-include pygram11/*.hpp
+include src/*.hpp
 include tests/*.py
 include tests/data/*.npz
 include LICENSE
