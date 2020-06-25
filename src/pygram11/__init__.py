@@ -28,9 +28,9 @@ SOFTWARE.
 
 from pygram11._backend1d import _omp_get_max_threads
 
-from .histogram import fix1d, fix1dmw, var1d, var1dmw
-from .histogram import fix2d, var2d
-from .histogram import histogram, histogram2d
+from .hist import fix1d, fix1dmw, var1d, var1dmw
+from .hist import fix2d, var2d
+from .hist import histogram, histogram2d
 
 __version__ = "0.9.2.dev0"
 version_info = tuple(__version__.split("."))
