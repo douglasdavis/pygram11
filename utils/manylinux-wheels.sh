@@ -16,8 +16,8 @@ pys=(
 )
 
 for py in "${pys[@]}"; do
-    $py -m pip install pip setuptools -U
-    $py -m pip wheel .
+    $py -m pip install pip pep517 setuptools -U
+    $py -m pep517.build --binary . --out-dir .
 done
 
 whls=(pygram11*.whl)

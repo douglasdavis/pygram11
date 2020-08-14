@@ -12,8 +12,8 @@ pys=(
 )
 
 for py in "${pys[@]}"; do
-    $py -m pip install pip setuptools wheel twine delocate -U
-    $py -m pip wheel .
+    $py -m pip install pip setuptools wheel twine delocate pep517 -U
+    $py -m pep517.build --binary . --out-dir .
 done
 
 whls=(pygram11*macos*.whl)
