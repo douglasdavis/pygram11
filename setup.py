@@ -56,6 +56,21 @@ def get_cpp_std_flag():
         raise RuntimeError("C++11 (or later) compatible compiler required")
 
 
+def conda_darwin_flags(flavor="inc"):
+    if os.getenv("CONDA_PREFIX"):
+        pref = os.getenv("CONDA_PREFIX")
+    elif os.getenv("PREFIX"):
+        pref = os.getenv("PREFIX")
+    else:
+        return []
+    if flavor == "inc":
+        return [f"-I{pref}/include"]
+    elif flavor == "lib":
+        return [f"-Wl,-rpath,{pref}/lib", f"-L{pref}/lib"]
+    else:
+        return []
+
+
 def get_compile_flags(is_cpp=False):
     """get the compile flags"""
     if is_cpp:
@@ -70,6 +85,7 @@ def get_compile_flags(is_cpp=False):
         if is_cpp:
             cflags += ["-fvisibility=hidden", "-stdlib=libc++", cpp_std]
         cflags += ["-Xpreprocessor", "-fopenmp"]
+        cflags += conda_darwin_flags("inc")
     else:
         if is_cpp:
             cflags += ["-fvisibility=hidden", cpp_std]
@@ -78,11 +94,9 @@ def get_compile_flags(is_cpp=False):
 
 
 def get_link_flags(is_cpp=False):
-    envPREFIX = os.getenv("PREFIX")
     lflags = []
     if sys.platform.startswith("darwin"):
-        if envPREFIX is not None:
-            lflags += [f"-Wl,-rpath,{envPREFIX}/lib", f"-L{envPREFIX}/lib"]
+        lflags += conda_darwin_flags("lib")
         lflags += ["-lomp"]
     else:
         lflags += ["-lgomp"]
