@@ -13,6 +13,7 @@ tasks:
       conda create -q -n py36 python=3.6 numpy pytest
       conda create -q -n py37 python=3.7 numpy pytest
       conda create -q -n py38 python=3.8 numpy pytest
+      conda create -q -n cf38 python=3.8 numpy pytest libgomp -c conda-forge
   - test_python36: |
       cd pygram11
       source $HOME/miniconda/etc/profile.d/conda.sh
@@ -31,6 +32,13 @@ tasks:
       cd pygram11
       source $HOME/miniconda/etc/profile.d/conda.sh
       conda activate py38
+      pip install pip -U
+      pip install .
+      pytest --ignore=extern
+  - test_cf38: |
+      cd pygram11
+      source $HOME/miniconda/etc/profile.d/conda.sh
+      conda activate cf38
       pip install pip -U
       pip install .
       pytest --ignore=extern
