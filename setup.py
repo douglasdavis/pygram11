@@ -176,20 +176,6 @@ def get_extensions():
     return extenmods
 
 
-def read_files(*parts):
-    here = os.path.abspath(os.path.dirname(__file__))
-    with codecs.open(os.path.join(here, *parts), "r") as fp:
-        return fp.read()
-
-
-def get_version(*file_paths):
-    version_file = read_files(*file_paths)
-    version_match = re.search(r"^__version__ = ['\"]([^'\"]*)['\"]", version_file, re.M)
-    if version_match:
-        return version_match.group(1)
-    raise RuntimeError("Unable to find version string.")
-
-
 if not has_openmp():
     sys.exit(
         "\n"
@@ -202,7 +188,8 @@ if not has_openmp():
 
 
 setup(
-    version=get_version("src", "pygram11", "__init__.py"),
+    use_scm_version=True,
+    setup_requires=["setuptools_scm"],
     ext_modules=get_extensions(),
     zip_safe=False,
 )
