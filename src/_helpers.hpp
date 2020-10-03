@@ -42,25 +42,25 @@ namespace py = pybind11;
 
 /// get the bin index for a fixed with histsgram with x potentially outside range
 template <typename T1, typename T2, typename T3>
-inline std::size_t get_bin(T1 x, T2 nbins, T3 xmin, T3 xmax, T3 norm) {
+inline py::ssize_t get_bin(T1 x, T2 nbins, T3 xmin, T3 xmax, T3 norm) {
   if (x < xmin) {
     return 0;
   }
   else if (x >= xmax) {
-    return static_cast<std::size_t>(nbins) - 1;
+    return nbins - 1;
   }
-  return static_cast<std::size_t>((x - xmin) * norm);
+  return static_cast<py::ssize_t>((x - xmin) * norm);
 }
 
 /// get the bin index for a fixed with histogram assuming x in the range
 template <typename T1, typename T2>
-inline std::size_t get_bin(T1 x, T2 xmin, T2 norm) {
-  return static_cast<std::size_t>((x - xmin) * norm);
+inline py::ssize_t get_bin(T1 x, T2 xmin, T2 norm) {
+  return static_cast<py::ssize_t>((x - xmin) * norm);
 }
 
 /// get the bin index for a variable width histogram with x potentially outside range
 template <typename T1, typename T2>
-inline std::size_t get_bin(T1 x, T2 nbins, const std::vector<T1>& edges) {
+inline py::ssize_t get_bin(T1 x, T2 nbins, const std::vector<T1>& edges) {
   if (x < edges.front()) {
     return 0;
   }
@@ -68,7 +68,7 @@ inline std::size_t get_bin(T1 x, T2 nbins, const std::vector<T1>& edges) {
     return nbins - 1;
   }
   else {
-    auto s = static_cast<std::size_t>(std::distance(
+    auto s = static_cast<py::ssize_t>(std::distance(
         std::begin(edges), std::lower_bound(std::begin(edges), std::end(edges), x)));
     return s - 1;
   }
@@ -76,8 +76,8 @@ inline std::size_t get_bin(T1 x, T2 nbins, const std::vector<T1>& edges) {
 
 /// get the bin index for a variable width histogram assuming x is in the range
 template <typename T1>
-inline std::size_t get_bin(T1 x, const std::vector<T1>& edges) {
-  auto s = static_cast<std::size_t>(std::distance(
+inline py::ssize_t get_bin(T1 x, const std::vector<T1>& edges) {
+  auto s = static_cast<py::ssize_t>(std::distance(
       std::begin(edges), std::lower_bound(std::begin(edges), std::end(edges), x)));
   return s - 1;
 }
@@ -101,23 +101,23 @@ inline void densify(T* counts, T* vars, int nbins, double xmin, double xmax) {
 
 /// fill a fixed width histogram with flow in parallel
 template <typename T1, typename T2>
-inline void fill_parallel_flow(const T1* x, const T2* w, std::size_t nx, std::size_t nbins,
+inline void fill_parallel_flow(const T1* x, const T2* w, py::ssize_t nx, py::ssize_t nbins,
                                T1 xmin, T1 xmax, T1 norm, T2* counts, T2* vars) {
 #pragma omp parallel
   {
     std::vector<T2> counts_ot(nbins, 0.0);
     std::vector<T2> vars_ot(nbins, 0.0);
-    std::size_t bin;
+    py::ssize_t bin;
     T2 weight;
 #pragma omp for nowait
-    for (std::size_t i = 0; i < nx; ++i) {
+    for (py::ssize_t i = 0; i < nx; ++i) {
       bin = get_bin(x[i], nbins, xmin, xmax, norm);
       weight = w[i];
       counts_ot[bin] += weight;
       vars_ot[bin] += weight * weight;
     }
 #pragma omp critical
-    for (std::size_t i = 0; i < nbins; ++i) {
+    for (py::ssize_t i = 0; i < nbins; ++i) {
       counts[i] += counts_ot[i];
       vars[i] += vars_ot[i];
     }
@@ -126,17 +126,17 @@ inline void fill_parallel_flow(const T1* x, const T2* w, std::size_t nx, std::si
 
 /// fill a fixed with histogram without flow in parallel
 template <typename T1, typename T2>
-inline void fill_parallel_noflow(const T1* x, const T2* w, std::size_t nx,
-                                 std::size_t nbins, T1 xmin, T1 xmax, T1 norm, T2* counts,
+inline void fill_parallel_noflow(const T1* x, const T2* w, py::ssize_t nx,
+                                 py::ssize_t nbins, T1 xmin, T1 xmax, T1 norm, T2* counts,
                                  T2* vars) {
 #pragma omp parallel
   {
     std::vector<T2> counts_ot(nbins, 0.0);
     std::vector<T2> vars_ot(nbins, 0.0);
-    std::size_t bin;
+    py::ssize_t bin;
     T2 weight;
 #pragma omp for nowait
-    for (std::size_t i = 0; i < nx; ++i) {
+    for (py::ssize_t i = 0; i < nx; ++i) {
       if (x[i] < xmin || x[i] >= xmax) {
         continue;
       }
@@ -146,7 +146,7 @@ inline void fill_parallel_noflow(const T1* x, const T2* w, std::size_t nx,
       vars_ot[bin] += weight * weight;
     }
 #pragma omp critical
-    for (std::size_t i = 0; i < nbins; ++i) {
+    for (py::ssize_t i = 0; i < nbins; ++i) {
       counts[i] += counts_ot[i];
       vars[i] += vars_ot[i];
     }
@@ -156,23 +156,23 @@ inline void fill_parallel_noflow(const T1* x, const T2* w, std::size_t nx,
 /// fill a variable width histogram with flow in parallel
 template <typename T1, typename T2>
 inline void fill_parallel_flow(const T1* x, const T2* w, const std::vector<T1>& edges,
-                               std::size_t nx, T2* counts, T2* vars) {
-  std::size_t nbins = edges.size() - 1;
+                               py::ssize_t nx, T2* counts, T2* vars) {
+  py::ssize_t nbins = edges.size() - 1;
 #pragma omp parallel
   {
     std::vector<T2> counts_ot(nbins, 0.0);
     std::vector<T2> vars_ot(nbins, 0.0);
-    std::size_t bin;
+    py::ssize_t bin;
     T2 weight;
 #pragma omp for nowait
-    for (std::size_t i = 0; i < nx; ++i) {
+    for (py::ssize_t i = 0; i < nx; ++i) {
       bin = get_bin(x[i], nbins, edges);
       weight = w[i];
       counts_ot[bin] += weight;
       vars_ot[bin] += weight * weight;
     }
 #pragma omp critical
-    for (std::size_t i = 0; i < nbins; ++i) {
+    for (py::ssize_t i = 0; i < nbins; ++i) {
       counts[i] += counts_ot[i];
       vars[i] += vars_ot[i];
     }
@@ -182,18 +182,18 @@ inline void fill_parallel_flow(const T1* x, const T2* w, const std::vector<T1>& 
 /// fill a variable width histogram with flow in parallel
 template <typename T1, typename T2>
 inline void fill_parallel_noflow(const T1* x, const T2* w, const std::vector<T1>& edges,
-                                 std::size_t nx, T2* counts, T2* vars) {
-  std::size_t nbins = edges.size() - 1;
+                                 py::ssize_t nx, T2* counts, T2* vars) {
+  py::ssize_t nbins = edges.size() - 1;
   T1 xmin = edges.front();
   T1 xmax = edges.back();
 #pragma omp parallel
   {
     std::vector<T2> counts_ot(nbins, 0.0);
     std::vector<T2> vars_ot(nbins, 0.0);
-    std::size_t bin;
+    py::ssize_t bin;
     T2 weight;
 #pragma omp for nowait
-    for (std::size_t i = 0; i < nx; ++i) {
+    for (py::ssize_t i = 0; i < nx; ++i) {
       if (x[i] < xmin || x[i] >= xmax) {
         continue;
       }
@@ -203,7 +203,7 @@ inline void fill_parallel_noflow(const T1* x, const T2* w, const std::vector<T1>
       vars_ot[bin] += weight * weight;
     }
 #pragma omp critical
-    for (std::size_t i = 0; i < nbins; ++i) {
+    for (py::ssize_t i = 0; i < nbins; ++i) {
       counts[i] += counts_ot[i];
       vars[i] += vars_ot[i];
     }
@@ -213,10 +213,10 @@ inline void fill_parallel_noflow(const T1* x, const T2* w, const std::vector<T1>
 template <typename T1, typename T2>
 inline void fillmw_parallel_flow(
     const py::array_t<T1, py::array::c_style | py::array::forcecast>& x,
-    const py::array_t<T2, py::array::c_style | py::array::forcecast>& w, std::size_t nbins,
+    const py::array_t<T2, py::array::c_style | py::array::forcecast>& w, py::ssize_t nbins,
     T1 xmin, T1 xmax, py::array_t<T2>& counts, py::array_t<T2>& vars) {
-  std::size_t ndata = static_cast<std::size_t>(x.shape(0));
-  std::size_t nweightvars = static_cast<std::size_t>(w.shape(1));
+  py::ssize_t ndata = x.shape(0);
+  py::ssize_t nweightvars = w.shape(1);
   T1 norm = nbins / (xmax - xmin);
   auto counts_proxy = counts.template mutable_unchecked<2>();
   auto vars_proxy = vars.template mutable_unchecked<2>();
@@ -226,22 +226,22 @@ inline void fillmw_parallel_flow(
   {
     std::vector<std::vector<T2>> counts_ot;
     std::vector<std::vector<T2>> vars_ot;
-    for (std::size_t i = 0; i < nweightvars; ++i) {
+    for (py::ssize_t i = 0; i < nweightvars; ++i) {
       counts_ot.emplace_back(nbins, 0);
       vars_ot.emplace_back(nbins, 0);
     }
 #pragma omp for nowait
-    for (std::size_t i = 0; i < ndata; i++) {
+    for (py::ssize_t i = 0; i < ndata; i++) {
       auto bin = get_bin(x_proxy(i), nbins, xmin, xmax, norm);
-      for (std::size_t j = 0; j < nweightvars; j++) {
+      for (py::ssize_t j = 0; j < nweightvars; j++) {
         T2 weight = w_proxy(i, j);
         counts_ot[j][bin] += weight;
         vars_ot[j][bin] += weight * weight;
       }
     }
 #pragma omp critical
-    for (std::size_t i = 0; i < nbins; ++i) {
-      for (std::size_t j = 0; j < nweightvars; ++j) {
+    for (py::ssize_t i = 0; i < nbins; ++i) {
+      for (py::ssize_t j = 0; j < nweightvars; ++j) {
         counts_proxy(i, j) += counts_ot[j][i];
         vars_proxy(i, j) += vars_ot[j][i];
       }
@@ -252,10 +252,10 @@ inline void fillmw_parallel_flow(
 template <typename T1, typename T2>
 inline void fillmw_parallel_noflow(
     const py::array_t<T1, py::array::c_style | py::array::forcecast>& x,
-    const py::array_t<T2, py::array::c_style | py::array::forcecast>& w, std::size_t nbins,
+    const py::array_t<T2, py::array::c_style | py::array::forcecast>& w, py::ssize_t nbins,
     T1 xmin, T1 xmax, py::array_t<T2>& counts, py::array_t<T2>& vars) {
-  std::size_t ndata = static_cast<std::size_t>(x.shape(0));
-  std::size_t nweightvars = static_cast<std::size_t>(w.shape(1));
+  py::ssize_t ndata = x.shape(0);
+  py::ssize_t nweightvars = w.shape(1);
   T1 norm = nbins / (xmax - xmin);
   auto counts_proxy = counts.template mutable_unchecked<2>();
   auto vars_proxy = vars.template mutable_unchecked<2>();
@@ -265,26 +265,26 @@ inline void fillmw_parallel_noflow(
   {
     std::vector<std::vector<T2>> counts_ot;
     std::vector<std::vector<T2>> vars_ot;
-    for (std::size_t i = 0; i < nweightvars; ++i) {
+    for (py::ssize_t i = 0; i < nweightvars; ++i) {
       counts_ot.emplace_back(nbins, 0);
       vars_ot.emplace_back(nbins, 0);
     }
 #pragma omp for nowait
-    for (std::size_t i = 0; i < ndata; i++) {
+    for (py::ssize_t i = 0; i < ndata; i++) {
       T1 x_i = x_proxy(i);
       if (x_i < xmin || x_i >= xmax) {
         continue;
       }
       auto bin = get_bin(x_i, xmin, norm);
-      for (std::size_t j = 0; j < nweightvars; j++) {
+      for (py::ssize_t j = 0; j < nweightvars; j++) {
         T2 weight = w_proxy(i, j);
         counts_ot[j][bin] += weight;
         vars_ot[j][bin] += weight * weight;
       }
     }
 #pragma omp critical
-    for (std::size_t i = 0; i < nbins; ++i) {
-      for (std::size_t j = 0; j < nweightvars; ++j) {
+    for (py::ssize_t i = 0; i < nbins; ++i) {
+      for (py::ssize_t j = 0; j < nweightvars; ++j) {
         counts_proxy(i, j) += counts_ot[j][i];
         vars_proxy(i, j) += vars_ot[j][i];
       }
@@ -297,33 +297,33 @@ inline void fillmw_parallel_flow(
     const py::array_t<T1, py::array::c_style | py::array::forcecast>& x,
     const py::array_t<T2, py::array::c_style | py::array::forcecast>& w,
     const std::vector<T1>& edges_v, py::array_t<T2>& counts, py::array_t<T2>& vars) {
-  std::size_t ndata = static_cast<std::size_t>(x.shape(0));
-  std::size_t nweightvars = static_cast<std::size_t>(w.shape(1));
+  py::ssize_t ndata = x.shape(0);
+  py::ssize_t nweightvars = w.shape(1);
   auto counts_proxy = counts.template mutable_unchecked<2>();
   auto vars_proxy = vars.template mutable_unchecked<2>();
   auto x_proxy = x.template unchecked<1>();
   auto w_proxy = w.template unchecked<2>();
-  std::size_t nbins = edges_v.size() - 1;
+  py::ssize_t nbins = edges_v.size() - 1;
 #pragma omp parallel
   {
     std::vector<std::vector<T2>> counts_ot;
     std::vector<std::vector<T2>> vars_ot;
-    for (std::size_t i = 0; i < nweightvars; ++i) {
+    for (py::ssize_t i = 0; i < nweightvars; ++i) {
       counts_ot.emplace_back(nbins, 0);
       vars_ot.emplace_back(nbins, 0);
     }
 #pragma omp for nowait
-    for (std::size_t i = 0; i < ndata; i++) {
+    for (py::ssize_t i = 0; i < ndata; i++) {
       auto bin = pygram11::helpers::get_bin(x_proxy(i), nbins, edges_v);
-      for (std::size_t j = 0; j < nweightvars; j++) {
+      for (py::ssize_t j = 0; j < nweightvars; j++) {
         T2 weight = w_proxy(i, j);
         counts_ot[j][bin] += weight;
         vars_ot[j][bin] += weight * weight;
       }
     }
 #pragma omp critical
-    for (std::size_t i = 0; i < nbins; ++i) {
-      for (std::size_t j = 0; j < nweightvars; ++j) {
+    for (py::ssize_t i = 0; i < nbins; ++i) {
+      for (py::ssize_t j = 0; j < nweightvars; ++j) {
         counts_proxy(i, j) += counts_ot[j][i];
         vars_proxy(i, j) += vars_ot[j][i];
       }
@@ -336,39 +336,39 @@ inline void fillmw_parallel_noflow(
     const py::array_t<T1, py::array::c_style | py::array::forcecast>& x,
     const py::array_t<T2, py::array::c_style | py::array::forcecast>& w,
     const std::vector<T1>& edges_v, py::array_t<T2>& counts, py::array_t<T2>& vars) {
-  std::size_t ndata = static_cast<std::size_t>(x.shape(0));
-  std::size_t nweightvars = static_cast<std::size_t>(w.shape(1));
+  py::ssize_t ndata = x.shape(0);
+  py::ssize_t nweightvars = w.shape(1);
   auto counts_proxy = counts.template mutable_unchecked<2>();
   auto vars_proxy = vars.template mutable_unchecked<2>();
   auto x_proxy = x.template unchecked<1>();
   auto w_proxy = w.template unchecked<2>();
-  std::size_t nbins = edges_v.size() - 1;
+  py::ssize_t nbins = edges_v.size() - 1;
   T1 xmin = edges_v.front();
   T1 xmax = edges_v.back();
 #pragma omp parallel
   {
     std::vector<std::vector<T2>> counts_ot;
     std::vector<std::vector<T2>> vars_ot;
-    for (std::size_t i = 0; i < nweightvars; ++i) {
+    for (py::ssize_t i = 0; i < nweightvars; ++i) {
       counts_ot.emplace_back(nbins, 0);
       vars_ot.emplace_back(nbins, 0);
     }
 #pragma omp for nowait
-    for (std::size_t i = 0; i < ndata; i++) {
+    for (py::ssize_t i = 0; i < ndata; i++) {
       T1 x_i = x_proxy(i);
       if (x_i < xmin || x_i >= xmax) {
         continue;
       }
       auto bin = pygram11::helpers::get_bin(x_proxy(i), edges_v);
-      for (std::size_t j = 0; j < nweightvars; j++) {
+      for (py::ssize_t j = 0; j < nweightvars; j++) {
         T2 weight = w_proxy(i, j);
         counts_ot[j][bin] += weight;
         vars_ot[j][bin] += weight * weight;
       }
     }
 #pragma omp critical
-    for (std::size_t i = 0; i < nbins; ++i) {
-      for (std::size_t j = 0; j < nweightvars; ++j) {
+    for (py::ssize_t i = 0; i < nbins; ++i) {
+      for (py::ssize_t j = 0; j < nweightvars; ++j) {
         counts_proxy(i, j) += counts_ot[j][i];
         vars_proxy(i, j) += vars_ot[j][i];
       }

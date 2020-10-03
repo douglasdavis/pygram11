@@ -41,14 +41,14 @@ namespace py = pybind11;
 
 template <typename TX, typename TY, typename TW>
 static void fixed_serial_fill(const TX* x, const TY* y, const TW* w, TW* counts, TW* vars,
-                              std::size_t ndata, std::size_t nbinsx, TX xmin, TX xmax,
-                              std::size_t nbinsy, TY ymin, TY ymax, bool flow) {
+                              py::ssize_t ndata, py::ssize_t nbinsx, TX xmin, TX xmax,
+                              py::ssize_t nbinsy, TY ymin, TY ymax, bool flow) {
   TW weight;
-  std::size_t xbin, ybin, bin;
+  py::ssize_t xbin, ybin, bin;
   TX normx = nbinsx / (xmax - xmin);
   TY normy = nbinsy / (ymax - ymin);
   if (flow) {
-    for (std::size_t i = 0; i < ndata; i++) {
+    for (py::ssize_t i = 0; i < ndata; i++) {
       xbin = pygram11::helpers::get_bin(x[i], nbinsx, xmin, xmax, normx);
       ybin = pygram11::helpers::get_bin(y[i], nbinsy, ymin, ymax, normy);
       weight = w[i];
@@ -58,7 +58,7 @@ static void fixed_serial_fill(const TX* x, const TY* y, const TW* w, TW* counts,
     }
   }
   else {
-    for (std::size_t i = 0; i < ndata; i++) {
+    for (py::ssize_t i = 0; i < ndata; i++) {
       if (x[i] < xmin || x[i] >= xmax || y[i] < ymin || y[i] >= ymax) {
         continue;
       }
@@ -74,15 +74,15 @@ static void fixed_serial_fill(const TX* x, const TY* y, const TW* w, TW* counts,
 
 template <typename TX, typename TY, typename TW>
 static void variable_serial_fill(const TX* x, const TY* y, const TW* w, TW* counts,
-                                 TW* vars, std::size_t ndata, const std::vector<TX>& xedges,
+                                 TW* vars, py::ssize_t ndata, const std::vector<TX>& xedges,
                                  const std::vector<TY>& yedges, bool flow) {
   TW weight;
-  std::size_t xbin, ybin, bin;
-  std::size_t nbinsx = xedges.size() - 1;
-  std::size_t nbinsy = yedges.size() - 1;
+  py::ssize_t xbin, ybin, bin;
+  py::ssize_t nbinsx = xedges.size() - 1;
+  py::ssize_t nbinsy = yedges.size() - 1;
 
   if (flow) {
-    for (std::size_t i = 0; i < ndata; i++) {
+    for (py::ssize_t i = 0; i < ndata; i++) {
       xbin = pygram11::helpers::get_bin(x[i], nbinsx, xedges);
       ybin = pygram11::helpers::get_bin(y[i], nbinsy, yedges);
       bin = ybin + nbinsy * xbin;
@@ -92,7 +92,7 @@ static void variable_serial_fill(const TX* x, const TY* y, const TW* w, TW* coun
     }
   }
   else {
-    for (std::size_t i = 0; i < ndata; i++) {
+    for (py::ssize_t i = 0; i < ndata; i++) {
       if (x[i] < xedges.front() || x[i] >= xedges.back() || y[i] < yedges.front() ||
           y[i] >= yedges.back()) {
         continue;
@@ -109,9 +109,9 @@ static void variable_serial_fill(const TX* x, const TY* y, const TW* w, TW* coun
 
 template <typename TX, typename TY, typename TW>
 py::tuple f2dw(const py::array_t<TX>& x, const py::array_t<TY>& y, const py::array_t<TW>& w,
-               std::size_t nbinsx, TX xmin, TX xmax, std::size_t nbinsy, TY ymin, TY ymax,
+               py::ssize_t nbinsx, TX xmin, TX xmax, py::ssize_t nbinsy, TY ymin, TY ymax,
                bool flow, bool as_err) {
-  std::size_t ndata = static_cast<std::size_t>(x.shape(0));
+  py::ssize_t ndata = x.shape(0);
   py::array_t<TW> counts({nbinsx, nbinsy});
   py::array_t<TW> vars({nbinsx, nbinsy});
   std::memset(counts.mutable_data(), 0, sizeof(TW) * nbinsx * nbinsy);
@@ -136,9 +136,9 @@ py::tuple f2dw(const py::array_t<TX>& x, const py::array_t<TY>& y, const py::arr
         std::vector<TW> counts_ot(nbinsx * nbinsy, 0.0);
         std::vector<TW> vars_ot(nbinsx * nbinsy, 0.0);
         TW weight;
-        std::size_t xbin, ybin, bin;
+        py::ssize_t xbin, ybin, bin;
 #pragma omp for nowait
-        for (std::size_t i = 0; i < ndata; i++) {
+        for (py::ssize_t i = 0; i < ndata; i++) {
           xbin = pygram11::helpers::get_bin(x_proxy[i], nbinsx, xmin, xmax, normx);
           ybin = pygram11::helpers::get_bin(y_proxy[i], nbinsy, ymin, ymax, normy);
           bin = ybin + nbinsy * xbin;
@@ -147,7 +147,7 @@ py::tuple f2dw(const py::array_t<TX>& x, const py::array_t<TY>& y, const py::arr
           vars_ot[bin] += weight * weight;
         }
 #pragma omp critical
-        for (std::size_t i = 0; i < (nbinsx * nbinsy); i++) {
+        for (py::ssize_t i = 0; i < (nbinsx * nbinsy); i++) {
           counts_proxy[i] += counts_ot[i];
           vars_proxy[i] += vars_ot[i];
         }
@@ -160,9 +160,9 @@ py::tuple f2dw(const py::array_t<TX>& x, const py::array_t<TY>& y, const py::arr
         std::vector<TW> counts_ot(nbinsx * nbinsy, 0.0);
         std::vector<TW> vars_ot(nbinsx * nbinsy, 0.0);
         TW weight;
-        std::size_t xbin, ybin, bin;
+        py::ssize_t xbin, ybin, bin;
 #pragma omp for nowait
-        for (std::size_t i = 0; i < ndata; i++) {
+        for (py::ssize_t i = 0; i < ndata; i++) {
           if (x_proxy[i] < xmin || x_proxy[i] >= xmax || y_proxy[i] < ymin ||
               y_proxy[i] >= ymax) {
             continue;
@@ -175,7 +175,7 @@ py::tuple f2dw(const py::array_t<TX>& x, const py::array_t<TY>& y, const py::arr
           vars_ot[bin] += weight * weight;
         }
 #pragma omp critical
-        for (std::size_t i = 0; i < (nbinsx * nbinsy); i++) {
+        for (py::ssize_t i = 0; i < (nbinsx * nbinsy); i++) {
           counts_proxy[i] += counts_ot[i];
           vars_proxy[i] += vars_ot[i];
         }
@@ -195,9 +195,9 @@ py::tuple v2dw(const py::array_t<TX>& x, const py::array_t<TY>& y, const py::arr
                const py::array_t<TX, py::array::c_style | py::array::forcecast>& xedges,
                const py::array_t<TY, py::array::c_style | py::array::forcecast>& yedges,
                bool flow, bool as_err) {
-  std::size_t ndata = static_cast<std::size_t>(x.shape(0));
-  std::size_t nbinsx = static_cast<std::size_t>(xedges.shape(0)) - 1;
-  std::size_t nbinsy = static_cast<std::size_t>(yedges.shape(0)) - 1;
+  py::ssize_t ndata = x.shape(0);
+  py::ssize_t nbinsx = xedges.shape(0) - 1;
+  py::ssize_t nbinsy = yedges.shape(0) - 1;
   std::vector<TX> xedges_v(nbinsx + 1);
   std::vector<TY> yedges_v(nbinsy + 1);
   xedges_v.assign(xedges.data(), xedges.data() + (nbinsx + 1));
@@ -224,9 +224,9 @@ py::tuple v2dw(const py::array_t<TX>& x, const py::array_t<TY>& y, const py::arr
         std::vector<TW> counts_ot(nbinsx * nbinsy, 0.0);
         std::vector<TW> vars_ot(nbinsx * nbinsy, 0.0);
         TW weight;
-        std::size_t xbin, ybin, bin;
+        py::ssize_t xbin, ybin, bin;
 #pragma omp for nowait
-        for (std::size_t i = 0; i < ndata; i++) {
+        for (py::ssize_t i = 0; i < ndata; i++) {
           xbin = pygram11::helpers::get_bin(x_proxy[i], nbinsx, xedges_v);
           ybin = pygram11::helpers::get_bin(y_proxy[i], nbinsy, yedges_v);
           bin = ybin + nbinsy * xbin;
@@ -235,7 +235,7 @@ py::tuple v2dw(const py::array_t<TX>& x, const py::array_t<TY>& y, const py::arr
           vars_ot[bin] += weight * weight;
         }
 #pragma omp critical
-        for (std::size_t i = 0; i < (nbinsx * nbinsy); i++) {
+        for (py::ssize_t i = 0; i < (nbinsx * nbinsy); i++) {
           counts_proxy[i] += counts_ot[i];
           vars_proxy[i] += vars_ot[i];
         }
@@ -248,9 +248,9 @@ py::tuple v2dw(const py::array_t<TX>& x, const py::array_t<TY>& y, const py::arr
         std::vector<TW> counts_ot(nbinsx * nbinsy, 0.0);
         std::vector<TW> vars_ot(nbinsx * nbinsy, 0.0);
         TW weight;
-        std::size_t xbin, ybin, bin;
+        py::ssize_t xbin, ybin, bin;
 #pragma omp for nowait
-        for (std::size_t i = 0; i < ndata; i++) {
+        for (py::ssize_t i = 0; i < ndata; i++) {
           if (x_proxy[i] < xedges_v.front() || x_proxy[i] >= xedges_v.back() ||
               y_proxy[i] < yedges_v.front() || y_proxy[i] >= yedges_v.back()) {
             continue;
@@ -263,7 +263,7 @@ py::tuple v2dw(const py::array_t<TX>& x, const py::array_t<TY>& y, const py::arr
           vars_ot[bin] += weight * weight;
         }
 #pragma omp critical
-        for (std::size_t i = 0; i < (nbinsx * nbinsy); i++) {
+        for (py::ssize_t i = 0; i < (nbinsx * nbinsy); i++) {
           counts_proxy[i] += counts_ot[i];
           vars_proxy[i] += vars_ot[i];
         }
