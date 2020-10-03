@@ -26,13 +26,12 @@ SOFTWARE.
 
 """
 
+from .version import version as __version__  # noqa
 from pygram11._backend1d import _omp_get_max_threads
-
 from .hist import fix1d, fix1dmw, var1d, var1dmw
 from .hist import fix2d, var2d
 from .hist import histogram, histogram2d
 
-__version__ = "0.10.2.dev0"
 version_info = tuple(__version__.split("."))
 
 
