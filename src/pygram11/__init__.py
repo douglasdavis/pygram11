@@ -32,7 +32,7 @@ from .hist import fix1d, fix1dmw, var1d, var1dmw
 from .hist import fix2d, var2d
 from .hist import histogram, histogram2d
 
-__version__ = "0.10.2.dev0"
+__version__ = "0.10.2"
 version_info = tuple(__version__.split("."))
 
 
