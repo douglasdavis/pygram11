@@ -16,7 +16,7 @@ tasks:
     export PATH=$HOME/.pyenv/bin:$PATH
     eval "$(pyenv init -)"
     cd pygram11
-    pyenv shell 3.8.5
+    pyenv shell 3.8.6
     pip install pip pytest setuptools numpy -U
     pip install .
     pyenv shell 3.7.7
@@ -31,17 +31,29 @@ tasks:
     cd pygram11
     pyenv shell 3.6.9
     python -m pytest
+    pip install numpy==1.16
+    python -m pytest
+    pip install numpy==1.17
+    python -m pytest
+    pip install numpy==1.18
+    python -m pytest
 - test37: |
     export PATH=$HOME/.pyenv/bin:$PATH
     eval "$(pyenv init -)"
     cd pygram11
     pyenv shell 3.7.7
     python -m pytest
+    pip install numpy==1.16
+    python -m pytest
+    pip install numpy==1.17
+    python -m pytest
+    pip install numpy==1.18
+    python -m pytest
 - test38 : |
     export PATH=$HOME/.pyenv/bin:$PATH
     eval "$(pyenv init -)"
     cd pygram11
-    pyenv shell 3.8.5
+    pyenv shell 3.8.6
     python -m pytest
 triggers:
 - action: email
