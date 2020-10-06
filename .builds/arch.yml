@@ -56,8 +56,6 @@ tasks:
     eval "$(pyenv init -)"
     cd pygram11
     pyenv shell 3.8.6
-    pip install numpy==1.17
-    python -m pytest
     pip install numpy==1.18
     python -m pytest
     pip install numpy==1.19
