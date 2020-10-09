@@ -1,6 +1,5 @@
 image: archlinux
 packages:
-- openblas
 - python
 - python-numpy
 - gcc
