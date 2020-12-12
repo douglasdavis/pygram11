@@ -11,9 +11,10 @@ Simple and fast histogramming in Python accelerated with
 [OpenMP](https://www.openmp.org/) (with help from
 [pybind11](https://github.com/pybind/pybind11)).
 
-`pygram11` provides fast functions for calculating histograms (and the
-variance in each bin). The API is very simple; documentation can be
-[found here](https://pygram11.readthedocs.io/) (you'll also find [some
+`pygram11` provides functions for very fast histogram calculations
+(and the variance in each bin) in one and two dimensions. The API is
+very simple; documentation can be [found
+here](https://pygram11.readthedocs.io/) (you'll also find [some
 benchmarks](https://pygram11.readthedocs.io/en/stable/bench.html)
 there).
 
