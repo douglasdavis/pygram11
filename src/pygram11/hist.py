@@ -26,12 +26,13 @@
 
 import numpy as np
 import numbers
+from typing import Iterable, Tuple, Optional, Union
 
 from pygram11._backend1d import _v1dw, _f1dw, _f1dmw, _v1dmw
 from pygram11._backend2d import _f2dw, _v2dw
 
 
-def _likely_uniform_bins(edges):
+def _likely_uniform_bins(edges: np.ndarray) -> bool:
     """Test if bin edges describe a set of fixed width bins."""
     diffs = np.ediff1d(edges)
     ones = np.ones_like(diffs)
@@ -40,7 +41,14 @@ def _likely_uniform_bins(edges):
     return max_close and min_close
 
 
-def fix1d(x, bins=10, range=None, weights=None, density=False, flow=False):
+def fix1d(
+    x: np.ndarray,
+    bins: int = 10,
+    range: Optional[Tuple[float, float]] = None,
+    weights: Optional[np.ndarray] = None,
+    density: bool = False,
+    flow: bool = False,
+) -> Tuple[np.ndarray, np.ndarray]:
     r"""Histogram data with fixed (uniform) bin widths.
 
     Parameters
@@ -95,7 +103,13 @@ def fix1d(x, bins=10, range=None, weights=None, density=False, flow=False):
     return _f1dw(x, weights, bins, start, stop, flow, density, True)
 
 
-def fix1dmw(x, weights, bins=10, range=None, flow=False):
+def fix1dmw(
+    x: np.ndarray,
+    weights: np.ndarray,
+    bins: int = 10,
+    range: Optional[Tuple[float, float]] = None,
+    flow: bool = False,
+) -> Tuple[np.ndarray, np.ndarray]:
     r"""Histogram data with multiple weight variations and fixed width bins.
 
     Parameters
@@ -147,7 +161,13 @@ def fix1dmw(x, weights, bins=10, range=None, flow=False):
     return _f1dmw(x, weights, bins, start, stop, flow, True)
 
 
-def var1d(x, bins, weights=None, density=False, flow=False):
+def var1d(
+    x: np.ndarray,
+    bins: np.ndarray,
+    weights: Optional[np.ndarray] = None,
+    density: bool = False,
+    flow: bool = False,
+) -> Tuple[np.ndarray, np.ndarray]:
     r"""Histogram data with variable bin widths.
 
     Parameters
@@ -199,21 +219,23 @@ def var1d(x, bins, weights=None, density=False, flow=False):
     return _v1dw(x, weights, bins, flow, density, True)
 
 
-def var1dmw(x, weights, bins, flow=False):
+def var1dmw(
+    x: np.ndarray,
+    weights: np.ndarray,
+    bins: np.ndarray,
+    flow: bool = False,
+) -> Tuple[np.ndarray, np.ndarray]:
     r"""Histogram data with multiple weight variations and variable width bins.
 
     Parameters
     ----------
     x : array_like
         data to histogram
-    bins : array_like
-        bin edges
     weights : array_like
         weight variations for the elements of ``x``, first dimension
         is the shape of ``x``, second dimension is the number of weights.
-    density : bool
-        normalize histogram bins as value of PDF such that the integral
-        over the range is 1.
+    bins : array_like
+        bin edges
     flow : bool
         if ``True`` the under and overflow bin contents are added to the first
         and last bins, respectively
@@ -313,7 +335,13 @@ def histogram(x, bins=10, range=None, weights=None, density=False, flow=False):
         return var1d(x, weights=weights, bins=bins, density=density, flow=flow)
 
 
-def fix2d(x, y, bins=10, range=None, weights=None):
+def fix2d(
+    x: np.ndarray,
+    y: np.ndarray,
+    bins: Union[int, Tuple[int, int]] = 10,
+    range: Optional[Iterable[Tuple[float, float]]] = None,
+    weights: Optional[np.ndarray] = None,
+) -> Tuple[np.ndarray, np.ndarray]:
     r"""Histogram the ``x``, ``y`` data with fixed (uniform) binning.
 
     Parameters
@@ -359,7 +387,7 @@ def fix2d(x, y, bins=10, range=None, weights=None):
     else:
         weights = np.ascontiguousarray(weights)
 
-    if isinstance(bins, numbers.Integral):
+    if isinstance(bins, int):
         nx = ny = bins
     else:
         nx, ny = bins
@@ -371,7 +399,13 @@ def fix2d(x, y, bins=10, range=None, weights=None):
     return _f2dw(x, y, weights, nx, xmin, xmax, ny, ymin, ymax, False, True)
 
 
-def var2d(x, y, xbins, ybins, weights=None):
+def var2d(
+    x: np.ndarray,
+    y: np.ndarray,
+    xbins: np.ndarray,
+    ybins: np.ndarray,
+    weights: Optional[np.ndarray] = None,
+) -> Tuple[np.ndarray, np.ndarray]:
     r"""Histogram the ``x``, ``y`` data with variable width binning.
 
     Parameters
@@ -422,7 +456,13 @@ def var2d(x, y, xbins, ybins, weights=None):
     return _v2dw(x, y, weights, xbins, ybins, False, True)
 
 
-def histogram2d(x, y, bins=10, range=None, weights=None):
+def histogram2d(
+    x,
+    y,
+    bins=10,
+    range=None,
+    weights=None,
+) -> Tuple[np.ndarray, np.ndarray]:
     r"""Histogram data in two dimensions.
 
     This function provides an API very simiar to
@@ -474,13 +514,16 @@ def histogram2d(x, y, bins=10, range=None, weights=None):
     if N != 1 and N != 2:
         return var2d(x, y, bins, bins, weights=weights)
 
-    if N == 1:
+    elif N == 1:
         return fix2d(x, y, bins=bins, range=range, weights=weights)
 
-    if N == 2:
+    elif N == 2:
         if isinstance(bins[0], numbers.Integral) and isinstance(
             bins[1], numbers.Integral
         ):
             return fix2d(x, y, bins=bins, range=range, weights=weights)
         else:
             return var2d(x, y, bins[0], bins[1], weights=weights)
+
+    else:
+        raise ValueError("bins argument is not compatible")

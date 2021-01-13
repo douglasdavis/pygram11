@@ -48,7 +48,7 @@ __all__ = [
 ]
 
 
-def omp_get_max_threads():
+def omp_get_max_threads() -> int:
     """Get the number of threads available to OpenMP.
 
     This returns the result of calling the OpenMP C API function `of
