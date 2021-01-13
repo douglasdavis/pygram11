@@ -6,7 +6,6 @@
 set -e -x
 
 pys=(
-    /Library/Frameworks/Python.framework/Versions/3.6/bin/python3
     /Library/Frameworks/Python.framework/Versions/3.7/bin/python3
     /Library/Frameworks/Python.framework/Versions/3.8/bin/python3
 )

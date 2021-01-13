@@ -22,10 +22,10 @@ there).
 
 Python 3 releases supported by both pybind11 and
 [NumPy](https://www.numpy.org/) should be compatible with pygram11.
-Python version 3.6 (or later) and NumPy version 1.16+ are supported by
-tests (and have binary releases). To build and install from source
-you'll just need a compiler with support for C++11 and OpenMP. The
-only runtime dependency is NumPy.
+Python version 3.7 (or later) and NumPy version 1.16 (or later) are
+supported by tests (and have binary releases). To build and install
+from source you'll just need a compiler with support for C++11 and
+OpenMP. The only runtime dependency is NumPy.
 
 ### From PyPI
 
