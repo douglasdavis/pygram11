@@ -315,6 +315,10 @@ def histogram(x, bins=10, range=None, weights=None, density=False, flow=False):
     >>> h, err = histogram(x, bins=[-3, -2, -1.5, 1.5, 3.5], weights=w)
 
     """
+    x = np.ascontiguousarray(x)
+    if weights is not None:
+        weights = np.ascontiguousarray(weights)
+
     # fixed bins
     if isinstance(bins, int):
         if weights is not None:
@@ -326,6 +330,7 @@ def histogram(x, bins=10, range=None, weights=None, density=False, flow=False):
 
     # variable bins
     else:
+        bins = np.ascontiguousarray(bins)
         if range is not None:
             raise TypeError("range must be None if bins is non-int")
         if weights is not None:
@@ -510,7 +515,12 @@ def histogram2d(
     except TypeError:
         N = 1
 
+    x = np.ascontiguousarray(x)
+    y = np.ascontiguousarray(y)
+    if weights is not None:
+        weights = np.ascontiguousarray(weights)
     if N != 1 and N != 2:
+        bins = np.ascontiguousarray(bins)
         return var2d(x, y, bins, bins, weights=weights)
 
     elif N == 1:
