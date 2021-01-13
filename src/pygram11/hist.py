@@ -25,7 +25,6 @@
 # SOFTWARE.
 
 import numpy as np
-import numbers
 from typing import Iterable, Tuple, Optional, Union
 
 from pygram11._backend1d import _v1dw, _f1dw, _f1dmw, _v1dmw
@@ -317,7 +316,7 @@ def histogram(x, bins=10, range=None, weights=None, density=False, flow=False):
 
     """
     # fixed bins
-    if isinstance(bins, numbers.Integral):
+    if isinstance(bins, int):
         if weights is not None:
             if weights.shape != x.shape:
                 return fix1dmw(x, weights, bins=bins, range=range, flow=flow)
@@ -518,9 +517,7 @@ def histogram2d(
         return fix2d(x, y, bins=bins, range=range, weights=weights)
 
     elif N == 2:
-        if isinstance(bins[0], numbers.Integral) and isinstance(
-            bins[1], numbers.Integral
-        ):
+        if isinstance(bins[0], int) and isinstance(bins[1], int):
             return fix2d(x, y, bins=bins, range=range, weights=weights)
         else:
             return var2d(x, y, bins[0], bins[1], weights=weights)
