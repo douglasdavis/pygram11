@@ -6,10 +6,17 @@ Setup
 
 There are a number Python modules providing APIs for histogram
 calculations. Here we see how pygram11 performs in comparison to
-numpy_, fast-histogram_, and boost-histogram_. Fast-histogram does not
-provide calculations for variable width bins, so we only compare to
-NumPy and boost-histogram. The tests were performed on an Intel
-i7-8850H 2.60Gz processor (6 physical cores, 12 threads).
+numpy_, fast-histogram_, and boost-histogram_. Tests were performed on
+an Intel i7-8850H 2.60Gz processor (6 physical cores, 12 threads).
+
+Fast-histogram does not provide calculations for variable width bins,
+so, when benchmarking variable width bins, we only compare to NumPy
+and boost-histogram.
+
+.. note::
+
+   pygram11 is designed for arrays of floats (``np.float32`` or
+   ``np.float64``). The benchmarks use only arrays of floats.
 
 Results
 -------
