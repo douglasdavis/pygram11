@@ -16,7 +16,8 @@ and boost-histogram.
 .. note::
 
    pygram11 is designed for arrays of floats (``np.float32`` or
-   ``np.float64``). The benchmarks use only arrays of floats.
+   ``np.float64``). The benchmarks use only arrays of floats. See
+   :issue:`10` for more context.
 
 Results
 -------
