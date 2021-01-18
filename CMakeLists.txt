@@ -13,3 +13,6 @@ set_target_properties(_backend1d PROPERTIES CXX_STANDARD 11)
 target_link_libraries(_backend1d PUBLIC OpenMP::OpenMP_CXX)
 set_target_properties(_backend2d PROPERTIES CXX_STANDARD 11)
 target_link_libraries(_backend2d PUBLIC OpenMP::OpenMP_CXX)
+
+target_compile_options(_backend1d PRIVATE -Wall -Wextra -pedantic -Werror)
+target_compile_options(_backend2d PRIVATE -Wall -Wextra -pedantic -Werror)

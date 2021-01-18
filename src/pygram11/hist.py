@@ -27,7 +27,7 @@
 import numpy as np
 from typing import Iterable, Tuple, Optional, Union
 
-from pygram11._backend1d import _v1dw, _f1dw, _f1dmw, _v1dmw
+from pygram11._backend1d import _f1d, _v1dw, _f1dw, _f1dmw, _v1dmw
 from pygram11._backend2d import _f2dw, _v2dw
 
 
@@ -47,7 +47,7 @@ def fix1d(
     weights: Optional[np.ndarray] = None,
     density: bool = False,
     flow: bool = False,
-) -> Tuple[np.ndarray, np.ndarray]:
+) -> Tuple[np.ndarray, Union[np.ndarray, None]]:
     r"""Histogram data with fixed (uniform) bin widths.
 
     Parameters
@@ -87,17 +87,17 @@ def fix1d(
 
     """
     x = np.ascontiguousarray(x)
-    if weights is not None:
-        weights = np.ascontiguousarray(weights)
-    else:
-        weights = np.ones_like(x, order="C")
-        if not (weights.dtype == np.float32 or weights.dtype == np.float64):
-            weights = weights.astype(np.float64)
 
     if range is not None:
         start, stop = range[0], range[1]
     else:
         start, stop = np.amin(x), np.amax(x)
+
+    if weights is not None:
+        weights = np.ascontiguousarray(weights)
+    else:
+        result = _f1d(x, bins, start, stop, flow)
+        return result, None
 
     return _f1dw(x, weights, bins, start, stop, flow, density, True)
 
@@ -460,13 +460,7 @@ def var2d(
     return _v2dw(x, y, weights, xbins, ybins, False, True)
 
 
-def histogram2d(
-    x,
-    y,
-    bins=10,
-    range=None,
-    weights=None,
-) -> Tuple[np.ndarray, np.ndarray]:
+def histogram2d(x, y, bins=10, range=None, weights=None):
     r"""Histogram data in two dimensions.
 
     This function provides an API very simiar to
