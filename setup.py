@@ -25,6 +25,7 @@ import glob
 import os
 import re
 import pathlib
+import platform
 import subprocess
 import sys
 import tempfile
@@ -71,6 +72,10 @@ def conda_darwin_flags(flavor="inc"):
         return []
 
 
+def is_apple_silicon():
+    return sys.platform.startswith("darwin") and "arm" in platform.processor()
+
+
 def get_compile_flags(is_cpp=False):
     """get the compile flags"""
     if is_cpp:
@@ -84,6 +89,8 @@ def get_compile_flags(is_cpp=False):
     if sys.platform.startswith("darwin"):
         if is_cpp:
             cflags += ["-fvisibility=hidden", "-stdlib=libc++", cpp_std]
+        if is_apple_silicon():
+            cflags += ["-I/opt/homebrew/include"]
         cflags += ["-Xpreprocessor", "-fopenmp"]
         cflags += conda_darwin_flags("inc")
     else:
@@ -96,6 +103,8 @@ def get_compile_flags(is_cpp=False):
 def get_link_flags(is_cpp=False):
     lflags = []
     if sys.platform.startswith("darwin"):
+        if is_apple_silicon():
+            lflags += ["-L/opt/homebrew/lib"]
         lflags += conda_darwin_flags("lib")
         lflags += ["-lomp"]
     else:
