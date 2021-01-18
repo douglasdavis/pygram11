@@ -88,16 +88,16 @@ def fix1d(
     """
     x = np.ascontiguousarray(x)
 
-    if range is not None:
-        start, stop = range[0], range[1]
-    else:
+    if range is None:
         start, stop = np.amin(x), np.amax(x)
-
-    if weights is not None:
-        weights = np.ascontiguousarray(weights)
     else:
+        start, stop = range[0], range[1]
+
+    if weights is None:
         result = _f1d(x, bins, start, stop, flow)
         return result, None
+    else:
+        weights = np.ascontiguousarray(weights)
 
     return _f1dw(x, weights, bins, start, stop, flow, density, True)
 
@@ -152,10 +152,10 @@ def fix1dmw(
     if not (weights.dtype == np.float32 or weights.dtype == np.float64):
         weights = weights.astype(np.float64)
 
-    if range is not None:
-        start, stop = range[0], range[1]
-    else:
+    if range is None:
         start, stop = np.amin(x), np.amax(x)
+    else:
+        start, stop = range[0], range[1]
 
     return _f1dmw(x, weights, bins, start, stop, flow, True)
 
@@ -201,12 +201,12 @@ def var1d(
 
     """
     x = np.ascontiguousarray(x)
-    if weights is not None:
-        weights = np.ascontiguousarray(weights)
-    else:
+    if weights is None:
         weights = np.ones_like(x, order="C")
         if not (weights.dtype == np.float32 or weights.dtype == np.float64):
             weights = weights.astype(np.float64)
+    else:
+        weights = np.ascontiguousarray(weights)
 
     bins = np.ascontiguousarray(bins)
     if not np.all(bins[1:] >= bins[:-1]):
