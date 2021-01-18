@@ -2,7 +2,7 @@
 
 MIT License
 
-Copyright (c) 2020 Douglas Davis
+Copyright (c) 2021 Douglas Davis
 
 Permission is hereby granted, free of charge, to any person
 obtaining a copy of this software and associated documentation files
@@ -27,13 +27,12 @@ SOFTWARE.
 """
 
 from .version import version as __version__  # noqa
-from pygram11._backend1d import _omp_get_max_threads
+from pygram11._backend import _omp_get_max_threads
 from .hist import fix1d, fix1dmw, var1d, var1dmw
 from .hist import fix2d, var2d
 from .hist import histogram, histogram2d
 
 version_info = tuple(__version__.split("."))
-
 
 __all__ = [
     "fix1d",
@@ -46,6 +45,12 @@ __all__ = [
     "histogram2d",
     "omp_get_max_threads",
 ]
+
+FIXED_WIDTH_PARALLEL_THRESHOLD: int = 10_000
+"""int: Threshold for running OpenMP accelerated loop for fixed width histograms."""
+
+VARIABLE_WIDTH_PARALLEL_THRESHOLD: int = 5_000
+"""int: Threshold for running OpenMP accelerated loop for variable width histograms."""
 
 
 def omp_get_max_threads() -> int:

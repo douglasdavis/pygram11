@@ -1,6 +1,6 @@
 // MIT License
 //
-// Copyright (c) 2020 Douglas Davis
+// Copyright (c) 2021 Douglas Davis
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -326,12 +326,6 @@ py::tuple v1dmw(const py::array_t<T1, py::array::c_style | py::array::forcecast>
 
 PYBIND11_MODULE(_backend1d, m) {
   m.doc() = "pygram11's pybind11 based 1D backend";
-
-  m.def("_omp_get_max_threads", []() { return omp_get_max_threads(); });
-
-  m.def("_f1d", &f1d<double>);
-  m.def("_f1d", &f1d<float>);
-  m.def("_f1d", &f1d<py::ssize_t>);
 
   m.def("_f1dw", &f1dw<double, double>);
   m.def("_f1dw", &f1dw<float, float>);

@@ -1,6 +1,6 @@
 # MIT License
 #
-# Copyright (c) 2020 Douglas Davis
+# Copyright (c) 2021 Douglas Davis
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -42,6 +42,7 @@ w_f64 = w_f32.astype(np.float64)
 x_f32_snx = np.random.choice(x_f32, 1234)
 w_f32_snx = np.random.choice(w_f32, 1234)
 
+pg.parallel_threshold = 1200
 
 class TestMisc:
     def test_omp_get_max_threads(self):

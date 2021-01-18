@@ -1,6 +1,6 @@
 # MIT License
 #
-# Copyright (c) 2020 Douglas Davis
+# Copyright (c) 2021 Douglas Davis
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -165,6 +165,14 @@ def get_extensions():
     cpp_lflags = get_link_flags(is_cpp=True)
     extenmods = []
     extenmods += [
+        Extension(
+            "pygram11._backend",
+            [os.path.join("src", "_backend.cpp")],
+            language="c++",
+            include_dirs=["extern/pybind11/include"],
+            extra_compile_args=cpp_cflags,
+            extra_link_args=cpp_lflags,
+        ),
         Extension(
             "pygram11._backend1d",
             [os.path.join("src", "_backend1d.cpp")],

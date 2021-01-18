@@ -2,7 +2,7 @@
 
 # MIT License
 #
-# Copyright (c) 2020 Douglas Davis
+# Copyright (c) 2021 Douglas Davis
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files
@@ -27,7 +27,8 @@
 import numpy as np
 from typing import Iterable, Tuple, Optional, Union
 
-from pygram11._backend1d import _f1d, _v1dw, _f1dw, _f1dmw, _v1dmw
+from pygram11._backend import _f1d
+from pygram11._backend1d import _v1dw, _f1dw, _f1dmw, _v1dmw
 from pygram11._backend2d import _f2dw, _v2dw
 
 
