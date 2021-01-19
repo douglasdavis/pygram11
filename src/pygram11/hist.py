@@ -27,7 +27,7 @@
 import numpy as np
 from typing import Iterable, Tuple, Optional, Union
 
-from pygram11._backend import _f1d
+from pygram11._backend import _f1d, _v1d
 from pygram11._backend1d import _v1dw, _f1dw, _f1dmw, _v1dmw
 from pygram11._backend2d import _f2dw, _v2dw
 
@@ -39,6 +39,22 @@ def _likely_uniform_bins(edges: np.ndarray) -> bool:
     max_close = np.allclose(ones, diffs / np.amax(diffs))
     min_close = np.allclose(ones, diffs / np.amin(diffs))
     return max_close and min_close
+
+
+def _densify_fixed_integral_counts(counts: np.ndarray, width: float) -> np.ndarray:
+    """Convert fixed width histogram to integral over PDF == 1."""
+    integral = np.sum(counts)
+    return np.array(counts / (width * integral), dtype=np.float64)
+
+
+def _density_variable_integral_counts(
+    counts: np.ndarray,
+    edges: np.ndarray,
+) -> np.ndarray:
+    """Convert variable width histogram to integral over PDF == 1."""
+    widths = edges[1:] - edges[:-1]
+    integral = float(np.sum(counts))
+    return np.array(counts / widths / integral, dtype=np.float64)
 
 
 def fix1d(
@@ -96,10 +112,12 @@ def fix1d(
 
     if weights is None:
         result = _f1d(x, bins, start, stop, flow)
+        if density:
+            width = (stop - start) / bins
+            result = _densify_fixed_integral_counts(result, width)
         return result, None
-    else:
-        weights = np.ascontiguousarray(weights)
 
+    weights = np.ascontiguousarray(weights)
     return _f1dw(x, weights, bins, start, stop, flow, density, True)
 
 
@@ -185,6 +203,11 @@ def var1d(
         if ``True`` the under and overflow bin contents are added to the first
         and last bins, respectively
 
+    Raises
+    ------
+    ValueError
+        If bins array is not monotonically increasing.
+
     Returns
     -------
     :py:obj:`numpy.ndarray`
@@ -202,20 +225,28 @@ def var1d(
 
     """
     x = np.ascontiguousarray(x)
-    if weights is None:
-        weights = np.ones_like(x, order="C")
-        if not (weights.dtype == np.float32 or weights.dtype == np.float64):
-            weights = weights.astype(np.float64)
-    else:
-        weights = np.ascontiguousarray(weights)
-
     bins = np.ascontiguousarray(bins)
     if not np.all(bins[1:] >= bins[:-1]):
         raise ValueError("bins sequence must monotonically increase")
 
     if _likely_uniform_bins(bins):
-        return _f1dw(x, weights, len(bins) - 1, bins[0], bins[-1], flow, density, True)
+        nbins = bins.shape[0] - 1
+        return fix1d(
+            x,
+            bins=nbins,
+            weights=weights,
+            range=(bins[0], bins[-1]),
+            flow=flow,
+            density=density,
+        )
 
+    if weights is None:
+        result = _v1d(x, bins, flow)
+        if density:
+            result = _density_variable_integral_counts(result, bins)
+        return result, None
+
+    weights = np.ascontiguousarray(weights)
     return _v1dw(x, weights, bins, flow, density, True)
 
 
@@ -298,6 +329,14 @@ def histogram(x, bins=10, range=None, weights=None, density=False, flow=False):
     flow : bool
         if ``True``, include under/overflow in the first/last bins.
 
+    Raises
+    ------
+    TypeError
+        If bins input defines edges and range is not None.
+    ValueError
+        If bins input defines edges and its not monotonically
+        increasing.
+
     Returns
     -------
     :py:obj:`numpy.ndarray`
@@ -363,6 +402,11 @@ def fix2d(
     weights : array_like, optional
        weight for each :math:`(x_i, y_i)` pair.
 
+    Raises
+    ------
+    ValueError
+        If x and y have different shape.
+
     Returns
     -------
     :py:obj:`numpy.ndarray`
@@ -425,6 +469,12 @@ def var2d(
        bin edges for the ``y`` dimension
     weights : array_like, optional
        weights for each :math:`(x_i, y_i)` pair.
+
+    Raises
+    ------
+    ValueError
+        If x and y have different shape or either bin edge definition
+        is not monotonically increasing.
 
     Returns
     -------
@@ -492,6 +542,12 @@ def histogram2d(x, y, bins=10, range=None, weights=None):
        An array of weights associated to each element :math:`(x_i,
        y_i)` pair.  Each pair of the data will contribute its
        associated weight to the bin count.
+
+    Raises
+    ------
+    ValueError
+        If x and y have different shape or either bin edge definition
+        is not monotonically increasing.
 
     Returns
     -------

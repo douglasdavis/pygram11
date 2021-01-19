@@ -59,6 +59,12 @@ class TestFixedNoFlow:
         np_res = np.histogram(x_f64, bins=nbins, range=(xmin, xmax))
         assert np.allclose(hm_res[0], np_res[0])
 
+    def test_fixed_noflow_noweight_density(self):
+        nbins, xmin, xmax = 25, 40, 180
+        hm_res = pg.histogram(x_f64, bins=nbins, range=(xmin, xmax), flow=False, density=True)
+        np_res = np.histogram(x_f64, bins=nbins, range=(xmin, xmax), density=True)
+        assert np.allclose(hm_res[0], np_res[0])
+
     def test_fixed_noflow_noweight_ints(self):
         nbins, xmin, xmax = 1000000, 0, 1000000000
         x = np.random.randint(xmin, xmax, 1000)
