@@ -44,9 +44,9 @@ using cstyle_t = py::array_t<T, py::array::c_style | py::array::forcecast>;
 template <typename T>
 struct faxis_t {
   py::ssize_t nbins;
-  T xmin;
-  T xmax;
-  inline T norm() const { return nbins / (xmax - xmin); }
+  T amin;
+  T amax;
+  inline T norm() const { return nbins / (amax - amin); }
 };
 
 /// Threshold for running parallel loops to calculate fixed width histograms.
@@ -108,7 +108,7 @@ inline void s_loop_incf(const Tx* x, py::ssize_t nx, faxis_t<Ta> ax, Tc* counts)
   auto norm = ax.norm();
   py::ssize_t bin;
   for (py::ssize_t i = 0; i < nx; ++i) {
-    bin = calc_bin(x[i], ax.nbins, ax.xmin, ax.xmax, norm);
+    bin = calc_bin(x[i], ax.nbins, ax.amin, ax.amax, norm);
     counts[bin]++;
   }
 }
@@ -137,7 +137,7 @@ inline void p_loop_incf(const Tx* x, py::ssize_t nx, faxis_t<Ta> ax, Tc* counts)
     py::ssize_t bin;
 #pragma omp for nowait
     for (py::ssize_t i = 0; i < nx; ++i) {
-      bin = calc_bin(x[i], ax.nbins, ax.xmin, ax.xmax, norm);
+      bin = calc_bin(x[i], ax.nbins, ax.amin, ax.amax, norm);
       counts_ot[bin]++;
     }
 #pragma omp critical
@@ -176,8 +176,8 @@ inline void s_loop_excf(const Tx* x, py::ssize_t nx, faxis_t<Ta> ax, Tc* counts)
   py::ssize_t bin;
   auto norm = ax.norm();
   for (py::ssize_t i = 0; i < nx; ++i) {
-    if (x[i] < ax.xmin || x[i] >= ax.xmax) continue;
-    bin = calc_bin(x[i], ax.xmin, norm);
+    if (x[i] < ax.amin || x[i] >= ax.amax) continue;
+    bin = calc_bin(x[i], ax.amin, norm);
     counts[bin]++;
   }
 }
@@ -206,8 +206,8 @@ inline void p_loop_excf(const Tx* x, py::ssize_t nx, faxis_t<Ta> ax, Tc* counts)
     py::ssize_t bin;
 #pragma omp for nowait
     for (py::ssize_t i = 0; i < nx; ++i) {
-      if (x[i] < ax.xmin || x[i] >= ax.xmax) continue;
-      bin = calc_bin(x[i], ax.xmin, norm);
+      if (x[i] < ax.amin || x[i] >= ax.amax) continue;
+      bin = calc_bin(x[i], ax.amin, norm);
       counts_ot[bin]++;
     }
 #pragma omp critical
