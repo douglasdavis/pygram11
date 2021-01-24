@@ -46,8 +46,12 @@ struct faxis_t {
   py::ssize_t nbins;
   T amin;
   T amax;
-  inline T norm() const { return nbins / (amax - amin); }
 };
+
+template <typename T>
+inline T anorm(faxis_t<T> ax) {
+  return ax.nbins / (ax.amax - ax.amin);
+}
 
 /// Threshold for running parallel loops to calculate fixed width histograms.
 inline py::ssize_t fwpt() {
@@ -105,7 +109,7 @@ inline py::ssize_t calc_bin(T1 x, const std::vector<T2>& edges) {
 /// Execute serial loop with overflow included (fixed width).
 template <typename Tx, typename Ta, typename Tc>
 inline void s_loop_incf(const Tx* x, py::ssize_t nx, faxis_t<Ta> ax, Tc* counts) {
-  auto norm = ax.norm();
+  auto norm = anorm(ax);
   py::ssize_t bin;
   for (py::ssize_t i = 0; i < nx; ++i) {
     bin = calc_bin(x[i], ax.nbins, ax.amin, ax.amax, norm);
@@ -130,7 +134,7 @@ inline void s_loop_incf(const Tx* x, py::ssize_t nx, const std::vector<Te>& edge
 /// Execute parallel loop with overflow included (fixed width).
 template <typename Tx, typename Ta, typename Tc>
 inline void p_loop_incf(const Tx* x, py::ssize_t nx, faxis_t<Ta> ax, Tc* counts) {
-  auto norm = ax.norm();
+  auto norm = anorm(ax);
 #pragma omp parallel
   {
     std::vector<Tc> counts_ot(ax.nbins, 0);
@@ -174,7 +178,7 @@ inline void p_loop_incf(const Tx* x, py::ssize_t nx, const std::vector<Te>& edge
 template <typename Tx, typename Ta, typename Tc>
 inline void s_loop_excf(const Tx* x, py::ssize_t nx, faxis_t<Ta> ax, Tc* counts) {
   py::ssize_t bin;
-  auto norm = ax.norm();
+  auto norm = anorm(ax);
   for (py::ssize_t i = 0; i < nx; ++i) {
     if (x[i] < ax.amin || x[i] >= ax.amax) continue;
     bin = calc_bin(x[i], ax.amin, norm);
@@ -199,7 +203,7 @@ inline void s_loop_excf(const Tx* x, py::ssize_t nx, const std::vector<Te>& edge
 /// Execute a parallel loop with overflow excluded (fixed width).
 template <typename Tx, typename Ta, typename Tc>
 inline void p_loop_excf(const Tx* x, py::ssize_t nx, faxis_t<Ta> ax, Tc* counts) {
-  auto norm = ax.norm();
+  auto norm = anorm(ax);
 #pragma omp parallel
   {
     std::vector<Tc> counts_ot(ax.nbins, 0);

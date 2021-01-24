@@ -20,8 +20,6 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import os
-import multiprocessing
 from pathlib import PosixPath
 
 import pygram11 as pg
@@ -41,15 +39,6 @@ w_f64 = w_f32.astype(np.float64)
 
 x_f32_snx = np.random.choice(x_f32, 1234)
 w_f32_snx = np.random.choice(w_f32, 1234)
-
-pg.parallel_threshold = 1200
-
-class TestMisc:
-    def test_omp_get_max_threads(self):
-        nthreads = os.getenv("OMP_NUM_THREADS")
-        if nthreads is None:
-            nthreads = multiprocessing.cpu_count()
-        assert int(nthreads) == pg.omp_get_max_threads()
 
 
 class TestFixedNoFlow:

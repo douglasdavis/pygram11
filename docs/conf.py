@@ -21,7 +21,7 @@ import pygram11
 # -- Project information -----------------------------------------------------
 
 project = "pygram11"
-copyright = "2020, Doug Davis"
+copyright = "2021, Doug Davis"
 author = "Doug Davis"
 
 
