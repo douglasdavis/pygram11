@@ -48,15 +48,15 @@ struct faxis_t {
   T amax;
 };
 
-template <typename T>
-inline T anorm(faxis_t<T> ax) {
+template <typename Ta>
+inline Ta anorm(faxis_t<Ta> ax) {
   return ax.nbins / (ax.amax - ax.amin);
 }
 
 /// sqrt variance array entries to convert it to standard error
-template <typename T,
-          typename = typename std::enable_if<std::is_arithmetic<T>::value>::type>
-inline void arr_sqrt(T* arr, int n) {
+template <typename Tc,
+          typename = typename std::enable_if<std::is_arithmetic<Tc>::value>::type>
+inline void arr_sqrt(Tc* arr, int n) {
   for (int i = 0; i < n; ++i) {
     arr[i] = std::sqrt(arr[i]);
   }
@@ -77,23 +77,23 @@ inline py::ssize_t vwpt() {
 }
 
 /// Calculate bin index for a fixed with histsgram with x potentially outside range.
-template <typename T1, typename T2, typename T3>
-inline py::ssize_t calc_bin(T1 x, T2 nbins, T3 xmin, T3 xmax, T3 norm) {
+template <typename Tx, typename Tn, typename Ta>
+inline py::ssize_t calc_bin(Tx x, Tn nbins, Ta xmin, Ta xmax, Ta norm) {
   if (x < xmin) return 0;
   if (x >= xmax) return nbins - 1;
   return static_cast<py::ssize_t>((x - xmin) * norm);
 }
 
 /// Calculate the bin index for a fixed with histogram assuming x in the range.
-template <typename T1, typename T2>
-inline py::ssize_t calc_bin(T1 x, T2 xmin, T2 norm) {
+template <typename Tx, typename Ta>
+inline py::ssize_t calc_bin(Tx x, Ta xmin, Ta norm) {
   return static_cast<py::ssize_t>((x - xmin) * norm);
 }
 
 /// Calculate bin index for a variable width histogram with x potentially outside range.
-template <typename T1, typename T2>
-inline py::ssize_t calc_bin(T1 x, py::ssize_t nbins, T2 xmin, T2 xmax,
-                            const std::vector<T2>& edges) {
+template <typename Tx, typename Te>
+inline py::ssize_t calc_bin(Tx x, py::ssize_t nbins, Te xmin, Te xmax,
+                            const std::vector<Te>& edges) {
   if (x < xmin) {
     return 0;
   }
@@ -108,8 +108,8 @@ inline py::ssize_t calc_bin(T1 x, py::ssize_t nbins, T2 xmin, T2 xmax,
 }
 
 /// Calculate bin index for a variable width histogram assuming x in the range.
-template <typename T1, typename T2>
-inline py::ssize_t calc_bin(T1 x, const std::vector<T2>& edges) {
+template <typename Tx, typename Te>
+inline py::ssize_t calc_bin(Tx x, const std::vector<Te>& edges) {
   auto s = static_cast<py::ssize_t>(std::distance(
       std::begin(edges), std::lower_bound(std::begin(edges), std::end(edges), x)));
   return s - 1;
@@ -145,10 +145,10 @@ inline void s_loop_incf(const Tx* x, const Tw* w, py::ssize_t nx, faxis_t<Ta> ax
 template <typename Tx, typename Te, typename Tc>
 inline void s_loop_incf(const Tx* x, py::ssize_t nx, const std::vector<Te>& edges,
                         Tc* counts) {
-  py::size_t bin;
+  py::ssize_t bin;
   auto nbins = edges.size() - 1;
-  auto xmin = edges.front();
-  auto xmax = edges.back();
+  Te xmin = edges.front();
+  Te xmax = edges.back();
   for (py::ssize_t i = 0; i < nx; ++i) {
     bin = calc_bin(x[i], nbins, xmin, xmax, edges);
     counts[bin]++;
@@ -159,7 +159,7 @@ inline void s_loop_incf(const Tx* x, py::ssize_t nx, const std::vector<Te>& edge
 template <typename Tx, typename Tw, typename Te, typename Tc>
 inline void s_loop_incf(const Tx* x, const Tw* w, py::ssize_t nx,
                         const std::vector<Te>& edges, Tc* counts, Tw* variances) {
-  py::size_t bin;
+  py::ssize_t bin;
   Tw weight;
   auto nbins = edges.size() - 1;
   auto xmin = edges.front();
@@ -563,7 +563,6 @@ pg11::arr_t<py::ssize_t> v1d(pg11::cstyle_t<Tx> x, pg11::cstyle_t<Te> edges, boo
   py::ssize_t nbins = nedges - 1;
   std::vector<Te> edges_v(nedges);
   edges_v.assign(edges.data(), edges.data() + nedges);
-
   pg11::arr_t<py::ssize_t> counts(nbins);
   std::memset(counts.mutable_data(), 0, sizeof(py::ssize_t) * nbins);
   py::ssize_t* counts_proxy = counts.mutable_data();
@@ -580,7 +579,6 @@ py::tuple v1dw(pg11::cstyle_t<Tx> x, pg11::cstyle_t<Tw> w, pg11::cstyle_t<Te> ed
   py::ssize_t nbins = nedges - 1;
   std::vector<Te> edges_v(nedges);
   edges_v.assign(edges.data(), edges.data() + nedges);
-
   pg11::arr_t<Tw> counts(nbins);
   pg11::arr_t<Tw> variances(nbins);
   std::memset(counts.mutable_data(), 0, sizeof(Tw) * nbins);
