@@ -525,70 +525,70 @@ inline void fill_v1d(const Tx* x, const Tw* w, py::ssize_t nx, const std::vector
 
 }  // namespace pg11
 
-template <typename T>
-pg11::arr_t<py::ssize_t> f1d(pg11::cstyle_t<T> x, py::ssize_t nbins, double xmin,
+template <typename Tx>
+pg11::arr_t<py::ssize_t> f1d(pg11::cstyle_t<Tx> x, py::ssize_t nbins, double xmin,
                              double xmax, bool flow) {
   py::ssize_t nx = x.shape(0);
   pg11::arr_t<py::ssize_t> counts(nbins);
   std::memset(counts.mutable_data(), 0, sizeof(py::ssize_t) * nbins);
-  auto counts_proxy = counts.mutable_unchecked().mutable_data();
-  auto x_proxy = x.unchecked().data();
+  py::ssize_t* counts_proxy = counts.mutable_data();
+  const Tx* x_proxy = x.data();
   pg11::faxis_t<double> ax{nbins, xmin, xmax};
   pg11::fill_f1d(x_proxy, nx, ax, counts_proxy, flow);
   return counts;
 }
 
-template <typename T1, typename T2>
-py::tuple f1dw(pg11::cstyle_t<T1> x, pg11::cstyle_t<T2> w, py::ssize_t nbins, double xmin,
+template <typename Tx, typename Tw>
+py::tuple f1dw(pg11::cstyle_t<Tx> x, pg11::cstyle_t<Tw> w, py::ssize_t nbins, double xmin,
                double xmax, bool flow) {
   py::ssize_t nx = x.shape(0);
-  pg11::arr_t<T2> counts(nbins);
-  pg11::arr_t<T2> variances(nbins);
-  std::memset(counts.mutable_data(), 0, sizeof(T2) * nbins);
-  std::memset(variances.mutable_data(), 0, sizeof(T2) * nbins);
-  T2* counts_proxy = counts.mutable_data();
-  T2* variances_proxy = variances.mutable_data();
-  const T1* x_proxy = x.data();
-  const T2* w_proxy = w.data();
+  pg11::arr_t<Tw> counts(nbins);
+  pg11::arr_t<Tw> variances(nbins);
+  std::memset(counts.mutable_data(), 0, sizeof(Tw) * nbins);
+  std::memset(variances.mutable_data(), 0, sizeof(Tw) * nbins);
+  Tw* counts_proxy = counts.mutable_data();
+  Tw* variances_proxy = variances.mutable_data();
+  const Tx* x_proxy = x.data();
+  const Tw* w_proxy = w.data();
   pg11::faxis_t<double> ax{nbins, xmin, xmax};
   pg11::fill_f1d(x_proxy, w_proxy, nx, ax, counts_proxy, variances_proxy, flow);
   pg11::arr_sqrt(variances_proxy, nbins);
   return py::make_tuple(counts, variances);
 }
 
-template <typename T1, typename T2>
-pg11::arr_t<py::ssize_t> v1d(pg11::cstyle_t<T1> x, pg11::cstyle_t<T2> edges, bool flow) {
+template <typename Tx, typename Te>
+pg11::arr_t<py::ssize_t> v1d(pg11::cstyle_t<Tx> x, pg11::cstyle_t<Te> edges, bool flow) {
   py::ssize_t nx = x.shape(0);
   py::ssize_t nedges = edges.shape(0);
   py::ssize_t nbins = nedges - 1;
-  std::vector<T2> edges_v(nedges);
+  std::vector<Te> edges_v(nedges);
   edges_v.assign(edges.data(), edges.data() + nedges);
 
   pg11::arr_t<py::ssize_t> counts(nbins);
   std::memset(counts.mutable_data(), 0, sizeof(py::ssize_t) * nbins);
-  auto counts_proxy = counts.mutable_unchecked().mutable_data();
-  auto x_proxy = x.unchecked().data();
+  py::ssize_t* counts_proxy = counts.mutable_data();
+  const Tx* x_proxy = x.data();
   pg11::fill_v1d(x_proxy, nx, edges_v, counts_proxy, flow);
   return counts;
 }
 
-template <typename T1, typename T2, typename T3>
-py::tuple v1dw(pg11::cstyle_t<T1> x, pg11::cstyle_t<T2> w, pg11::cstyle_t<T3> edges,
+template <typename Tx, typename Tw, typename Te>
+py::tuple v1dw(pg11::cstyle_t<Tx> x, pg11::cstyle_t<Tw> w, pg11::cstyle_t<Te> edges,
                bool flow) {
   py::ssize_t nx = x.shape(0);
   py::ssize_t nedges = edges.shape(0);
   py::ssize_t nbins = nedges - 1;
-  std::vector<T3> edges_v(nedges);
+  std::vector<Te> edges_v(nedges);
   edges_v.assign(edges.data(), edges.data() + nedges);
 
-  pg11::arr_t<T2> counts(nbins);
-  pg11::arr_t<T2> variances(nbins);
-  std::memset(counts.mutable_data(), 0, sizeof(T2) * nbins);
-  std::memset(variances.mutable_data(), 0, sizeof(T2) * nbins);
-  T2* counts_proxy = counts.mutable_unchecked().mutable_data();
-  T2* variances_proxy = variances.mutable_unchecked().mutable_data();
-  const T1* x_proxy = x.unchecked().data();
-  const T2* w_proxy = w.unchecked().data();
+  pg11::arr_t<Tw> counts(nbins);
+  pg11::arr_t<Tw> variances(nbins);
+  std::memset(counts.mutable_data(), 0, sizeof(Tw) * nbins);
+  std::memset(variances.mutable_data(), 0, sizeof(Tw) * nbins);
+  Tw* counts_proxy = counts.mutable_data();
+  Tw* variances_proxy = variances.mutable_data();
+  const Tx* x_proxy = x.data();
+  const Tw* w_proxy = w.data();
   pg11::fill_v1d(x_proxy, w_proxy, nx, edges_v, counts_proxy, variances_proxy, flow);
   pg11::arr_sqrt(variances_proxy, nbins);
   return py::make_tuple(counts, variances);
