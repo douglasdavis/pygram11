@@ -29,6 +29,7 @@
 /// STL
 #include <algorithm>
 #include <cmath>
+#include <type_traits>
 #include <vector>
 
 namespace py = pybind11;
@@ -42,6 +43,9 @@ template <typename T>
 using cstyle_t = py::array_t<T, py::array::c_style | py::array::forcecast>;
 
 template <typename T>
+using enable_if_arithmetic_t = typename std::enable_if<std::is_arithmetic<T>::value>::type;
+
+template <typename T>
 struct faxis_t {
   py::ssize_t nbins;
   T amin;
@@ -53,11 +57,16 @@ inline Ta anorm(faxis_t<Ta> ax) {
   return ax.nbins / (ax.amax - ax.amin);
 }
 
-/// sqrt variance array entries to convert it to standard error
-template <typename Tc,
-          typename = typename std::enable_if<std::is_arithmetic<Tc>::value>::type>
-inline void arr_sqrt(Tc* arr, int n) {
-  for (int i = 0; i < n; ++i) {
+template <typename T, typename = enable_if_arithmetic_t<T>>
+inline arr_t<T> zeros(py::ssize_t n) {
+  arr_t<T> arr(n);
+  std::memset(arr.mutable_data(), 0, sizeof(T) * n);
+  return arr;
+}
+
+template <typename T, typename = enable_if_arithmetic_t<T>>
+inline void arr_sqrt(T* arr, py::ssize_t n) {
+  for (py::ssize_t i = 0; i < n; ++i) {
     arr[i] = std::sqrt(arr[i]);
   }
 }
@@ -433,23 +442,17 @@ inline void p_loop_excf(const Tx* x, const Tw* w, py::ssize_t nx,
 template <typename Tx, typename Ta, typename Tc>
 inline void fill_f1d(const Tx* x, py::ssize_t nx, pg11::faxis_t<Ta> ax, Tc* counts,
                      bool flow) {
-  // serial
-  if (nx < pg11::fwpt()) {
-    if (flow) {
+  if (nx < pg11::fwpt()) {  // serial
+    if (flow)
       pg11::s_loop_incf(x, nx, ax, counts);
-    }
-    else {
+    else
       pg11::s_loop_excf(x, nx, ax, counts);
-    }
   }
-  // parallel
-  else {
-    if (flow) {
+  else {  // parallel
+    if (flow)
       pg11::p_loop_incf(x, nx, ax, counts);
-    }
-    else {
+    else
       pg11::p_loop_excf(x, nx, ax, counts);
-    }
   }
 }
 
@@ -457,69 +460,51 @@ inline void fill_f1d(const Tx* x, py::ssize_t nx, pg11::faxis_t<Ta> ax, Tc* coun
 template <typename Tx, typename Tw, typename Ta, typename Tc>
 inline void fill_f1d(const Tx* x, const Tw* w, py::ssize_t nx, pg11::faxis_t<Ta> ax,
                      Tc* counts, Tw* variances, bool flow) {
-  // serial
-  if (nx < pg11::fwpt()) {
-    if (flow) {
+  if (nx < pg11::fwpt()) {  // serial
+    if (flow)
       pg11::s_loop_incf(x, w, nx, ax, counts, variances);
-    }
-    else {
+    else
       pg11::s_loop_excf(x, w, nx, ax, counts, variances);
-    }
   }
-  // parallel
-  else {
-    if (flow) {
+  else {  // parallel
+    if (flow)
       pg11::p_loop_incf(x, w, nx, ax, counts, variances);
-    }
-    else {
+    else
       pg11::p_loop_excf(x, w, nx, ax, counts, variances);
-    }
   }
 }
 
 template <typename Tx, typename Te, typename Tc>
 inline void fill_v1d(const Tx* x, py::ssize_t nx, const std::vector<Te>& edges, Tc* counts,
                      bool flow) {
-  // serial
-  if (nx < pg11::vwpt()) {
-    if (flow) {
+  if (nx < pg11::vwpt()) {  // serial
+    if (flow)
       pg11::s_loop_incf(x, nx, edges, counts);
-    }
-    else {
+    else
       pg11::s_loop_excf(x, nx, edges, counts);
-    }
   }
-  // parallel
-  else {
-    if (flow) {
+  else {  // parallel
+    if (flow)
       pg11::p_loop_incf(x, nx, edges, counts);
-    }
-    else {
+    else
       pg11::p_loop_excf(x, nx, edges, counts);
-    }
   }
 }
 
 template <typename Tx, typename Tw, typename Te, typename Tc>
 inline void fill_v1d(const Tx* x, const Tw* w, py::ssize_t nx, const std::vector<Te>& edges,
                      Tc* counts, Tw* variances, bool flow) {
-  // serial
-  if (nx < pg11::vwpt()) {
-    if (flow) {
+  if (nx < pg11::vwpt()) {  // serial
+    if (flow)
       pg11::s_loop_incf(x, w, nx, edges, counts, variances);
-    }
-    else {
+    else
       pg11::s_loop_excf(x, w, nx, edges, counts, variances);
-    }
   }
-  // parallel
-  else {
-    if (flow) {
+  else {  // parallel
+    if (flow)
       pg11::p_loop_incf(x, w, nx, edges, counts, variances);
-    }
-    else {
+    else
       pg11::p_loop_excf(x, w, nx, edges, counts, variances);
-    }
   }
 }
 
@@ -528,67 +513,45 @@ inline void fill_v1d(const Tx* x, const Tw* w, py::ssize_t nx, const std::vector
 template <typename Tx>
 pg11::arr_t<py::ssize_t> f1d(pg11::cstyle_t<Tx> x, py::ssize_t nbins, double xmin,
                              double xmax, bool flow) {
-  py::ssize_t nx = x.shape(0);
-  pg11::arr_t<py::ssize_t> counts(nbins);
-  std::memset(counts.mutable_data(), 0, sizeof(py::ssize_t) * nbins);
-  py::ssize_t* counts_proxy = counts.mutable_data();
-  const Tx* x_proxy = x.data();
+  auto counts = pg11::zeros<py::ssize_t>(nbins);
   pg11::faxis_t<double> ax{nbins, xmin, xmax};
-  pg11::fill_f1d(x_proxy, nx, ax, counts_proxy, flow);
+  pg11::fill_f1d(x.data(), x.shape(0), ax, counts.mutable_data(), flow);
   return counts;
 }
 
 template <typename Tx, typename Tw>
 py::tuple f1dw(pg11::cstyle_t<Tx> x, pg11::cstyle_t<Tw> w, py::ssize_t nbins, double xmin,
                double xmax, bool flow) {
-  py::ssize_t nx = x.shape(0);
-  pg11::arr_t<Tw> counts(nbins);
-  pg11::arr_t<Tw> variances(nbins);
-  std::memset(counts.mutable_data(), 0, sizeof(Tw) * nbins);
-  std::memset(variances.mutable_data(), 0, sizeof(Tw) * nbins);
-  Tw* counts_proxy = counts.mutable_data();
-  Tw* variances_proxy = variances.mutable_data();
-  const Tx* x_proxy = x.data();
-  const Tw* w_proxy = w.data();
+  auto counts = pg11::zeros<Tw>(nbins);
+  auto variances = pg11::zeros<Tw>(nbins);
   pg11::faxis_t<double> ax{nbins, xmin, xmax};
-  pg11::fill_f1d(x_proxy, w_proxy, nx, ax, counts_proxy, variances_proxy, flow);
-  pg11::arr_sqrt(variances_proxy, nbins);
+  pg11::fill_f1d(x.data(), w.data(), x.shape(0), ax, counts.mutable_data(),
+                 variances.mutable_data(), flow);
+  pg11::arr_sqrt(variances.mutable_data(), nbins);
   return py::make_tuple(counts, variances);
 }
 
-template <typename Tx, typename Te>
-pg11::arr_t<py::ssize_t> v1d(pg11::cstyle_t<Tx> x, pg11::cstyle_t<Te> edges, bool flow) {
-  py::ssize_t nx = x.shape(0);
+template <typename Tx>
+pg11::arr_t<py::ssize_t> v1d(pg11::cstyle_t<Tx> x, pg11::cstyle_t<double> edges,
+                             bool flow) {
   py::ssize_t nedges = edges.shape(0);
-  py::ssize_t nbins = nedges - 1;
-  std::vector<Te> edges_v(nedges);
-  edges_v.assign(edges.data(), edges.data() + nedges);
-  pg11::arr_t<py::ssize_t> counts(nbins);
-  std::memset(counts.mutable_data(), 0, sizeof(py::ssize_t) * nbins);
-  py::ssize_t* counts_proxy = counts.mutable_data();
-  const Tx* x_proxy = x.data();
-  pg11::fill_v1d(x_proxy, nx, edges_v, counts_proxy, flow);
+  std::vector<double> edges_v(edges.data(), edges.data() + nedges);
+  auto counts = pg11::zeros<py::ssize_t>(nedges - 1);
+  pg11::fill_v1d(x.data(), x.shape(0), edges_v, counts.mutable_data(), flow);
   return counts;
 }
 
-template <typename Tx, typename Tw, typename Te>
-py::tuple v1dw(pg11::cstyle_t<Tx> x, pg11::cstyle_t<Tw> w, pg11::cstyle_t<Te> edges,
+template <typename Tx, typename Tw>
+py::tuple v1dw(pg11::cstyle_t<Tx> x, pg11::cstyle_t<Tw> w, pg11::cstyle_t<double> edges,
                bool flow) {
-  py::ssize_t nx = x.shape(0);
   py::ssize_t nedges = edges.shape(0);
   py::ssize_t nbins = nedges - 1;
-  std::vector<Te> edges_v(nedges);
-  edges_v.assign(edges.data(), edges.data() + nedges);
-  pg11::arr_t<Tw> counts(nbins);
-  pg11::arr_t<Tw> variances(nbins);
-  std::memset(counts.mutable_data(), 0, sizeof(Tw) * nbins);
-  std::memset(variances.mutable_data(), 0, sizeof(Tw) * nbins);
-  Tw* counts_proxy = counts.mutable_data();
-  Tw* variances_proxy = variances.mutable_data();
-  const Tx* x_proxy = x.data();
-  const Tw* w_proxy = w.data();
-  pg11::fill_v1d(x_proxy, w_proxy, nx, edges_v, counts_proxy, variances_proxy, flow);
-  pg11::arr_sqrt(variances_proxy, nbins);
+  std::vector<double> edges_v(edges.data(), edges.data() + nedges);
+  auto counts = pg11::zeros<Tw>(nbins);
+  auto variances = pg11::zeros<Tw>(nbins);
+  pg11::fill_v1d(x.data(), w.data(), x.shape(0), edges_v, counts.mutable_data(),
+                 variances.mutable_data(), flow);
+  pg11::arr_sqrt(variances.mutable_data(), nbins);
   return py::make_tuple(counts, variances);
 }
 
@@ -606,23 +569,14 @@ PYBIND11_MODULE(_backend, m) {
   m.def("_f1dw", &f1dw<py::ssize_t, double>);
   m.def("_f1dw", &f1dw<py::ssize_t, float>);
 
-  m.def("_v1d", &v1d<double, double>);
-  m.def("_v1d", &v1d<float, double>);
-  m.def("_v1d", &v1d<py::ssize_t, double>);
-  m.def("_v1d", &v1d<double, py::ssize_t>);
-  m.def("_v1d", &v1d<float, py::ssize_t>);
-  m.def("_v1d", &v1d<py::ssize_t, py::ssize_t>);
+  m.def("_v1d", &v1d<double>);
+  m.def("_v1d", &v1d<float>);
+  m.def("_v1d", &v1d<py::ssize_t>);
 
-  m.def("_v1dw", &v1dw<double, double, double>);
-  m.def("_v1dw", &v1dw<double, float, double>);
-  m.def("_v1dw", &v1dw<float, double, double>);
-  m.def("_v1dw", &v1dw<float, float, double>);
-  m.def("_v1dw", &v1dw<py::ssize_t, double, double>);
-  m.def("_v1dw", &v1dw<py::ssize_t, float, double>);
-  m.def("_v1dw", &v1dw<double, double, py::ssize_t>);
-  m.def("_v1dw", &v1dw<double, float, py::ssize_t>);
-  m.def("_v1dw", &v1dw<float, double, py::ssize_t>);
-  m.def("_v1dw", &v1dw<float, float, py::ssize_t>);
-  m.def("_v1dw", &v1dw<py::ssize_t, double, py::ssize_t>);
-  m.def("_v1dw", &v1dw<py::ssize_t, float, py::ssize_t>);
+  m.def("_v1dw", &v1dw<double, double>);
+  m.def("_v1dw", &v1dw<double, float>);
+  m.def("_v1dw", &v1dw<float, double>);
+  m.def("_v1dw", &v1dw<float, float>);
+  m.def("_v1dw", &v1dw<py::ssize_t, double>);
+  m.def("_v1dw", &v1dw<py::ssize_t, float>);
 }
