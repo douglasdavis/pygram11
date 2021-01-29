@@ -37,9 +37,6 @@ namespace py = pybind11;
 namespace pg11 {
 
 template <typename T>
-using arr_t = py::array_t<T>;
-
-template <typename T>
 using cstyle_t = py::array_t<T, py::array::c_style | py::array::forcecast>;
 
 template <typename T>
@@ -58,8 +55,8 @@ inline Ta anorm(faxis_t<Ta> ax) {
 }
 
 template <typename T, typename = enable_if_arithmetic_t<T>>
-inline arr_t<T> zeros(py::ssize_t n) {
-  arr_t<T> arr(n);
+inline py::array_t<T> zeros(py::ssize_t n) {
+  py::array_t<T> arr(n);
   std::memset(arr.mutable_data(), 0, sizeof(T) * n);
   return arr;
 }
@@ -511,7 +508,7 @@ inline void fill_v1d(const Tx* x, const Tw* w, py::ssize_t nx, const std::vector
 }  // namespace pg11
 
 template <typename Tx>
-pg11::arr_t<py::ssize_t> f1d(pg11::cstyle_t<Tx> x, py::ssize_t nbins, double xmin,
+py::array_t<py::ssize_t> f1d(pg11::cstyle_t<Tx> x, py::ssize_t nbins, double xmin,
                              double xmax, bool flow) {
   auto counts = pg11::zeros<py::ssize_t>(nbins);
   pg11::faxis_t<double> ax{nbins, xmin, xmax};
@@ -532,7 +529,7 @@ py::tuple f1dw(pg11::cstyle_t<Tx> x, pg11::cstyle_t<Tw> w, py::ssize_t nbins, do
 }
 
 template <typename Tx>
-pg11::arr_t<py::ssize_t> v1d(pg11::cstyle_t<Tx> x, pg11::cstyle_t<double> edges,
+py::array_t<py::ssize_t> v1d(pg11::cstyle_t<Tx> x, pg11::cstyle_t<double> edges,
                              bool flow) {
   py::ssize_t nedges = edges.shape(0);
   std::vector<double> edges_v(edges.data(), edges.data() + nedges);
