@@ -43,8 +43,7 @@ def _likely_uniform_bins(edges: np.ndarray) -> bool:
 
 def _densify_fixed_integral_counts(counts: np.ndarray, width: float) -> np.ndarray:
     """Convert fixed width histogram to integral over PDF == 1."""
-    integral = np.sum(counts)
-    return np.array(counts / (width * integral), dtype=np.float64)
+    return np.array(counts / (width * counts.sum()), dtype=np.float64)
 
 
 def _density_variable_integral_counts(
@@ -106,9 +105,11 @@ def fix1d(
     x = np.ascontiguousarray(x)
 
     if range is None:
-        start, stop = np.amin(x), np.amax(x)
+        start = float(np.amin(x))
+        stop = float(np.amax(x))
     else:
-        start, stop = range[0], range[1]
+        start = range[0]
+        stop = range[1]
 
     if weights is None:
         result = _f1d(x, bins, start, stop, flow)
@@ -172,7 +173,7 @@ def fix1dmw(
         weights = weights.astype(np.float64)
 
     if range is None:
-        start, stop = np.amin(x), np.amax(x)
+        start, stop = float(np.amin(x)), float(np.amax(x))
     else:
         start, stop = range[0], range[1]
 
@@ -185,7 +186,7 @@ def var1d(
     weights: Optional[np.ndarray] = None,
     density: bool = False,
     flow: bool = False,
-) -> Tuple[np.ndarray, np.ndarray]:
+) -> Tuple[np.ndarray, Optional[np.ndarray]]:
     r"""Histogram data with variable bin widths.
 
     Parameters
@@ -442,7 +443,10 @@ def fix2d(
         nx, ny = bins
 
     if range is None:
-        range = [(x.min(), x.max()), (y.min(), y.max())]
+        range = [
+            (float(np.amin(x)), float(np.amax(x))),
+            (float(np.amin(y)), float(np.amin(y))),
+        ]
     (xmin, xmax), (ymin, ymax) = range
 
     return _f2dw(x, y, weights, nx, xmin, xmax, ny, ymin, ymax, False, True)
