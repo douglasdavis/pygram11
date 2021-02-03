@@ -35,6 +35,9 @@ from setuptools import setup
 from setuptools.extension import Extension
 
 
+CONDA_BUILD = "CONDA_BUILD" in os.environ
+
+
 def has_flag(compiler, flag):
     """check if compiler has compatibility with the flag"""
     with tempfile.NamedTemporaryFile("w", suffix=".cpp") as f:
@@ -58,12 +61,9 @@ def get_cpp_std_flag():
 
 
 def conda_darwin_flags(flavor="inc"):
-    if os.getenv("CONDA_PREFIX"):
-        pref = os.getenv("CONDA_PREFIX")
-    elif os.getenv("PREFIX"):
-        pref = os.getenv("PREFIX")
-    else:
+    if not CONDA_BUILD:
         return []
+    pref = os.environ["PREFIX"]
     if flavor == "inc":
         return [f"-I{pref}/include"]
     elif flavor == "lib":
@@ -89,7 +89,7 @@ def get_compile_flags(is_cpp=False):
     if sys.platform.startswith("darwin"):
         if is_cpp:
             cflags += ["-fvisibility=hidden", "-stdlib=libc++", cpp_std]
-        if is_apple_silicon():
+        if is_apple_silicon() and not CONDA_BUILD:
             cflags += ["-I/opt/homebrew/include"]
         cflags += ["-Xpreprocessor", "-fopenmp"]
         cflags += conda_darwin_flags("inc")
@@ -103,7 +103,7 @@ def get_compile_flags(is_cpp=False):
 def get_link_flags(is_cpp=False):
     lflags = []
     if sys.platform.startswith("darwin"):
-        if is_apple_silicon():
+        if is_apple_silicon() and not CONDA_BUILD:
             lflags += ["-L/opt/homebrew/lib"]
         lflags += conda_darwin_flags("lib")
         lflags += ["-lomp"]
@@ -159,12 +159,9 @@ def has_openmp():
 
 
 def get_extensions():
-    c_cflags = get_compile_flags()
-    c_lflags = get_link_flags()
     cpp_cflags = get_compile_flags(is_cpp=True)
     cpp_lflags = get_link_flags(is_cpp=True)
-    extenmods = []
-    extenmods += [
+    return [
         Extension(
             "pygram11._backend",
             [os.path.join("src", "_backend.cpp")],
@@ -190,7 +187,6 @@ def get_extensions():
             extra_link_args=cpp_lflags,
         ),
     ]
-    return extenmods
 
 
 if not has_openmp():
