@@ -27,8 +27,8 @@
 import numpy as np
 from typing import Iterable, Tuple, Optional, Union
 
-from pygram11._backend import _f1d, _v1d
-from pygram11._backend1d import _v1dw, _f1dw, _f1dmw, _v1dmw
+from pygram11._backend import _f1d, _v1d, _f1dw, _v1dw
+from pygram11._backend1d import _f1dmw, _v1dmw
 from pygram11._backend2d import _f2dw, _v2dw
 
 
@@ -41,19 +41,48 @@ def _likely_uniform_bins(edges: np.ndarray) -> bool:
     return max_close and min_close
 
 
-def _densify_fixed_integral_counts(counts: np.ndarray, width: float) -> np.ndarray:
-    """Convert fixed width histogram to integral over PDF == 1."""
+def _densify_fixed_counts(counts: np.ndarray, width: float) -> np.ndarray:
+    """Convert fixed width histogram to unity integral over PDF."""
     return np.array(counts / (width * counts.sum()), dtype=np.float64)
 
 
-def _density_variable_integral_counts(
+def _densify_fixed_weighted_counts(
+    raw: Tuple[np.ndarray, np.ndarray], width: float
+) -> Tuple[np.ndarray, np.ndarray]:
+    """Convert fixed width weighted histogram to unity integral over PDF."""
+    counts = raw[0]
+    integral = counts.sum()
+    res0 = _densify_fixed_counts(counts, width)
+    variances = raw[1] * raw[1]
+    f1 = 1.0 / ((width * integral) ** 2)
+    f2 = counts / integral
+    res1 = f1 * (variances + (f2 * f2 * variances.sum()))
+    return res0, np.sqrt(res1)
+
+
+def _densify_variable_counts(
     counts: np.ndarray,
     edges: np.ndarray,
 ) -> np.ndarray:
-    """Convert variable width histogram to integral over PDF == 1."""
+    """Convert variable width histogram to unity integral over PDF."""
     widths = edges[1:] - edges[:-1]
     integral = float(np.sum(counts))
     return np.array(counts / widths / integral, dtype=np.float64)
+
+
+def _densify_variable_weighted_counts(
+    raw: Tuple[np.ndarray, np.ndarray], edges: np.ndarray
+) -> Tuple[np.ndarray, np.ndarray]:
+    """Convert variable width histogram to unity integral over PDF."""
+    counts = raw[0]
+    variances = raw[1] * raw[1]
+    integral = counts.sum()
+    widths = edges[1:] - edges[:-1]
+    res0 = _densify_variable_counts(counts, edges)
+    f1 = 1.0 / ((widths * integral) ** 2)
+    f2 = counts / integral
+    res1 = f1 * (variances + (f2 * f2 * variances.sum()))
+    return res0, res1
 
 
 def fix1d(
@@ -115,11 +144,15 @@ def fix1d(
         result = _f1d(x, bins, start, stop, flow)
         if density:
             width = (stop - start) / bins
-            result = _densify_fixed_integral_counts(result, width)
+            result = _densify_fixed_counts(result, width)
         return result, None
 
     weights = np.ascontiguousarray(weights)
-    return _f1dw(x, weights, bins, start, stop, flow, density, True)
+    result = _f1dw(x, weights, bins, start, stop, flow)
+    if density:
+        width = (stop - start) / bins
+        result = _densify_fixed_weighted_counts(result, width)
+    return result
 
 
 def fix1dmw(
@@ -244,11 +277,14 @@ def var1d(
     if weights is None:
         result = _v1d(x, bins, flow)
         if density:
-            result = _density_variable_integral_counts(result, bins)
+            result = _densify_variable_counts(result, bins)
         return result, None
 
     weights = np.ascontiguousarray(weights)
-    return _v1dw(x, weights, bins, flow, density, True)
+    result = _v1dw(x, weights, bins, flow)
+    if density:
+        result = _densify_variable_weighted_counts(result, bins)
+    return result
 
 
 def var1dmw(

@@ -20,11 +20,84 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import pytest
-import pygram11 as pg
+import sys
+from pathlib import Path
+
 import numpy as np
+import numpy.testing as npt
+import pygram11 as pg
+
+import pytest
+
+DATA_FILE = Path(__file__).parent / "data" / "test_data.npz"
+DATA_RAW = np.load(DATA_FILE)
+X_RAWF = DATA_RAW["data_f64"]
+X_RAWI = DATA_RAW["data_ui32"]
+W_RAW = DATA_RAW["weights_f32"]
 
 
-class TestPlaceHolder:
-    def test_placeholder(self):
-        assert True
+def make_data_1d(xtype, wtype=None):
+    x = X_RAWF.astype(dtype=xtype)
+    if wtype is not None:
+        w = np.random.uniform(0.7, 1.8, x.shape[0])
+    else:
+        w = None
+    return x, w
+
+
+class TestFixed1D:
+    @pytest.mark.parametrize("xtype", [np.float32, np.float64, np.int64])
+    @pytest.mark.parametrize("wtype", [None, np.float32, np.float64])
+    @pytest.mark.parametrize("density", [True, False])
+    @pytest.mark.parametrize("flow", [True, False])
+    @pytest.mark.parametrize("ompt", [sys.maxsize, 1])
+    @pytest.mark.parametrize("func", [pg.histogram, pg.fix1d])
+    def test_one(self, xtype, wtype, density, flow, ompt, func):
+        pg.FIXED_WIDTH_PARALLEL_THRESHOLD = ompt
+        if density and flow:
+            assert True
+            return
+        x, w = make_data_1d(xtype, wtype)
+        n, xmin, xmax = 25, 40.5, 180.5
+        res0, err0 = func(
+            x, weights=w, bins=n, range=(xmin, xmax), density=density, flow=flow
+        )
+        res1, edge = np.histogram(
+            x, weights=w, bins=n, range=(xmin, xmax), density=density
+        )
+        if flow:
+            if w is None:
+                res1[0] += np.sum(x < xmin)
+                res1[-1] += np.sum(x >= xmax)
+            else:
+                res1[0] += w[x < xmin].sum()
+                res1[-1] += w[x >= xmax].sum()
+        npt.assert_allclose(res0, res1, rtol=1e-05, atol=1e-08)
+
+
+class TestVar1D:
+    @pytest.mark.parametrize("xtype", [np.float32, np.float64, np.int64])
+    @pytest.mark.parametrize("wtype", [None, np.float32, np.float64])
+    @pytest.mark.parametrize("density", [True, False])
+    @pytest.mark.parametrize("flow", [True, False])
+    @pytest.mark.parametrize("ompt", [sys.maxsize, 1])
+    @pytest.mark.parametrize("func", [pg.histogram, pg.var1d])
+    def test_one(self, xtype, wtype, density, flow, ompt, func):
+        pg.VARIABLE_WIDTH_PARALLEL_THRESHOLD = ompt
+        if density and flow:
+            assert True
+            return
+        x, w = make_data_1d(xtype, wtype)
+        bins = np.array([1.1, 5.5, 17.2, 32.9, 100.2, 170.5, 172.1, 173.1, 279.2])
+        res0, err0 = func(x, weights=w, bins=bins, density=density, flow=flow)
+        res1, edge = np.histogram(x, weights=w, bins=bins, density=density)
+        xmin = bins[0]
+        xmax = bins[-1]
+        if flow:
+            if w is None:
+                res1[0] += np.sum(x < xmin)
+                res1[-1] += np.sum(x >= xmax)
+            else:
+                res1[0] += w[x < xmin].sum()
+                res1[-1] += w[x >= xmax].sum()
+        npt.assert_allclose(res0, res1, rtol=1e-05, atol=1e-08)
