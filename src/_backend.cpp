@@ -650,8 +650,8 @@ inline void fill_v1d(const Tx* x, const Tw* w, py::ssize_t nx, const std::vector
 }  // namespace pg11
 
 template <typename Tx>
-py::array_t<py::ssize_t> f1d(py::array_t<Tx> x, py::ssize_t nbins, double xmin, double xmax,
-                             bool flow) {
+py::array_t<py::ssize_t> f1d(py::array_t<Tx, py::array::c_style> x, py::ssize_t nbins,
+                             double xmin, double xmax, bool flow) {
   auto counts = pg11::zeros<py::ssize_t>(nbins);
   pg11::faxis_t<double> ax{nbins, xmin, xmax};
   pg11::fill_f1d(x.data(), x.shape(0), ax, counts.mutable_data(), flow);
@@ -659,8 +659,8 @@ py::array_t<py::ssize_t> f1d(py::array_t<Tx> x, py::ssize_t nbins, double xmin, 
 }
 
 template <typename Tx, typename Tw>
-py::tuple f1dw(py::array_t<Tx> x, py::array_t<Tw> w, py::ssize_t nbins, double xmin,
-               double xmax, bool flow) {
+py::tuple f1dw(py::array_t<Tx, py::array::c_style> x, py::array_t<Tw, py::array::c_style> w,
+               py::ssize_t nbins, double xmin, double xmax, bool flow) {
   auto counts = pg11::zeros<Tw>(nbins);
   auto variances = pg11::zeros<Tw>(nbins);
   pg11::faxis_t<double> ax{nbins, xmin, xmax};
@@ -694,7 +694,8 @@ py::tuple f1dmw(py::array_t<Tx> x, py::array_t<Tw> w, py::ssize_t nbins, double 
 }
 
 template <typename Tx>
-py::array_t<py::ssize_t> v1d(py::array_t<Tx> x, py::array_t<double> edges, bool flow) {
+py::array_t<py::ssize_t> v1d(py::array_t<Tx, py::array::c_style> x,
+                             py::array_t<double> edges, bool flow) {
   py::ssize_t nedges = edges.shape(0);
   std::vector<double> edges_v(edges.data(), edges.data() + nedges);
   auto counts = pg11::zeros<py::ssize_t>(nedges - 1);
@@ -703,7 +704,8 @@ py::array_t<py::ssize_t> v1d(py::array_t<Tx> x, py::array_t<double> edges, bool 
 }
 
 template <typename Tx, typename Tw>
-py::tuple v1dw(py::array_t<Tx> x, py::array_t<Tw> w, py::array_t<double> edges, bool flow) {
+py::tuple v1dw(py::array_t<Tx, py::array::c_style> x, py::array_t<Tw, py::array::c_style> w,
+               py::array_t<double> edges, bool flow) {
   py::ssize_t nedges = edges.shape(0);
   py::ssize_t nbins = nedges - 1;
   std::vector<double> edges_v(edges.data(), edges.data() + nedges);
@@ -715,35 +717,29 @@ py::tuple v1dw(py::array_t<Tx> x, py::array_t<Tw> w, py::array_t<double> edges, 
   return py::make_tuple(counts, variances);
 }
 
+template <typename T>
+void inject_t(py::module_& m) {
+  using namespace pybind11::literals;
+  // clang-format off
+  m.def("_f1d", &f1d<T>, "x"_a.noconvert(), "bins"_a, "xmin"_a, "xmax"_a, "flow"_a);
+  m.def("_f1dw", &f1dw<T, double>, "x"_a.noconvert(), "w"_a.noconvert(), "bins"_a, "xmin"_a, "xmax"_a, "flow"_a);
+  m.def("_f1dw", &f1dw<T, float>, "x"_a.noconvert(), "w"_a.noconvert(), "bins"_a, "xmin"_a, "xmax"_a, "flow"_a);
+  m.def("_f1dmw", &f1dmw<T, double>, "x"_a.noconvert(), "w"_a.noconvert(), "bins"_a, "xmin"_a, "xmax"_a, "flow"_a);
+  m.def("_f1dmw", &f1dmw<T, float>, "x"_a.noconvert(), "w"_a.noconvert(), "bins"_a, "xmin"_a, "xmax"_a, "flow"_a);
+  m.def("_v1d", &v1d<T>, "x"_a.noconvert(), "edges"_a, "flow"_a);
+  m.def("_v1dw", &v1dw<T, double>, "x"_a.noconvert(), "w"_a.noconvert(), "edges"_a, "flow"_a);
+  m.def("_v1dw", &v1dw<T, float>, "x"_a.noconvert(), "w"_a.noconvert(), "edges"_a, "flow"_a);
+  // clang-format on
+}
+
 PYBIND11_MODULE(_backend, m) {
   m.doc() = "pygram11 C++ backend.";
   m.def("_omp_get_max_threads", []() { return omp_get_max_threads(); });
-  m.def("_f1d", &f1d<double>);
-  m.def("_f1d", &f1d<float>);
-  m.def("_f1d", &f1d<py::ssize_t>);
 
-  m.def("_f1dw", &f1dw<double, double>);
-  m.def("_f1dw", &f1dw<double, float>);
-  m.def("_f1dw", &f1dw<float, double>);
-  m.def("_f1dw", &f1dw<float, float>);
-  m.def("_f1dw", &f1dw<py::ssize_t, double>);
-  m.def("_f1dw", &f1dw<py::ssize_t, float>);
-
-  m.def("_f1dmw", &f1dmw<double, double>);
-  m.def("_f1dmw", &f1dmw<double, float>);
-  m.def("_f1dmw", &f1dmw<float, double>);
-  m.def("_f1dmw", &f1dmw<float, float>);
-  m.def("_f1dmw", &f1dmw<py::ssize_t, double>);
-  m.def("_f1dmw", &f1dmw<py::ssize_t, float>);
-
-  m.def("_v1d", &v1d<double>);
-  m.def("_v1d", &v1d<float>);
-  m.def("_v1d", &v1d<py::ssize_t>);
-
-  m.def("_v1dw", &v1dw<double, double>);
-  m.def("_v1dw", &v1dw<double, float>);
-  m.def("_v1dw", &v1dw<float, double>);
-  m.def("_v1dw", &v1dw<float, float>);
-  m.def("_v1dw", &v1dw<py::ssize_t, double>);
-  m.def("_v1dw", &v1dw<py::ssize_t, float>);
+  inject_t<double>(m);
+  inject_t<float>(m);
+  inject_t<py::ssize_t>(m);
+  inject_t<int>(m);
+  inject_t<unsigned int>(m);
+  inject_t<unsigned long>(m);
 }

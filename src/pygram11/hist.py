@@ -27,8 +27,8 @@
 import numpy as np
 from typing import Iterable, Tuple, Optional, Union
 
-from pygram11._backend import _f1d, _v1d, _f1dw, _v1dw
-from pygram11._backend1d import _f1dmw, _v1dmw
+from pygram11._backend import _f1d, _v1d, _f1dw, _v1dw, _f1dmw
+from pygram11._backend1d import _v1dmw
 from pygram11._backend2d import _f2dw, _v2dw
 
 
@@ -131,8 +131,6 @@ def fix1d(
     >>> h, h_err = fix1d(x, bins=20, range=(0, 100), weights=w)
 
     """
-    x = np.ascontiguousarray(x)
-
     if range is None:
         start = float(np.amin(x))
         stop = float(np.amax(x))
@@ -147,7 +145,6 @@ def fix1d(
             result = _densify_fixed_counts(result, width)
         return result, None
 
-    weights = np.ascontiguousarray(weights)
     result = _f1dw(x, weights, bins, start, stop, flow)
     if density:
         width = (stop - start) / bins
@@ -200,17 +197,15 @@ def fix1dmw(
     represents the histogram of the data using its respective weight.
 
     """
-    x = np.ascontiguousarray(x)
-    weights = np.ascontiguousarray(weights)
-    if not (weights.dtype == np.float32 or weights.dtype == np.float64):
-        weights = weights.astype(np.float64)
+    x = np.asarray(x)
+    weights = np.asarray(weights)
 
     if range is None:
         start, stop = float(np.amin(x)), float(np.amax(x))
     else:
         start, stop = range[0], range[1]
 
-    return _f1dmw(x, weights, bins, start, stop, flow, True)
+    return _f1dmw(x, weights, bins, start, stop, flow)
 
 
 def var1d(
@@ -392,9 +387,9 @@ def histogram(x, bins=10, range=None, weights=None, density=False, flow=False):
     >>> h, err = histogram(x, bins=[-3, -2, -1.5, 1.5, 3.5], weights=w)
 
     """
-    x = np.ascontiguousarray(x)
+    x = np.asarray(x)
     if weights is not None:
-        weights = np.ascontiguousarray(weights)
+        weights = np.asarray(weights)
 
     # fixed bins
     if isinstance(bins, int):
