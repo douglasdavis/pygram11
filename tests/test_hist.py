@@ -34,6 +34,13 @@ DATA_RAW = np.load(DATA_FILE)
 X_RAWF = DATA_RAW["data_f64"]
 X_RAWI = DATA_RAW["data_ui32"]
 W_RAW = DATA_RAW["weights_f32"]
+E_ARRS = (
+    np.array([27.5, 35.1, 40.2, 50.1, 57.2, 60.1,
+              64.2, 70.2, 90.1, 98.2, 110.1, 120.2,
+              130.2, 160.1, 200.2, 250.1]),
+    np.array([1.1, 5.5, 17.2, 32.9, 100.2,
+              170.5, 172.1, 173.1, 279.2]),
+)
 XTYPES = (np.float32, np.float64, np.int32, np.int64, np.uint32, np.uint64)
 
 
@@ -59,7 +66,7 @@ class TestFixed1D:
     @pytest.mark.parametrize("flow", [True, False])
     @pytest.mark.parametrize("ompt", [sys.maxsize, 1])
     @pytest.mark.parametrize("func", [pg.histogram, pg.fix1d])
-    def test_one(self, xtype, wtype, density, flow, ompt, func):
+    def test_no_weight_and_single_weight(self, xtype, wtype, density, flow, ompt, func):
         pg.FIXED_WIDTH_PARALLEL_THRESHOLD = ompt
         if density and flow:
             assert True
@@ -86,7 +93,7 @@ class TestFixed1D:
     @pytest.mark.parametrize("flow", [True, False])
     @pytest.mark.parametrize("ompt", [sys.maxsize, 1])
     @pytest.mark.parametrize("func", [pg.histogram, pg.fix1dmw])
-    def test_two(self, xtype, wtype, flow, ompt, func):
+    def test_multiple_weights(self, xtype, wtype, flow, ompt, func):
         pg.FIXED_WIDTH_MW_PARALLEL_THRESHOLD = ompt
         x, w = make_data_1d_mw(xtype, wtype)
         n, xmin, xmax = 35, 40.4, 190.2
@@ -102,17 +109,17 @@ class TestFixed1D:
 class TestVar1D:
     @pytest.mark.parametrize("xtype", XTYPES)
     @pytest.mark.parametrize("wtype", [None, np.float32, np.float64])
+    @pytest.mark.parametrize("bins", E_ARRS)
     @pytest.mark.parametrize("density", [True, False])
     @pytest.mark.parametrize("flow", [True, False])
     @pytest.mark.parametrize("ompt", [sys.maxsize, 1])
     @pytest.mark.parametrize("func", [pg.histogram, pg.var1d])
-    def test_one(self, xtype, wtype, density, flow, ompt, func):
+    def test_no_weight_and_single_weight(self, xtype, wtype, bins, density, flow, ompt, func):
         pg.VARIABLE_WIDTH_PARALLEL_THRESHOLD = ompt
         if density and flow:
             assert True
             return
         x, w = make_data_1d(xtype, wtype)
-        bins = np.array([1.1, 5.5, 17.2, 32.9, 100.2, 170.5, 172.1, 173.1, 279.2])
         res0, err0 = func(x, weights=w, bins=bins, density=density, flow=flow)
         res1, edge = np.histogram(x, weights=w, bins=bins, density=density)
         xmin = bins[0]
@@ -125,3 +132,22 @@ class TestVar1D:
                 res1[0] += w[x < xmin].sum()
                 res1[-1] += w[x >= xmax].sum()
         npt.assert_allclose(res0, res1, rtol=1e-05, atol=1e-08)
+
+    @pytest.mark.parametrize("xtype", XTYPES)
+    @pytest.mark.parametrize("wtype", [np.float32, np.float64])
+    @pytest.mark.parametrize("bins", E_ARRS)
+    @pytest.mark.parametrize("flow", [True, False])
+    @pytest.mark.parametrize("ompt", [sys.maxsize, 1])
+    @pytest.mark.parametrize("func", [pg.var1dmw, pg.histogram])
+    def test_multiple_weights(self, xtype, wtype, bins, flow, ompt, func):
+        pg.VARIABLE_WIDTH_MW_PARALLEL_THRESHOLD = ompt
+        x, w = make_data_1d_mw(xtype, wtype)
+        xmin = bins[0]
+        xmax = bins[-1]
+        res0, err0 = func(x, weights=w, bins=bins, flow=flow)
+        for i in range(res0.shape[1]):
+            res1, edge = np.histogram(x, weights=w[:, i], bins=bins)
+            if flow:
+                res1[0] += np.sum(w[:, i][x < xmin])
+                res1[-1] += np.sum(w[:, i][x >= xmax])
+            npt.assert_allclose(res0[:, i], res1, rtol=1e-05, atol=1e-08)

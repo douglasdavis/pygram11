@@ -27,8 +27,7 @@
 import numpy as np
 from typing import Iterable, Tuple, Optional, Union
 
-from pygram11._backend import _f1d, _v1d, _f1dw, _v1dw, _f1dmw
-from pygram11._backend1d import _v1dmw
+from pygram11._backend import _f1d, _v1d, _f1dw, _v1dw, _f1dmw, _v1dmw
 from pygram11._backend2d import _f2dw, _v2dw
 
 
@@ -324,19 +323,17 @@ def var1dmw(
     (6, 3)
 
     """
-    x = np.ascontiguousarray(x)
-    weights = np.ascontiguousarray(weights)
-    if not (weights.dtype == np.float32 or weights.dtype == np.float64):
-        weights = weights.astype(np.float64)
+    x = np.asarray(x)
+    weights = np.asarray(weights)
 
-    bins = np.ascontiguousarray(bins)
+    bins = np.asarray(bins, dtype=np.float64)
     if not np.all(bins[1:] >= bins[:-1]):
         raise ValueError("bins sequence must monotonically increase")
 
     if _likely_uniform_bins(bins):
-        return _f1dmw(x, weights, len(bins) - 1, bins[0], bins[-1], flow, True)
+        return _f1dmw(x, weights, len(bins) - 1, bins[0], bins[-1], flow)
 
-    return _v1dmw(x, weights, bins, flow, True)
+    return _v1dmw(x, weights, bins, flow)
 
 
 def histogram(x, bins=10, range=None, weights=None, density=False, flow=False):

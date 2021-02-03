@@ -219,6 +219,32 @@ inline void s_loop_incf(const Tx* x, const Tw* w, py::ssize_t nx,
   }
 }
 
+/// Execute serial loop with overflow included (variable width); multiweight inputs
+template <typename Tx, typename Tw, typename Te>
+inline void s_loop_incf(const py::array_t<Tx>& x, const py::array_t<Tw>& w,
+                        const std::vector<Te>& edges, py::array_t<Tw>& counts,
+                        py::array_t<Tw>& variances) {
+  auto counts_px = counts.template mutable_unchecked<2>();
+  auto variances_px = variances.template mutable_unchecked<2>();
+  auto w_px = w.template unchecked<2>();
+  auto x_px = x.data();
+  auto nbins = edges.size() - 1;
+  auto xmin = edges.front();
+  auto xmax = edges.back();
+  Tw w_ij;
+  py::ssize_t bin;
+  py::ssize_t nx = x.shape(0);
+  py::ssize_t nw = w.shape(1);
+  for (py::ssize_t i = 0; i < nx; ++i) {
+    bin = calc_bin(x_px[i], nbins, xmin, xmax, edges);
+    for (py::ssize_t j = 0; j < nw; ++j) {
+      w_ij = w_px(i, j);
+      counts_px(bin, j) += w_ij;
+      variances_px(bin, j) += w_ij * w_ij;
+    }
+  }
+}
+
 /// Execute parallel loop with overflow included (fixed width).
 template <typename Tx, typename Ta, typename Tc>
 inline void p_loop_incf(const Tx* x, py::ssize_t nx, faxis_t<Ta> ax, Tc* counts) {
@@ -354,6 +380,47 @@ inline void p_loop_incf(const Tx* x, const Tw* w, py::ssize_t nx,
   }
 }
 
+/// Execute parallel loop with overflow included (variable width); multiweight inputs.
+template <typename Tx, typename Tw, typename Te>
+inline void p_loop_incf(const py::array_t<Tx>& x, const py::array_t<Tw>& w,
+                        const std::vector<Te>& edges, py::array_t<Tw>& counts,
+                        py::array_t<Tw>& variances) {
+  auto counts_px = counts.template mutable_unchecked<2>();
+  auto variances_px = variances.template mutable_unchecked<2>();
+  auto w_px = w.template unchecked<2>();
+  auto x_px = x.data();
+  auto nx = x.shape(0);
+  auto nw = w.shape(1);
+  auto nbins = edges.size() - 1;
+  auto xmin = edges.front();
+  auto xmax = edges.back();
+#pragma omp parallel
+  {
+    std::vector<std::vector<Tw>> counts_ot;
+    std::vector<std::vector<Tw>> variances_ot;
+    for (int i = 0; i < nw; ++i) {
+      counts_ot.emplace_back(nbins, 0);
+      variances_ot.emplace_back(nbins, 0);
+    }
+#pragma omp for nowait
+    for (py::ssize_t i = 0; i < nx; ++i) {
+      auto bin = calc_bin(x_px[i], nbins, xmin, xmax, edges);
+      for (py::ssize_t j = 0; j < nw; ++j) {
+        auto w_ij = w_px(i, j);
+        counts_ot[j][bin] += w_ij;
+        variances_ot[j][bin] += w_ij * w_ij;
+      }
+    }
+#pragma omp critical
+    for (std::size_t i = 0; i < nbins; ++i) {
+      for (py::ssize_t j = 0; j < nw; ++j) {
+        counts_px(i, j) += counts_ot[j][i];
+        variances_px(i, j) += variances_ot[j][i];
+      }
+    }
+  }
+}
+
 /// Execute a serial loop with overflow excluded (fixed width).
 template <typename Tx, typename Ta, typename Tc>
 inline void s_loop_excf(const Tx* x, py::ssize_t nx, faxis_t<Ta> ax, Tc* counts) {
@@ -434,6 +501,32 @@ inline void s_loop_excf(const Tx* x, const Tw* w, py::ssize_t nx,
     weight = w[i];
     counts[bin] += weight;
     variances[bin] += weight * weight;
+  }
+}
+
+/// Execute serial loop with overflow excluded (variable width); multiweight inputs
+template <typename Tx, typename Tw, typename Te>
+inline void s_loop_excf(const py::array_t<Tx>& x, const py::array_t<Tw>& w,
+                        const std::vector<Te>& edges, py::array_t<Tw>& counts,
+                        py::array_t<Tw>& variances) {
+  auto counts_px = counts.template mutable_unchecked<2>();
+  auto variances_px = variances.template mutable_unchecked<2>();
+  auto w_px = w.template unchecked<2>();
+  auto x_px = x.data();
+  auto xmin = edges.front();
+  auto xmax = edges.back();
+  Tw w_ij;
+  py::ssize_t bin;
+  py::ssize_t nx = x.shape(0);
+  py::ssize_t nw = w.shape(1);
+  for (py::ssize_t i = 0; i < nx; ++i) {
+    if (x_px[i] < xmin || x_px[i] >= xmax) continue;
+    bin = calc_bin(x_px[i], edges);
+    for (py::ssize_t j = 0; j < nw; ++j) {
+      w_ij = w_px(i, j);
+      counts_px(bin, j) += w_ij;
+      variances_px(bin, j) += w_ij * w_ij;
+    }
   }
 }
 
@@ -573,6 +666,48 @@ inline void p_loop_excf(const Tx* x, const Tw* w, py::ssize_t nx,
     for (py::ssize_t i = 0; i < nbins; ++i) {
       counts[i] += counts_ot[i];
       variances[i] += variances_ot[i];
+    }
+  }
+}
+
+/// Execute parallel loop with overflow excluded (variable width); multiweight inputs.
+template <typename Tx, typename Tw, typename Te>
+inline void p_loop_excf(const py::array_t<Tx>& x, const py::array_t<Tw>& w,
+                        const std::vector<Te>& edges, py::array_t<Tw>& counts,
+                        py::array_t<Tw>& variances) {
+  auto counts_px = counts.template mutable_unchecked<2>();
+  auto variances_px = variances.template mutable_unchecked<2>();
+  auto w_px = w.template unchecked<2>();
+  auto x_px = x.data();
+  auto nx = x.shape(0);
+  auto nw = w.shape(1);
+  auto nbins = edges.size() - 1;
+  auto xmin = edges.front();
+  auto xmax = edges.back();
+#pragma omp parallel
+  {
+    std::vector<std::vector<Tw>> counts_ot;
+    std::vector<std::vector<Tw>> variances_ot;
+    for (int i = 0; i < nw; ++i) {
+      counts_ot.emplace_back(nbins, 0);
+      variances_ot.emplace_back(nbins, 0);
+    }
+#pragma omp for nowait
+    for (py::ssize_t i = 0; i < nx; ++i) {
+      if (x_px[i] < xmin || x_px[i] >= xmax) continue;
+      auto bin = calc_bin(x_px[i], edges);
+      for (py::ssize_t j = 0; j < nw; ++j) {
+        auto w_ij = w_px(i, j);
+        counts_ot[j][bin] += w_ij;
+        variances_ot[j][bin] += w_ij * w_ij;
+      }
+    }
+#pragma omp critical
+    for (std::size_t i = 0; i < nbins; ++i) {
+      for (py::ssize_t j = 0; j < nw; ++j) {
+        counts_px(i, j) += counts_ot[j][i];
+        variances_px(i, j) += variances_ot[j][i];
+      }
     }
   }
 }
@@ -717,18 +852,62 @@ py::tuple v1dw(py::array_t<Tx, py::array::c_style> x, py::array_t<Tw, py::array:
   return py::make_tuple(counts, variances);
 }
 
+template <typename Tx, typename Tw>
+py::tuple v1dmw(py::array_t<Tx> x, py::array_t<Tw> w, py::array_t<double> edges,
+                bool flow) {
+  py::ssize_t nedges = edges.shape(0);
+  py::ssize_t nbins = nedges - 1;
+  std::vector<double> edges_v(edges.data(), edges.data() + nedges);
+  auto counts = pg11::zeros<Tw>(nbins, w.shape(1));
+  auto variances = pg11::zeros<Tw>(nbins, w.shape(1));
+
+  if (x.shape(0) < pg11::vwmwpt()) {  // serial
+    if (flow)
+      pg11::s_loop_incf(x, w, edges_v, counts, variances);
+    else
+      pg11::s_loop_excf(x, w, edges_v, counts, variances);
+  }
+  else {  // parallel
+    if (flow)
+      pg11::p_loop_incf(x, w, edges_v, counts, variances);
+    else
+      pg11::p_loop_excf(x, w, edges_v, counts, variances);
+  }
+
+  return py::make_tuple(counts, variances);
+}
+
 template <typename T>
 void inject_t(py::module_& m) {
   using namespace pybind11::literals;
   // clang-format off
-  m.def("_f1d", &f1d<T>, "x"_a.noconvert(), "bins"_a, "xmin"_a, "xmax"_a, "flow"_a);
-  m.def("_f1dw", &f1dw<T, double>, "x"_a.noconvert(), "w"_a.noconvert(), "bins"_a, "xmin"_a, "xmax"_a, "flow"_a);
-  m.def("_f1dw", &f1dw<T, float>, "x"_a.noconvert(), "w"_a.noconvert(), "bins"_a, "xmin"_a, "xmax"_a, "flow"_a);
-  m.def("_f1dmw", &f1dmw<T, double>, "x"_a.noconvert(), "w"_a.noconvert(), "bins"_a, "xmin"_a, "xmax"_a, "flow"_a);
-  m.def("_f1dmw", &f1dmw<T, float>, "x"_a.noconvert(), "w"_a.noconvert(), "bins"_a, "xmin"_a, "xmax"_a, "flow"_a);
-  m.def("_v1d", &v1d<T>, "x"_a.noconvert(), "edges"_a, "flow"_a);
-  m.def("_v1dw", &v1dw<T, double>, "x"_a.noconvert(), "w"_a.noconvert(), "edges"_a, "flow"_a);
-  m.def("_v1dw", &v1dw<T, float>, "x"_a.noconvert(), "w"_a.noconvert(), "edges"_a, "flow"_a);
+
+  /// Unweighted 1D
+  m.def("_f1d", &f1d<T>,
+        "x"_a.noconvert(), "bins"_a, "xmin"_a, "xmax"_a, "flow"_a);
+  m.def("_v1d", &v1d<T>,
+        "x"_a.noconvert(), "edges"_a, "flow"_a);
+
+  /// Weighted 1D
+  m.def("_f1dw", &f1dw<T, double>,
+        "x"_a.noconvert(), "w"_a.noconvert(), "bins"_a, "xmin"_a, "xmax"_a, "flow"_a);
+  m.def("_f1dw", &f1dw<T, float>,
+        "x"_a.noconvert(), "w"_a.noconvert(), "bins"_a, "xmin"_a, "xmax"_a, "flow"_a);
+  m.def("_v1dw", &v1dw<T, double>,
+        "x"_a.noconvert(), "w"_a.noconvert(), "edges"_a, "flow"_a);
+  m.def("_v1dw", &v1dw<T, float>,
+        "x"_a.noconvert(), "w"_a.noconvert(), "edges"_a, "flow"_a);
+
+  /// Multiweight 1D
+  m.def("_f1dmw", &f1dmw<T, double>,
+        "x"_a.noconvert(), "w"_a.noconvert(), "bins"_a, "xmin"_a, "xmax"_a, "flow"_a);
+  m.def("_f1dmw", &f1dmw<T, float>,
+        "x"_a.noconvert(), "w"_a.noconvert(), "bins"_a, "xmin"_a, "xmax"_a, "flow"_a);
+  m.def("_v1dmw", &v1dmw<T, double>,
+        "x"_a.noconvert(), "w"_a.noconvert(), "edges"_a, "flow"_a);
+  m.def("_v1dmw", &v1dmw<T, float>,
+        "x"_a.noconvert(), "w"_a.noconvert(), "edges"_a, "flow"_a);
+
   // clang-format on
 }
 
