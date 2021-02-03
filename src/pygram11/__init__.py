@@ -27,10 +27,17 @@ SOFTWARE.
 """
 
 from .version import version as __version__  # noqa
+from .hist import (
+    fix1d,
+    fix1dmw,
+    var1d,
+    var1dmw,
+    fix2d,
+    var2d,
+    histogram,
+    histogram2d,
+)
 from pygram11._backend import _omp_get_max_threads
-from .hist import fix1d, fix1dmw, var1d, var1dmw
-from .hist import fix2d, var2d
-from .hist import histogram, histogram2d
 
 version_info = tuple(__version__.split("."))
 
