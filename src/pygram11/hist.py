@@ -252,8 +252,8 @@ def var1d(
     >>> h, __ = var1d(x, bin_edges)
 
     """
-    x = np.ascontiguousarray(x)
-    bins = np.ascontiguousarray(bins)
+    x = np.asarray(x)
+    bins = np.array(bins)
     if not np.all(bins[1:] >= bins[:-1]):
         raise ValueError("bins sequence must monotonically increase")
 
@@ -274,7 +274,7 @@ def var1d(
             result = _densify_variable_counts(result, bins)
         return result, None
 
-    weights = np.ascontiguousarray(weights)
+    weights = np.asarray(weights)
     result = _v1dw(x, weights, bins, flow)
     if density:
         result = _densify_variable_weighted_counts(result, bins)
@@ -384,7 +384,6 @@ def histogram(x, bins=10, range=None, weights=None, density=False, flow=False):
     >>> h, err = histogram(x, bins=[-3, -2, -1.5, 1.5, 3.5], weights=w)
 
     """
-    x = np.asarray(x)
     if weights is not None:
         weights = np.asarray(weights)
 

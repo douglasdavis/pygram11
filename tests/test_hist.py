@@ -34,6 +34,7 @@ DATA_RAW = np.load(DATA_FILE)
 X_RAWF = DATA_RAW["data_f64"]
 X_RAWI = DATA_RAW["data_ui32"]
 W_RAW = DATA_RAW["weights_f32"]
+# fmt: off
 E_ARRS = (
     np.array([27.5, 35.1, 40.2, 50.1, 57.2, 60.1,
               64.2, 70.2, 90.1, 98.2, 110.1, 120.2,
@@ -42,6 +43,7 @@ E_ARRS = (
               170.5, 172.1, 173.1, 279.2]),
 )
 XTYPES = (np.float32, np.float64, np.int32, np.int64, np.uint32, np.uint64)
+# fmt: on
 
 
 def make_data_1d(xtype, wtype=None):
@@ -114,7 +116,9 @@ class TestVar1D:
     @pytest.mark.parametrize("flow", [True, False])
     @pytest.mark.parametrize("ompt", [sys.maxsize, 1])
     @pytest.mark.parametrize("func", [pg.histogram, pg.var1d])
-    def test_no_weight_and_single_weight(self, xtype, wtype, bins, density, flow, ompt, func):
+    def test_no_weight_and_single_weight(
+        self, xtype, wtype, bins, density, flow, ompt, func
+    ):
         pg.VARIABLE_WIDTH_PARALLEL_THRESHOLD = ompt
         if density and flow:
             assert True
