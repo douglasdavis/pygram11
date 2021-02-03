@@ -75,11 +75,25 @@ inline py::ssize_t fwpt() {
       .cast<py::ssize_t>();
 }
 
+/// Threshold for running parallel loops to calculate multiweight fixed width histograms
+inline py::ssize_t fwmwpt() {
+  return py::module_::import("pygram11")
+    .attr("FIXED_WIDTH_MULTIWEIGHT_PARALLEL_THRESHOLD")
+    .cast<py::ssize_t>();
+}
+
 /// Threshold for running parallel loops to calculate variable width histograms.
 inline py::ssize_t vwpt() {
   return py::module_::import("pygram11")
       .attr("VARIABLE_WIDTH_PARALLEL_THRESHOLD")
       .cast<py::ssize_t>();
+}
+
+/// Threshold for running parallel loops to calculate multiweight variable width histograms.
+inline py::ssize_t vwmwpt() {
+  return py::module_::import("pygram11")
+    .attr("VARIABLE_WIDTH_MULTIWEIGHT_PARALLEL_THRESHOLD")
+    .cast<py::ssize_t>();
 }
 
 /// Calculate bin index for a fixed with histogram with x potentially outside range.
