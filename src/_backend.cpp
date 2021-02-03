@@ -82,7 +82,7 @@ inline py::ssize_t vwpt() {
       .cast<py::ssize_t>();
 }
 
-/// Calculate bin index for a fixed with histsgram with x potentially outside range.
+/// Calculate bin index for a fixed with histogram with x potentially outside range.
 template <typename Tx, typename Tn, typename Ta>
 inline py::ssize_t calc_bin(Tx x, Tn nbins, Ta xmin, Ta xmax, Ta norm) {
   if (x < xmin) return 0;
