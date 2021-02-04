@@ -72,6 +72,16 @@ inline void arr_sqrt(T* arr, py::ssize_t n) {
   }
 }
 
+template <typename T, typename = enable_if_arithmetic_t<T>>
+inline void arr_sqrt(py::array_t<T>& arr) {
+  auto a = arr.template mutable_unchecked<2>();
+  for (py::ssize_t i = 0; i < arr.shape(0); ++i) {
+    for (py::ssize_t j = 0; j < arr.shape(1); ++j) {
+      a(i, j) = std::sqrt(a(i, j));
+    }
+  }
+}
+
 /// Threshold for running parallel loops to calculate fixed width histograms.
 inline py::ssize_t fwpt() {
   return py::module_::import("pygram11")
@@ -811,7 +821,6 @@ py::tuple f1dmw(py::array_t<Tx> x, py::array_t<Tw> w, py::ssize_t nbins, double 
   auto counts = pg11::zeros<Tw>(nbins, w.shape(1));
   auto variances = pg11::zeros<Tw>(nbins, w.shape(1));
   pg11::faxis_t<double> ax{nbins, xmin, xmax};
-
   if (x.shape(0) < pg11::fwmwpt()) {  // serial
     if (flow)
       pg11::s_loop_incf(x, w, ax, counts, variances);
@@ -824,7 +833,7 @@ py::tuple f1dmw(py::array_t<Tx> x, py::array_t<Tw> w, py::ssize_t nbins, double 
     else
       pg11::p_loop_excf(x, w, ax, counts, variances);
   }
-
+  pg11::arr_sqrt(variances);
   return py::make_tuple(counts, variances);
 }
 
@@ -860,7 +869,6 @@ py::tuple v1dmw(py::array_t<Tx> x, py::array_t<Tw> w, py::array_t<double> edges,
   std::vector<double> edges_v(edges.data(), edges.data() + nedges);
   auto counts = pg11::zeros<Tw>(nbins, w.shape(1));
   auto variances = pg11::zeros<Tw>(nbins, w.shape(1));
-
   if (x.shape(0) < pg11::vwmwpt()) {  // serial
     if (flow)
       pg11::s_loop_incf(x, w, edges_v, counts, variances);
@@ -873,7 +881,7 @@ py::tuple v1dmw(py::array_t<Tx> x, py::array_t<Tw> w, py::array_t<double> edges,
     else
       pg11::p_loop_excf(x, w, edges_v, counts, variances);
   }
-
+  pg11::arr_sqrt(variances);
   return py::make_tuple(counts, variances);
 }
 
