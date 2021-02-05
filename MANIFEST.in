@@ -4,6 +4,7 @@ include tests/data/*.npz
 include LICENSE
 
 graft extern/pybind11/include
+graft extern/mp11/include
 
 global-exclude .git*
 global-exclude .pytest_cache
