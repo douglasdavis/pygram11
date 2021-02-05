@@ -23,6 +23,9 @@
 /// pybind11
 #include <pybind11/numpy.h>
 
+/// Boost
+#include <boost/mp11.hpp>
+
 /// OpenMP
 #include <omp.h>
 
@@ -987,62 +990,46 @@ py::array_t<py::ssize_t> f2d(py::array_t<Tx> x, py::array_t<Ty> y, py::ssize_t n
   return counts;
 }
 
-template <typename T>
-void inject1d(py::module_& m) {
-  using namespace pybind11::literals;
-  // clang-format off
+using namespace pybind11::literals;
+using boost::mp11::mp_for_each;
+using boost::mp11::mp_list;
+using boost::mp11::mp_product;
 
-  /// unweighted
-  m.def("_f1d", &f1d<T>,
-        "x"_a.noconvert(), "bins"_a, "xmin"_a, "xmax"_a, "flow"_a);
-  m.def("_v1d", &v1d<T>,
-        "x"_a.noconvert(), "edges"_a, "flow"_a);
+using pg_mp_list = mp_list<double, float, py::ssize_t, int, unsigned long, unsigned int>;
+using pg_mp_list = pg_mp_list;
+using pg_weight_list = mp_list<double, float>;
+using pg_type_weight_pairs = mp_product<mp_list, pg_mp_list, pg_weight_list>;
+using pg_type_pairs = mp_product<mp_list, pg_mp_list, pg_mp_list>;
 
-  /// weighted
-  m.def("_f1dw", &f1dw<T, double>,
-        "x"_a.noconvert(), "w"_a.noconvert(), "bins"_a, "xmin"_a, "xmax"_a, "flow"_a);
-  m.def("_f1dw", &f1dw<T, float>,
-        "x"_a.noconvert(), "w"_a.noconvert(), "bins"_a, "xmin"_a, "xmax"_a, "flow"_a);
-  m.def("_v1dw", &v1dw<T, double>,
-        "x"_a.noconvert(), "w"_a.noconvert(), "edges"_a, "flow"_a);
-  m.def("_v1dw", &v1dw<T, float>,
-        "x"_a.noconvert(), "w"_a.noconvert(), "edges"_a, "flow"_a);
+// clang-format off
+template <typename Tx>
+void inject1d(py::module_& m, const Tx&) {
+  m.def("_f1d", &f1d<Tx>, "x"_a.noconvert(), "b"_a, "x1"_a, "x2"_a, "f"_a);
+  m.def("_v1d", &v1d<Tx>, "x"_a.noconvert(), "b"_a, "f"_a);
+}
 
-  /// multiweight
-  m.def("_f1dmw", &f1dmw<T, double>,
-        "x"_a.noconvert(), "w"_a.noconvert(), "bins"_a, "xmin"_a, "xmax"_a, "flow"_a);
-  m.def("_f1dmw", &f1dmw<T, float>,
-        "x"_a.noconvert(), "w"_a.noconvert(), "bins"_a, "xmin"_a, "xmax"_a, "flow"_a);
-  m.def("_v1dmw", &v1dmw<T, double>,
-        "x"_a.noconvert(), "w"_a.noconvert(), "edges"_a, "flow"_a);
-  m.def("_v1dmw", &v1dmw<T, float>,
-        "x"_a.noconvert(), "w"_a.noconvert(), "edges"_a, "flow"_a);
-
-  // clang-format on
+template <typename Tx, typename Tw>
+void inject1dw(py::module_& m, const mp_list<Tx, Tw>&) {
+  m.def("_f1dw", &f1dw<Tx, Tw>, "x"_a.noconvert(), "w"_a.noconvert(), "b"_a, "x1"_a, "x2"_a, "f"_a);
+  m.def("_f1dmw", &f1dmw<Tx, Tw>, "x"_a.noconvert(), "w"_a.noconvert(), "b"_a, "x1"_a, "x2"_a, "f"_a);
+  m.def("_v1dw", &v1dw<Tx, Tw>, "x"_a.noconvert(), "w"_a.noconvert(), "b"_a, "f"_a);
+  m.def("_v1dmw", &v1dmw<Tx, Tw>, "x"_a.noconvert(), "w"_a.noconvert(), "b"_a, "f"_a);
 }
 
 template <typename Tx, typename Ty>
-void inject2d(py::module_& m) {
-  using namespace pybind11::literals;
-  // clang-format off
-
+void inject2d(py::module_& m, const mp_list<Tx, Ty>&) {
   m.def("_f2d", &f2d<Tx, Ty>,
         "x"_a.noconvert(), "y"_a.noconvert(),
-        "binsx"_a, "xmin"_a, "xmax"_a, "binsy"_a, "ymin"_a, "ymax"_a, "bool"_a);
-
-  // clang-format on
+        "bx"_a, "x1"_a, "x2"_a,
+        "by"_a, "y1"_a, "y2"_a, "f"_a);
 }
+// clang-format on
 
 PYBIND11_MODULE(_backend, m) {
   m.doc() = "pygram11 C++ backend.";
   m.def("_omp_get_max_threads", []() { return omp_get_max_threads(); });
 
-  inject1d<double>(m);
-  inject1d<float>(m);
-  inject1d<py::ssize_t>(m);
-  inject1d<int>(m);
-  inject1d<unsigned int>(m);
-  inject1d<unsigned long>(m);
-
-  inject2d<double, double>(m);
+  mp_for_each<pg_mp_list>([&](const auto& x) { inject1d(m, x); });
+  mp_for_each<pg_type_weight_pairs>([&](const auto& x) { inject1dw(m, x); });
+  mp_for_each<pg_type_pairs>([&](const auto& x) { inject2d(m, x); });
 }

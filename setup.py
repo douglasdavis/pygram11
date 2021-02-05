@@ -54,10 +54,8 @@ def get_cpp_std_flag():
     setuptools.distutils.sysconfig.customize_compiler(compiler)
     if has_flag(compiler, "-std=c++14"):
         return "-std=c++14"
-    elif has_flag(compiler, "-std=c++11"):
-        return "-std=c++11"
     else:
-        raise RuntimeError("C++11 (or later) compatible compiler required")
+        raise RuntimeError("C++14 (or later) compatible compiler required")
 
 
 def conda_darwin_flags(flavor="inc"):
@@ -166,7 +164,7 @@ def get_extensions():
             "pygram11._backend",
             [os.path.join("src", "_backend.cpp")],
             language="c++",
-            include_dirs=["extern/pybind11/include"],
+            include_dirs=["extern/pybind11/include", "extern/mp11/include"],
             extra_compile_args=cpp_cflags,
             extra_link_args=cpp_lflags,
         ),
