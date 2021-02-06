@@ -27,8 +27,8 @@
 import numpy as np
 from typing import Iterable, Tuple, Optional, Union
 
-from pygram11._backend import _f1d, _v1d, _f1dw, _v1dw, _f1dmw, _v1dmw
-from pygram11._backend2d import _f2dw, _v2dw
+from pygram11._backend import _f1d, _v1d, _f1dw, _v1dw, _f1dmw, _v1dmw, _f2d, _f2dw
+from pygram11._backend2d import _v2dw
 
 
 def _likely_uniform_bins(edges: np.ndarray) -> bool:
@@ -84,6 +84,31 @@ def _densify_variable_weighted_counts(
     return res0, res1
 
 
+def _get_limits_1d(
+    x: np.ndarray, range: Optional[Tuple[float, float]] = None
+) -> Tuple[float, float]:
+    """Get bin limits given an optional range and 1D data."""
+    if range is None:
+        return (float(np.amin(x)), float(np.amax(x)))
+    return range[0], range[1]
+
+
+def _get_limits_2d(
+    x: np.array,
+    y: np.array,
+    range: Optional[Iterable[Tuple[float, float]]] = None,
+) -> Tuple[float, float, float, float]:
+    """Get bin limits given an optional range and 2D data."""
+    if range is None:
+        xmin, xmax, ymin, ymax = (
+            float(np.amin(x)),
+            float(np.amax(x)),
+            float(np.amin(y)),
+            float(np.amin(y)),
+        )
+    return range[0][0], range[0][1], range[1][0], range[1][1]
+
+
 def fix1d(
     x: np.ndarray,
     bins: int = 10,
@@ -96,27 +121,39 @@ def fix1d(
 
     Parameters
     ----------
-    x : array_like
+    x : numpy.ndarray
         Data to histogram.
     bins : int
         The number of bins.
     range : (float, float), optional
-        The minimum and maximum of the histogram axis.
-    weights : array_like, optional
-        The weights for each element of ``x``.
+        The minimum and maximum of the histogram axis. If these are
+        not defined the min and max of the input data is used
+    weights : numpy.ndarray, optional
+        The weights for each element of ``x``. If weights are absent,
+        the second return type is ``None``.
     density : bool
         If True, normalize histogram bins as value of PDF such that
-        the integral over the range is one.
+        the integral over the range is unity.
     flow : bool
         If True, the under and overflow bin contents are added to the
         first and last bins, respectively.
 
+    Raises
+    ------
+    TypeError
+        If the dtype of either ``x`` or ``weights`` is unsupported.
+    ValueError
+        If the shapes of ``x`` and ``weights`` are unequal (when
+        ``weights`` is not ``None``).
+
     Returns
     -------
     :py:obj:`numpy.ndarray`
-        The bin counts.
+        The resulting histogram bin counts.
     :py:obj:`numpy.ndarray`
-        The standard error of each bin count, :math:`\sqrt{\sum_i w_i^2}`.
+        The standard error of each bin count,
+        :math:`\sqrt{\sum_iw_i^2}`. (If weights are not used this
+        return is ``None``
 
     Examples
     --------
@@ -124,29 +161,28 @@ def fix1d(
 
     >>> h, __ = fix1d(x, bins=20, range=(0, 100))
 
-    The same data, now histogrammed with weights:
+    When weights are absent the second return is ``None``. The same
+    data, now histogrammed with weights and over/underflow included:
 
     >>> w = np.abs(np.random.randn(x.shape[0]))
-    >>> h, h_err = fix1d(x, bins=20, range=(0, 100), weights=w)
+    >>> h, stderr = fix1d(x, bins=20, range=(0, 100), weights=w, flow=True)
 
     """
-    if range is None:
-        start = float(np.amin(x))
-        stop = float(np.amax(x))
-    else:
-        start = range[0]
-        stop = range[1]
+    xmin, xmax = _get_limits_1d(x, range)
 
     if weights is None:
-        result = _f1d(x, bins, start, stop, flow)
+        result = _f1d(x, bins, xmin, xmax, flow)
         if density:
-            width = (stop - start) / bins
+            width = (xmax - xmin) / bins
             result = _densify_fixed_counts(result, width)
         return result, None
 
-    result = _f1dw(x, weights, bins, start, stop, flow)
+    if weights.shape != x.shape:
+        raise ValueError("x and weights must have the same shape")
+
+    result = _f1dw(x, weights, bins, xmin, xmax, flow)
     if density:
-        width = (stop - start) / bins
+        width = (xmax - xmin) / bins
         result = _densify_fixed_weighted_counts(result, width)
     return result
 
@@ -162,9 +198,9 @@ def fix1dmw(
 
     Parameters
     ----------
-    x : array_like
+    x : numpy.ndarray
         data to histogram.
-    weights : array_like
+    weights : numpy.ndarray
         The weight variations for the elements of ``x``, first
         dimension is the length of ``x``, second dimension is the
         number of weights variations.
@@ -175,6 +211,14 @@ def fix1dmw(
     flow : bool
         If True, the under and overflow bin contents are added to the
         first and last bins, respectively.
+
+    Raises
+    ------
+    TypeError
+        If the dtype of either ``x`` or ``weights`` is unsupported.
+    ValueError
+        If the ``x`` and ``weights`` arrays have incompatible shapes
+        (if ``x.shape[0] != weights.shape[0]``).
 
     Returns
     -------
@@ -196,15 +240,11 @@ def fix1dmw(
     represents the histogram of the data using its respective weight.
 
     """
-    x = np.asarray(x)
-    weights = np.asarray(weights)
+    if x.shape[0] != weights.shape[0]:
+        raise ValueError("x and weights have incompatible shapes.")
 
-    if range is None:
-        start, stop = float(np.amin(x)), float(np.amax(x))
-    else:
-        start, stop = range[0], range[1]
-
-    return _f1dmw(x, weights, bins, start, stop, flow)
+    xmin, xmax = _get_limits_1d(x, range)
+    return _f1dmw(x, weights, bins, xmin, xmax, flow)
 
 
 def var1d(
@@ -218,23 +258,27 @@ def var1d(
 
     Parameters
     ----------
-    x : array_like
-        data to histogram
-    bins : array_like
-        bin edges
-    weights : array_like, optional
+    x : numpy.ndarray
+        Data to histogram
+    bins : numpy.ndarray
+        Bin edges
+    weights : numpy.ndarray, optional
         weight for each element of ``x``
     density : bool
-        normalize histogram bins as value of PDF such that the integral
-        over the range is 1.
+        Normalize histogram bins as value of PDF such that the integral
+        over the range is equal to unity.
     flow : bool
-        if ``True`` the under and overflow bin contents are added to the first
+        If ``True`` the under and overflow bin contents are added to the first
         and last bins, respectively
 
     Raises
     ------
+    TypeError
+        If the dtype of ``x`` or ``weights`` is unsupported.
     ValueError
         If bins array is not monotonically increasing.
+    ValueError
+        If the ``x`` and ``weights`` have incompatible shapes.
 
     Returns
     -------
@@ -252,8 +296,6 @@ def var1d(
     >>> h, __ = var1d(x, bin_edges)
 
     """
-    x = np.asarray(x)
-    bins = np.array(bins)
     if not np.all(bins[1:] >= bins[:-1]):
         raise ValueError("bins sequence must monotonically increase")
 
@@ -274,7 +316,9 @@ def var1d(
             result = _densify_variable_counts(result, bins)
         return result, None
 
-    weights = np.asarray(weights)
+    if x.shape != weights.shape:
+        raise ValueError("x and weights have incompatible shapes.")
+
     result = _v1dw(x, weights, bins, flow)
     if density:
         result = _densify_variable_weighted_counts(result, bins)
@@ -291,16 +335,25 @@ def var1dmw(
 
     Parameters
     ----------
-    x : array_like
-        data to histogram
-    weights : array_like
-        weight variations for the elements of ``x``, first dimension
+    x : numpy.ndarray
+        Data to histogram
+    weights : numpy.ndarray
+        Weight variations for the elements of ``x``, first dimension
         is the shape of ``x``, second dimension is the number of weights.
-    bins : array_like
-        bin edges
+    bins : numpy.ndarray
+        Bin edges
     flow : bool
-        if ``True`` the under and overflow bin contents are added to the first
+        If ``True`` the under and overflow bin contents are added to the first
         and last bins, respectively
+
+    Raises
+    ------
+    TypeError
+        If the dtype of ``x`` or ``weights`` is unsupported.
+    ValueError
+        If bins array is not monotonically increasing.
+    ValueError
+        If the ``x`` and ``weights`` have incompatible shapes.
 
     Returns
     -------
@@ -323,12 +376,11 @@ def var1dmw(
     (6, 3)
 
     """
-    x = np.asarray(x)
-    weights = np.asarray(weights)
-
-    bins = np.asarray(bins, dtype=np.float64)
     if not np.all(bins[1:] >= bins[:-1]):
         raise ValueError("bins sequence must monotonically increase")
+
+    if x.shape[0] != weights.shape[0]:
+        raise ValueError("x and weights have incompatible shapes.")
 
     if _likely_uniform_bins(bins):
         return _f1dmw(x, weights, len(bins) - 1, bins[0], bins[-1], flow)
@@ -362,9 +414,12 @@ def histogram(x, bins=10, range=None, weights=None, density=False, flow=False):
     ------
     TypeError
         If bins input defines edges and range is not None.
+    TypeError
+        If the dtype of ``x`` or ``weights`` is unsupported.
     ValueError
-        If bins input defines edges and its not monotonically
-        increasing.
+        If bins array is not monotonically increasing.
+    ValueError
+        If the ``x`` and ``weights`` have incompatible shapes.
 
     Returns
     -------
@@ -384,13 +439,17 @@ def histogram(x, bins=10, range=None, weights=None, density=False, flow=False):
     >>> h, err = histogram(x, bins=[-3, -2, -1.5, 1.5, 3.5], weights=w)
 
     """
+
+    # make sure x and weight data are NumPy arrays.
+    x = np.array(x)
     if weights is not None:
         weights = np.asarray(weights)
+        is_multiweight = weights.shape != x.shape
 
     # fixed bins
     if isinstance(bins, int):
         if weights is not None:
-            if weights.shape != x.shape:
+            if is_multiweight:
                 return fix1dmw(x, weights, bins=bins, range=range, flow=flow)
         return fix1d(
             x, weights=weights, bins=bins, range=range, density=density, flow=flow
@@ -398,11 +457,11 @@ def histogram(x, bins=10, range=None, weights=None, density=False, flow=False):
 
     # variable bins
     else:
-        bins = np.ascontiguousarray(bins)
+        bins = np.asarray(bins)
         if range is not None:
             raise TypeError("range must be None if bins is non-int")
         if weights is not None:
-            if weights.shape != x.shape:
+            if is_multiweight:
                 return var1dmw(x, weights, bins=bins, flow=flow)
         return var1d(x, weights=weights, bins=bins, density=density, flow=flow)
 
@@ -413,27 +472,31 @@ def fix2d(
     bins: Union[int, Tuple[int, int]] = 10,
     range: Optional[Iterable[Tuple[float, float]]] = None,
     weights: Optional[np.ndarray] = None,
+    flow: bool = False,
 ) -> Tuple[np.ndarray, np.ndarray]:
     r"""Histogram the ``x``, ``y`` data with fixed (uniform) binning.
 
     Parameters
     ----------
-    x : array_like
-       first entries in data pairs to histogram
-    y : array_like
-       second entries in data pairs to histogram
-    bins : int or iterable
+    x : numpy.ndarray
+       First entries in data pairs to histogram
+    y : numpy.ndarray
+       Second entries in data pairs to histogram
+    bins : int or Tuple[int, int]
        if int, both dimensions will have that many bins,
        if iterable, the number of bins for each dimension
-    range : iterable, optional
+    range : Iterable[Tuple[float, float]], optional
        axis limits to histogram over in the form [(xmin, xmax), (ymin, ymax)]
-    weights : array_like, optional
-       weight for each :math:`(x_i, y_i)` pair.
+    weights : numpy.ndarray, optional
+       Weight for each :math:`(x_i, y_i)` pair.
+    flow : bool
+       Include over/underflow.
 
     Raises
     ------
     ValueError
-        If x and y have different shape.
+        If x and y have different shape (or if weights is not None and
+        the same is different)
 
     Returns
     -------
@@ -455,28 +518,27 @@ def fix2d(
     >>> h, err = fix2d(x, y, bins=(20, 10), range=((0, 100), (0, 50)), weights=w)
 
     """
-    x = np.ascontiguousarray(x)
-    y = np.ascontiguousarray(y)
+    x = np.asarray(x)
+    y = np.asarray(y)
     if x.shape != y.shape:
         raise ValueError("x and y must be the same shape")
-    if weights is None:
-        weights = np.ones_like(x, dtype=np.float64)
-    else:
-        weights = np.ascontiguousarray(weights)
+    if weights is not None:
+        weights = np.asarray(weights)
+        if weights.shape != x.shape:
+            raise ValueError("data and weights must be the same shape")
 
     if isinstance(bins, int):
         nx = ny = bins
     else:
         nx, ny = bins
 
-    if range is None:
-        range = [
-            (float(np.amin(x)), float(np.amax(x))),
-            (float(np.amin(y)), float(np.amin(y))),
-        ]
-    (xmin, xmax), (ymin, ymax) = range
+    xmin, xmax, ymin, ymax = _get_limits_2d(x, y, range)
 
-    return _f2dw(x, y, weights, nx, xmin, xmax, ny, ymin, ymax, False, True)
+    if weights is None:
+        result = _f2d(x, y, nx, xmin, xmax, ny, ymin, ymax, flow)
+        return result, None
+
+    return _f2dw(x, y, weights, nx, xmin, xmax, ny, ymin, ymax, flow)
 
 
 def var2d(
@@ -542,7 +604,7 @@ def var2d(
     return _v2dw(x, y, weights, xbins, ybins, False, True)
 
 
-def histogram2d(x, y, bins=10, range=None, weights=None):
+def histogram2d(x, y, bins=10, range=None, weights=None, flow=False):
     r"""Histogram data in two dimensions.
 
     This function provides an API very simiar to
@@ -573,6 +635,9 @@ def histogram2d(x, y, bins=10, range=None, weights=None):
        An array of weights associated to each element :math:`(x_i,
        y_i)` pair.  Each pair of the data will contribute its
        associated weight to the bin count.
+    flow : bool
+       Include over/underflow.
+
 
     Raises
     ------
@@ -597,12 +662,12 @@ def histogram2d(x, y, bins=10, range=None, weights=None):
     except TypeError:
         N = 1
 
-    x = np.ascontiguousarray(x)
-    y = np.ascontiguousarray(y)
+    x = np.asarray(x)
+    y = np.asarray(y)
     if weights is not None:
-        weights = np.ascontiguousarray(weights)
+        weights = np.asarray(weights)
     if N != 1 and N != 2:
-        bins = np.ascontiguousarray(bins)
+        bins = np.asarray(bins)
         return var2d(x, y, bins, bins, weights=weights)
 
     elif N == 1:
@@ -610,7 +675,7 @@ def histogram2d(x, y, bins=10, range=None, weights=None):
 
     elif N == 2:
         if isinstance(bins[0], int) and isinstance(bins[1], int):
-            return fix2d(x, y, bins=bins, range=range, weights=weights)
+            return fix2d(x, y, bins=bins, range=range, weights=weights, flow=flow)
         else:
             return var2d(x, y, bins[0], bins[1], weights=weights)
 
