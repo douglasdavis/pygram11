@@ -152,9 +152,10 @@ inline py::ssize_t calc_bin(Tx x, const std::vector<Te>& edges) {
   return s - 1;
 }
 
+/// One dimensional histograms
 namespace one {
 
-/// Execute serial loop with overflow included (fixed width).
+/// fix, serial loop, include flow, no weights
 template <typename Tx, typename Ta, typename Tc>
 inline void s_loop_incf(const Tx* x, py::ssize_t nx, faxis_t<Ta> ax, Tc* counts) {
   auto norm = anorm(ax);
@@ -165,7 +166,7 @@ inline void s_loop_incf(const Tx* x, py::ssize_t nx, faxis_t<Ta> ax, Tc* counts)
   }
 }
 
-/// Execute serial loop with overflow included (fixed width); weighted inputs.
+/// fix, serial loop, include flow, with weights
 template <typename Tx, typename Tw, typename Ta, typename Tc>
 inline void s_loop_incf(const Tx* x, const Tw* w, py::ssize_t nx, faxis_t<Ta> ax,
                         Tc* counts, Tw* variances) {
@@ -180,7 +181,7 @@ inline void s_loop_incf(const Tx* x, const Tw* w, py::ssize_t nx, faxis_t<Ta> ax
   }
 }
 
-/// Execute serial loop with overflow included (fixed width); multiweight intputs.
+/// fix, serial loop, include flow, with multiweights
 template <typename Tx, typename Tw, typename Ta>
 inline void s_loop_incf(const py::array_t<Tx>& x, const py::array_t<Tw>& w, faxis_t<Ta> ax,
                         py::array_t<Tw>& counts, py::array_t<Tw>& variances) {
@@ -203,7 +204,7 @@ inline void s_loop_incf(const py::array_t<Tx>& x, const py::array_t<Tw>& w, faxi
   }
 }
 
-/// Execute serial loop with overflow included (variable width).
+/// var, serial loop, include flow, no weights
 template <typename Tx, typename Te, typename Tc>
 inline void s_loop_incf(const Tx* x, py::ssize_t nx, const std::vector<Te>& edges,
                         Tc* counts) {
@@ -217,7 +218,7 @@ inline void s_loop_incf(const Tx* x, py::ssize_t nx, const std::vector<Te>& edge
   }
 }
 
-/// Execute serial loop with overflow included (variable width); weighted inputs.
+/// var, serial loop, include flow, with weights
 template <typename Tx, typename Tw, typename Te, typename Tc>
 inline void s_loop_incf(const Tx* x, const Tw* w, py::ssize_t nx,
                         const std::vector<Te>& edges, Tc* counts, Tw* variances) {
@@ -234,7 +235,7 @@ inline void s_loop_incf(const Tx* x, const Tw* w, py::ssize_t nx,
   }
 }
 
-/// Execute serial loop with overflow included (variable width); multiweight inputs
+/// var, serial loop, include flow, with multiweights
 template <typename Tx, typename Tw, typename Te>
 inline void s_loop_incf(const py::array_t<Tx>& x, const py::array_t<Tw>& w,
                         const std::vector<Te>& edges, py::array_t<Tw>& counts,
@@ -260,7 +261,7 @@ inline void s_loop_incf(const py::array_t<Tx>& x, const py::array_t<Tw>& w,
   }
 }
 
-/// Execute parallel loop with overflow included (fixed width).
+/// fix, parallel loop, include flow, no weights
 template <typename Tx, typename Ta, typename Tc>
 inline void p_loop_incf(const Tx* x, py::ssize_t nx, faxis_t<Ta> ax, Tc* counts) {
   auto norm = anorm(ax);
@@ -280,7 +281,7 @@ inline void p_loop_incf(const Tx* x, py::ssize_t nx, faxis_t<Ta> ax, Tc* counts)
   }
 }
 
-/// Execute parallel loop with overflow included (fixed width); weighted inputs.
+/// fix, parallel loop, include flow, with weights
 template <typename Tx, typename Tw, typename Ta, typename Tc>
 inline void p_loop_incf(const Tx* x, const Tw* w, py::ssize_t nx, faxis_t<Ta> ax,
                         Tc* counts, Tw* variances) {
@@ -306,7 +307,7 @@ inline void p_loop_incf(const Tx* x, const Tw* w, py::ssize_t nx, faxis_t<Ta> ax
   }
 }
 
-/// Execute parallel loop with overflow included (fixed width); multiweight inputs.
+/// fix, parallel loop, include flow, with multiweights
 template <typename Tx, typename Tw, typename Ta>
 inline void p_loop_incf(const py::array_t<Tx>& x, const py::array_t<Tw>& w, faxis_t<Ta> ax,
                         py::array_t<Tw>& counts, py::array_t<Tw>& variances) {
@@ -344,7 +345,7 @@ inline void p_loop_incf(const py::array_t<Tx>& x, const py::array_t<Tw>& w, faxi
   }
 }
 
-/// Execute parallel loop with overflow included (variable width).
+/// var, parallel loop, include flow, no weights
 template <typename Tx, typename Te, typename Tc>
 inline void p_loop_incf(const Tx* x, py::ssize_t nx, const std::vector<Te>& edges,
                         Tc* counts) {
@@ -367,7 +368,7 @@ inline void p_loop_incf(const Tx* x, py::ssize_t nx, const std::vector<Te>& edge
   }
 }
 
-/// Execute parallel loop with overflow included (variable width); weighted inputs.
+/// var, parallel loop, include flow,  with weights
 template <typename Tx, typename Tw, typename Te, typename Tc>
 inline void p_loop_incf(const Tx* x, const Tw* w, py::ssize_t nx,
                         const std::vector<Te>& edges, Tc* counts, Tw* variances) {
@@ -395,7 +396,7 @@ inline void p_loop_incf(const Tx* x, const Tw* w, py::ssize_t nx,
   }
 }
 
-/// Execute parallel loop with overflow included (variable width); multiweight inputs.
+/// var, parallel loop, include flow, with multiweights
 template <typename Tx, typename Tw, typename Te>
 inline void p_loop_incf(const py::array_t<Tx>& x, const py::array_t<Tw>& w,
                         const std::vector<Te>& edges, py::array_t<Tw>& counts,
@@ -436,7 +437,7 @@ inline void p_loop_incf(const py::array_t<Tx>& x, const py::array_t<Tw>& w,
   }
 }
 
-/// Execute a serial loop with overflow excluded (fixed width).
+/// fix, serial loop, exclude flow, no weights
 template <typename Tx, typename Ta, typename Tc>
 inline void s_loop_excf(const Tx* x, py::ssize_t nx, faxis_t<Ta> ax, Tc* counts) {
   py::ssize_t bin;
@@ -448,7 +449,7 @@ inline void s_loop_excf(const Tx* x, py::ssize_t nx, faxis_t<Ta> ax, Tc* counts)
   }
 }
 
-/// Execute a serial loop with overflow excluded (fixed width); weighted inputs.
+/// fix, serial loop, exclude flow, with weights
 template <typename Tx, typename Tw, typename Ta, typename Tc>
 inline void s_loop_excf(const Tx* x, const Tw* w, py::ssize_t nx, faxis_t<Ta> ax,
                         Tc* counts, Tw* variances) {
@@ -464,7 +465,7 @@ inline void s_loop_excf(const Tx* x, const Tw* w, py::ssize_t nx, faxis_t<Ta> ax
   }
 }
 
-/// Execute serial loop with overflow excluded (fixed width); multiweight intputs.
+/// fix, serial loop, exclude flow, with multiweights
 template <typename Tx, typename Tw, typename Ta>
 inline void s_loop_excf(const py::array_t<Tx>& x, const py::array_t<Tw>& w, faxis_t<Ta> ax,
                         py::array_t<Tw>& counts, py::array_t<Tw>& variances) {
@@ -488,7 +489,7 @@ inline void s_loop_excf(const py::array_t<Tx>& x, const py::array_t<Tw>& w, faxi
   }
 }
 
-/// Execute a serial loop with overflow excluded (variable width).
+/// var, serial loop, exclude flow, no weights
 template <typename Tx, typename Te, typename Tc>
 inline void s_loop_excf(const Tx* x, py::ssize_t nx, const std::vector<Te>& edges,
                         Tc* counts) {
@@ -502,7 +503,7 @@ inline void s_loop_excf(const Tx* x, py::ssize_t nx, const std::vector<Te>& edge
   }
 }
 
-/// Execute a serial loop with overflow excluded (variable width); weighted inputs.
+/// var, serial loop, exclude flow, with weights
 template <typename Tx, typename Tw, typename Te, typename Tc>
 inline void s_loop_excf(const Tx* x, const Tw* w, py::ssize_t nx,
                         const std::vector<Te>& edges, Tc* counts, Tw* variances) {
@@ -519,7 +520,7 @@ inline void s_loop_excf(const Tx* x, const Tw* w, py::ssize_t nx,
   }
 }
 
-/// Execute serial loop with overflow excluded (variable width); multiweight inputs
+/// var, serial loop, exclude flow, with multiweights
 template <typename Tx, typename Tw, typename Te>
 inline void s_loop_excf(const py::array_t<Tx>& x, const py::array_t<Tw>& w,
                         const std::vector<Te>& edges, py::array_t<Tw>& counts,
@@ -545,7 +546,7 @@ inline void s_loop_excf(const py::array_t<Tx>& x, const py::array_t<Tw>& w,
   }
 }
 
-/// Execute a parallel loop with overflow excluded (fixed width).
+/// fix, parallel loop, exclude flow, no weights
 template <typename Tx, typename Ta, typename Tc>
 inline void p_loop_excf(const Tx* x, py::ssize_t nx, faxis_t<Ta> ax, Tc* counts) {
   auto norm = anorm(ax);
@@ -566,7 +567,7 @@ inline void p_loop_excf(const Tx* x, py::ssize_t nx, faxis_t<Ta> ax, Tc* counts)
   }
 }
 
-/// Execute a parallel loop with overflow excluded (fixed width); weighted inputs.
+/// fix, parallel loop, exclude flow, with weights
 template <typename Tx, typename Tw, typename Ta, typename Tc>
 inline void p_loop_excf(const Tx* x, const Tw* w, py::ssize_t nx, faxis_t<Ta> ax,
                         Tc* counts, Tw* variances) {
@@ -593,7 +594,7 @@ inline void p_loop_excf(const Tx* x, const Tw* w, py::ssize_t nx, faxis_t<Ta> ax
   }
 }
 
-/// Execute parallel loop with overflow excluded (fixed width); multiweight inputs.
+/// fix, parallel loop, exclude flow, with multiweights
 template <typename Tx, typename Tw, typename Ta>
 inline void p_loop_excf(const py::array_t<Tx>& x, const py::array_t<Tw>& w, faxis_t<Ta> ax,
                         py::array_t<Tw>& counts, py::array_t<Tw>& variances) {
@@ -632,7 +633,7 @@ inline void p_loop_excf(const py::array_t<Tx>& x, const py::array_t<Tw>& w, faxi
   }
 }
 
-/// Execute a parallel loop with overflow excluded (variable width).
+/// var, parallel loop, exclude flow, no weights
 template <typename Tx, typename Te, typename Tc>
 inline void p_loop_excf(const Tx* x, py::ssize_t nx, const std::vector<Te>& edges,
                         Tc* counts) {
@@ -656,7 +657,7 @@ inline void p_loop_excf(const Tx* x, py::ssize_t nx, const std::vector<Te>& edge
   }
 }
 
-/// Execute a parallel loop with overflow excluded (variable width); weighted inputs.
+/// var, parallel loop, exclude flow, with weights
 template <typename Tx, typename Tw, typename Te, typename Tc>
 inline void p_loop_excf(const Tx* x, const Tw* w, py::ssize_t nx,
                         const std::vector<Te>& edges, Tc* counts, Tw* variances) {
@@ -685,7 +686,7 @@ inline void p_loop_excf(const Tx* x, const Tw* w, py::ssize_t nx,
   }
 }
 
-/// Execute parallel loop with overflow excluded (variable width); multiweight inputs.
+/// var, parallel loop, exclude flow, with multiweights
 template <typename Tx, typename Tw, typename Te>
 inline void p_loop_excf(const py::array_t<Tx>& x, const py::array_t<Tw>& w,
                         const std::vector<Te>& edges, py::array_t<Tw>& counts,
@@ -729,8 +730,10 @@ inline void p_loop_excf(const py::array_t<Tx>& x, const py::array_t<Tw>& w,
 
 }  // namespace one
 
+/// Two dimensional histograms
 namespace two {
 
+/// fix, serial loop, include flow, no weights
 template <typename Tx, typename Ty, typename Ta>
 inline void s_loop_incf(const Tx* x, const Ty* y, py::ssize_t nx, faxis_t<Ta> axx,
                         faxis_t<Ta> axy, py::array_t<py::ssize_t>& counts) {
@@ -747,6 +750,7 @@ inline void s_loop_incf(const Tx* x, const Ty* y, py::ssize_t nx, faxis_t<Ta> ax
   }
 }
 
+/// fix, serial loop, include flow, with weights
 template <typename Tx, typename Ty, typename Tw, typename Ta>
 inline void s_loop_incf(const Tx* x, const Ty* y, const Tw* w, py::ssize_t nx,
                         faxis_t<Ta> axx, faxis_t<Ta> axy, py::array_t<Tw>& counts,
@@ -766,45 +770,7 @@ inline void s_loop_incf(const Tx* x, const Ty* y, const Tw* w, py::ssize_t nx,
   }
 }
 
-template <typename Tx, typename Ty, typename Ta>
-inline void s_loop_excf(const Tx* x, const Ty* y, py::ssize_t nx, faxis_t<Ta> axx,
-                        faxis_t<Ta> axy, py::array_t<py::ssize_t>& counts) {
-  auto normx = anorm(axx);
-  auto normy = anorm(axy);
-  auto nby = axy.nbins;
-  auto counts_px = counts.mutable_data();
-  py::ssize_t bin, by, bx;
-  for (py::ssize_t i = 0; i < nx; ++i) {
-    if (x[i] < axx.amin || x[i] >= axx.amax || y[i] < axy.amin || y[i] >= axy.amax)
-      continue;
-    by = pg11::calc_bin(y[i], axy.amin, normy);
-    bx = pg11::calc_bin(x[i], axx.amin, normx);
-    bin = by + nby * bx;
-    counts_px[bin]++;
-  }
-}
-
-template <typename Tx, typename Ty, typename Tw, typename Ta>
-inline void s_loop_excf(const Tx* x, const Ty* y, const Tw* w, py::ssize_t nx,
-                        faxis_t<Ta> axx, faxis_t<Ta> axy, py::array_t<Tw>& counts,
-                        py::array_t<Tw>& variances) {
-  auto normx = anorm(axx);
-  auto normy = anorm(axy);
-  auto nby = axy.nbins;
-  auto counts_px = counts.mutable_data();
-  auto variances_px = variances.mutable_data();
-  py::ssize_t bin, by, bx;
-  for (py::ssize_t i = 0; i < nx; ++i) {
-    if (x[i] < axx.amin || x[i] >= axx.amax || y[i] < axy.amin || y[i] >= axy.amax)
-      continue;
-    by = pg11::calc_bin(y[i], axy.amin, normy);
-    bx = pg11::calc_bin(x[i], axx.amin, normx);
-    bin = by + nby * bx;
-    counts_px[bin] += w[i];
-    variances_px[bin] += w[i] * w[i];
-  }
-}
-
+/// fix, parallel loop, include flow, no weights
 template <typename Tx, typename Ty, typename Ta>
 inline void p_loop_incf(const Tx* x, const Ty* y, py::ssize_t nx, faxis_t<Ta> axx,
                         faxis_t<Ta> axy, py::array_t<py::ssize_t>& counts) {
@@ -831,6 +797,7 @@ inline void p_loop_incf(const Tx* x, const Ty* y, py::ssize_t nx, faxis_t<Ta> ax
   }
 }
 
+/// fix, parallel loop, include flow, with weights
 template <typename Tx, typename Ty, typename Tw, typename Ta>
 inline void p_loop_incf(const Tx* x, const Ty* y, const Tw* w, py::ssize_t nx,
                         faxis_t<Ta> axx, faxis_t<Ta> axy, py::array_t<Tw>& counts,
@@ -862,6 +829,48 @@ inline void p_loop_incf(const Tx* x, const Ty* y, const Tw* w, py::ssize_t nx,
   }
 }
 
+/// fix, serial loop, exclude flow, no weights
+template <typename Tx, typename Ty, typename Ta>
+inline void s_loop_excf(const Tx* x, const Ty* y, py::ssize_t nx, faxis_t<Ta> axx,
+                        faxis_t<Ta> axy, py::array_t<py::ssize_t>& counts) {
+  auto normx = anorm(axx);
+  auto normy = anorm(axy);
+  auto nby = axy.nbins;
+  auto counts_px = counts.mutable_data();
+  py::ssize_t bin, by, bx;
+  for (py::ssize_t i = 0; i < nx; ++i) {
+    if (x[i] < axx.amin || x[i] >= axx.amax || y[i] < axy.amin || y[i] >= axy.amax)
+      continue;
+    by = pg11::calc_bin(y[i], axy.amin, normy);
+    bx = pg11::calc_bin(x[i], axx.amin, normx);
+    bin = by + nby * bx;
+    counts_px[bin]++;
+  }
+}
+
+/// fix, serial loop, exclude flow, with weights
+template <typename Tx, typename Ty, typename Tw, typename Ta>
+inline void s_loop_excf(const Tx* x, const Ty* y, const Tw* w, py::ssize_t nx,
+                        faxis_t<Ta> axx, faxis_t<Ta> axy, py::array_t<Tw>& counts,
+                        py::array_t<Tw>& variances) {
+  auto normx = anorm(axx);
+  auto normy = anorm(axy);
+  auto nby = axy.nbins;
+  auto counts_px = counts.mutable_data();
+  auto variances_px = variances.mutable_data();
+  py::ssize_t bin, by, bx;
+  for (py::ssize_t i = 0; i < nx; ++i) {
+    if (x[i] < axx.amin || x[i] >= axx.amax || y[i] < axy.amin || y[i] >= axy.amax)
+      continue;
+    by = pg11::calc_bin(y[i], axy.amin, normy);
+    bx = pg11::calc_bin(x[i], axx.amin, normx);
+    bin = by + nby * bx;
+    counts_px[bin] += w[i];
+    variances_px[bin] += w[i] * w[i];
+  }
+}
+
+/// fix, parallel loop, exclude flow, no weights
 template <typename Tx, typename Ty, typename Ta>
 inline void p_loop_excf(const Tx* x, const Ty* y, py::ssize_t nx, faxis_t<Ta> axx,
                         faxis_t<Ta> axy, py::array_t<py::ssize_t>& counts) {
@@ -890,6 +899,7 @@ inline void p_loop_excf(const Tx* x, const Ty* y, py::ssize_t nx, faxis_t<Ta> ax
   }
 }
 
+/// fix, parallel loop, exclude flow, with weights
 template <typename Tx, typename Ty, typename Tw, typename Ta>
 inline void p_loop_excf(const Tx* x, const Ty* y, const Tw* w, py::ssize_t nx,
                         faxis_t<Ta> axx, faxis_t<Ta> axy, py::array_t<Tw>& counts,
@@ -1121,6 +1131,19 @@ py::tuple f2dw(py::array_t<Tx> x, py::array_t<Ty> y, py::array_t<Tw> w, py::ssiz
   pg11::arr_sqrt(variances);
   return py::make_tuple(counts, variances);
 }
+
+// template <typename Tx, typename Ty>
+// py::array_t<py::ssize_t> v2d(py::array_t<Tx> x, py::array_t<Ty>, py::array_t<double> xbins,
+//                              py::array_t<double> ybins, bool flow) {
+//   py::ssize_t nedgesx = xbins.shape(0);
+//   py::ssize_t nedgesy = ybins.shape(0);
+//   py::ssize_t nbinsx = nedgesx - 1;
+//   py::ssize_t nbinsy = nedgesy - 1;
+//   auto counts = pg11::zeros<Tw>(nbinsx, nbinsy);
+//   std::vector<double> edgesx_v(xbins.data(), xbins.data() + nedgesx);
+//   std::vector<double> edgesy_v(ybins.data(), ybins.data() + nedgesy);
+//   return counts;
+// }
 
 using namespace pybind11::literals;
 using boost::mp11::mp_for_each;
