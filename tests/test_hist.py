@@ -39,7 +39,7 @@ E_ARRS = (
     np.array([27.5, 35.1, 40.2, 50.1, 57.2, 60.1,
               64.2, 70.2, 90.1, 98.2, 110.1, 120.2,
               130.2, 160.1, 200.2, 250.1]),
-    np.array([1.1, 5.5, 17.2, 32.9, 100.2,
+    np.array([1.1, 17.2, 32.9, 100.2,
               170.5, 172.1, 173.1, 279.2]),
 )
 XTYPES = (np.float32, np.float64, np.int32, np.int64, np.uint32, np.uint64)
@@ -47,9 +47,16 @@ XTYPES = (np.float32, np.float64, np.int32, np.int64, np.uint32, np.uint64)
 
 
 def make_data_1d(xtype, wtype=None):
-    x = X_RAWF.astype(dtype=xtype)
+    x = X_RAWF.astype(dtype=xtype) * np.random.uniform(0.8, 1.2, X_RAWF.shape[0])
     w = None if wtype is None else np.random.uniform(0.7, 1.8, x.shape[0])
     return x, w
+
+
+def make_data_2d(xtype, ytype, wtype=None):
+    x = X_RAWF.astype(dtype=xtype) * np.random.uniform(0.8, 1.2, X_RAWF.shape[0])
+    y = (X_RAWF * np.random.uniform(0.8, 1.2, x.shape[0])).astype(ytype)
+    w = None if wtype is None else np.random.uniform(0.75, 1.25, x.shape[0])
+    return x, y, w
 
 
 def make_data_1d_mw(xtype, wtype):
@@ -61,7 +68,7 @@ def make_data_1d_mw(xtype, wtype):
     return x, w
 
 
-class TestFixed1D:
+class TestFix1D:
     @pytest.mark.parametrize("xtype", XTYPES)
     @pytest.mark.parametrize("wtype", [None, np.float32, np.float64])
     @pytest.mark.parametrize("density", [True, False])
@@ -126,8 +133,7 @@ class TestVar1D:
         x, w = make_data_1d(xtype, wtype)
         res0, err0 = func(x, weights=w, bins=bins, density=density, flow=flow)
         res1, edge = np.histogram(x, weights=w, bins=bins, density=density)
-        xmin = bins[0]
-        xmax = bins[-1]
+        xmin, xmax = bins[0], bins[-1]
         if flow:
             if w is None:
                 res1[0] += np.sum(x < xmin)
@@ -146,8 +152,7 @@ class TestVar1D:
     def test_multiple_weights(self, xtype, wtype, bins, flow, ompt, func):
         pg.VARIABLE_WIDTH_MW_PARALLEL_THRESHOLD = ompt
         x, w = make_data_1d_mw(xtype, wtype)
-        xmin = bins[0]
-        xmax = bins[-1]
+        xmin, xmax = bins[0], bins[-1]
         res0, err0 = func(x, weights=w, bins=bins, flow=flow)
         for i in range(res0.shape[1]):
             res1, edge = np.histogram(x, weights=w[:, i], bins=bins)
@@ -155,3 +160,53 @@ class TestVar1D:
                 res1[0] += np.sum(w[:, i][x < xmin])
                 res1[-1] += np.sum(w[:, i][x >= xmax])
             npt.assert_allclose(res0[:, i], res1, rtol=1e-05, atol=1e-08)
+
+
+class TestFix2D:
+    @pytest.mark.parametrize("xtype", XTYPES)
+    @pytest.mark.parametrize("ytype", XTYPES)
+    @pytest.mark.parametrize("wtype", [None, np.float64, np.float32])
+    @pytest.mark.parametrize("flow", [False])
+    @pytest.mark.parametrize("ompt", [sys.maxsize, 1])
+    @pytest.mark.parametrize("func", [pg.histogram2d, pg.fix2d])
+    def test_no_weight_and_single_weight(self, xtype, ytype, wtype, flow, ompt, func):
+        pg.FIXED_WIDTH_PARALLEL_THRESHOLD = ompt
+        x, y, w = make_data_2d(xtype, ytype, wtype)
+        nbx, xmin, xmax = 25, 40.5, 180.5
+        nby, ymin, ymax = 21, 33.3, 178.2
+        res0, err0 = func(
+            x,
+            y,
+            bins=[nbx, nby],
+            range=((xmin, xmax), (ymin, ymax)),
+            weights=w,
+            flow=flow,
+        )
+        res1, ex, ey = np.histogram2d(
+            x, y, bins=[nbx, nby], range=((xmin, xmax), (ymin, ymax)), weights=w
+        )
+
+        npt.assert_allclose(res0, res1, rtol=1e-05, atol=1e-08)
+
+
+class TestVar2D:
+    @pytest.mark.parametrize("xtype", XTYPES)
+    @pytest.mark.parametrize("ytype", XTYPES)
+    @pytest.mark.parametrize("wtype", [None, np.float64, np.float32])
+    @pytest.mark.parametrize("xbins", E_ARRS)
+    @pytest.mark.parametrize("ybins", E_ARRS)
+    @pytest.mark.parametrize("flow", [False])
+    @pytest.mark.parametrize("ompt", [sys.maxsize, 1])
+    @pytest.mark.parametrize("func", [pg.var2d, pg.histogram2d])
+    def test_no_weight_and_single_weight(
+        self, xtype, ytype, wtype, xbins, ybins, flow, ompt, func
+    ):
+        pg.VARIABLE_WIDTH_PARALLEL_THRESHOLD = ompt
+        x, y, w = make_data_2d(xtype, ytype, wtype)
+        if func == pg.histogram2d:
+            res0, err0 = func(x, y, bins=[xbins, ybins], weights=w, flow=flow)
+        elif func == pg.var2d:
+            res0, err0 = func(x, y, xbins, ybins, weights=w, flow=flow)
+        res1, edgex, edgey = np.histogram2d(x, y, bins=[xbins, ybins], weights=w)
+
+        npt.assert_allclose(res0, res1, rtol=1e-03, atol=1e-05)

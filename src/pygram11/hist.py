@@ -24,11 +24,17 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import numpy as np
-from typing import Iterable, Tuple, Optional, Union
+# stdlib
+from typing import Sequence, Tuple, Optional, Union
 
-from pygram11._backend import _f1d, _v1d, _f1dw, _v1dw, _f1dmw, _v1dmw, _f2d, _f2dw
-from pygram11._backend2d import _v2dw
+# third party
+import numpy as np
+
+# One dimensional backend functions
+from pygram11._backend import _f1d, _v1d, _f1dw, _v1dw, _f1dmw, _v1dmw
+
+# Two dimensional backend functions
+from pygram11._backend import _f2d, _f2dw, _v2d, _v2dw
 
 
 def _likely_uniform_bins(edges: np.ndarray) -> bool:
@@ -94,19 +100,20 @@ def _get_limits_1d(
 
 
 def _get_limits_2d(
-    x: np.array,
-    y: np.array,
-    range: Optional[Iterable[Tuple[float, float]]] = None,
+    x: np.ndarray,
+    y: np.ndarray,
+    range: Optional[Sequence[Tuple[float, float]]] = None,
 ) -> Tuple[float, float, float, float]:
     """Get bin limits given an optional range and 2D data."""
     if range is None:
-        xmin, xmax, ymin, ymax = (
+        return (
             float(np.amin(x)),
             float(np.amax(x)),
             float(np.amin(y)),
             float(np.amin(y)),
         )
-    return range[0][0], range[0][1], range[1][0], range[1][1]
+    else:
+        return range[0][0], range[0][1], range[1][0], range[1][1]
 
 
 def fix1d(
@@ -470,10 +477,10 @@ def fix2d(
     x: np.ndarray,
     y: np.ndarray,
     bins: Union[int, Tuple[int, int]] = 10,
-    range: Optional[Iterable[Tuple[float, float]]] = None,
+    range: Optional[Sequence[Tuple[float, float]]] = None,
     weights: Optional[np.ndarray] = None,
     flow: bool = False,
-) -> Tuple[np.ndarray, np.ndarray]:
+) -> Tuple[np.ndarray, Optional[np.ndarray]]:
     r"""Histogram the ``x``, ``y`` data with fixed (uniform) binning.
 
     Parameters
@@ -485,7 +492,7 @@ def fix2d(
     bins : int or Tuple[int, int]
        if int, both dimensions will have that many bins,
        if iterable, the number of bins for each dimension
-    range : Iterable[Tuple[float, float]], optional
+    range : Sequence[Tuple[float, float]], optional
        axis limits to histogram over in the form [(xmin, xmax), (ymin, ymax)]
     weights : numpy.ndarray, optional
        Weight for each :math:`(x_i, y_i)` pair.
@@ -518,14 +525,11 @@ def fix2d(
     >>> h, err = fix2d(x, y, bins=(20, 10), range=((0, 100), (0, 50)), weights=w)
 
     """
-    x = np.asarray(x)
-    y = np.asarray(y)
     if x.shape != y.shape:
-        raise ValueError("x and y must be the same shape")
+        raise ValueError("x and y must be the same shape.")
     if weights is not None:
-        weights = np.asarray(weights)
         if weights.shape != x.shape:
-            raise ValueError("data and weights must be the same shape")
+            raise ValueError("data and weights must be the same shape.")
 
     if isinstance(bins, int):
         nx = ny = bins
@@ -547,21 +551,24 @@ def var2d(
     xbins: np.ndarray,
     ybins: np.ndarray,
     weights: Optional[np.ndarray] = None,
-) -> Tuple[np.ndarray, np.ndarray]:
+    flow: bool = False,
+) -> Tuple[np.ndarray, Optional[np.ndarray]]:
     r"""Histogram the ``x``, ``y`` data with variable width binning.
 
     Parameters
     ----------
     x : array_like
-       first entries in the data pairs to histogram
+        The :math:`x_i`'s in the :math:`(x_i, y_i)` pairs.
     y : array_like
-       second entries in the data pairs to histogram
+        The :math:`y_i`'s in the :math:`(x_i, y_i)` pairs.
     xbins : array_like
-       bin edges for the ``x`` dimension
+        Bin edges for the ``x`` dimension
     ybins : array_like
-       bin edges for the ``y`` dimension
+        Bin edges for the ``y`` dimension
     weights : array_like, optional
-       weights for each :math:`(x_i, y_i)` pair.
+        Weights for each :math:`(x_i, y_i)` pair.
+    flow : bool
+        Include under/overflow.
 
     Raises
     ------
@@ -585,23 +592,22 @@ def var2d(
     >>> h, __ = var2d(x, y, bins, bins)
 
     """
-    x = np.ascontiguousarray(x)
-    y = np.ascontiguousarray(y)
     if x.shape != y.shape:
-        raise ValueError("x and y must be the same shape")
-    xbins = np.ascontiguousarray(xbins)
-    ybins = np.ascontiguousarray(ybins)
+        raise ValueError("x and y must be the same shape.")
     if not np.all(xbins[1:] >= xbins[:-1]):
-        raise ValueError("xbins sequence must monotonically increase")
+        raise ValueError("xbins sequence must monotonically increase.")
     if not np.all(ybins[1:] >= ybins[:-1]):
-        raise ValueError("ybins sequence must monotonically increase")
+        raise ValueError("ybins sequence must monotonically increase.")
+    if weights is not None:
+        weights = np.asarray(weights)
+        if weights.shape != x.shape:
+            raise ValueError("data and weights must be the same shape.")
 
     if weights is None:
-        weights = np.ones_like(x, dtype=np.float64)
-    else:
-        weights = np.ascontiguousarray(weights)
+        result = _v2d(x, y, xbins, ybins, flow)
+        return result, None
 
-    return _v2dw(x, y, weights, xbins, ybins, False, True)
+    return _v2dw(x, y, weights, xbins, ybins, flow)
 
 
 def histogram2d(x, y, bins=10, range=None, weights=None, flow=False):
@@ -668,16 +674,18 @@ def histogram2d(x, y, bins=10, range=None, weights=None, flow=False):
         weights = np.asarray(weights)
     if N != 1 and N != 2:
         bins = np.asarray(bins)
-        return var2d(x, y, bins, bins, weights=weights)
+        return var2d(x, y, bins, bins, weights=weights, flow=flow)
 
     elif N == 1:
-        return fix2d(x, y, bins=bins, range=range, weights=weights)
+        return fix2d(x, y, bins=bins, range=range, weights=weights, flow=flow)
 
     elif N == 2:
         if isinstance(bins[0], int) and isinstance(bins[1], int):
             return fix2d(x, y, bins=bins, range=range, weights=weights, flow=flow)
         else:
-            return var2d(x, y, bins[0], bins[1], weights=weights)
+            b1 = np.asarray(bins[0])
+            b2 = np.asarray(bins[1])
+            return var2d(x, y, b1, b2, weights=weights, flow=flow)
 
     else:
         raise ValueError("bins argument is not compatible")

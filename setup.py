@@ -168,14 +168,6 @@ def get_extensions():
             extra_compile_args=cpp_cflags,
             extra_link_args=cpp_lflags,
         ),
-        Extension(
-            "pygram11._backend2d",
-            [os.path.join("src", "_backend2d.cpp")],
-            language="c++",
-            include_dirs=["extern/pybind11/include"],
-            extra_compile_args=cpp_cflags,
-            extra_link_args=cpp_lflags,
-        ),
     ]
 
 

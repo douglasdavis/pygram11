@@ -24,7 +24,7 @@ Python 3 releases supported by both pybind11 and
 [NumPy](https://www.numpy.org/) should be compatible with pygram11.
 Python version 3.7 (or later) and NumPy version 1.16 (or later) are
 supported by tests (and have binary releases). To build and install
-from source you'll just need a compiler with support for C++11 and
+from source you'll just need a compiler with support for C++14 and
 OpenMP. The only runtime dependency is NumPy.
 
 ### From PyPI
@@ -58,7 +58,7 @@ conda install nomkl ## sometimes necessary fix (macOS only)
 
 ### From Source
 
-All you need is a C++11 compiler and OpenMP. If you are using a
+All you need is a C++14 compiler and OpenMP. If you are using a
 relatively modern GCC release on Linux then you probably don't have to
 worry about the OpenMP dependency. If you are on macOS, you can
 install `libomp` from Homebrew. With those dependencies met, simply
