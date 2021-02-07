@@ -162,51 +162,51 @@ class TestVar1D:
             npt.assert_allclose(res0[:, i], res1, rtol=1e-05, atol=1e-08)
 
 
-class TestFix2D:
-    @pytest.mark.parametrize("xtype", XTYPES)
-    @pytest.mark.parametrize("ytype", XTYPES)
-    @pytest.mark.parametrize("wtype", [None, np.float64, np.float32])
-    @pytest.mark.parametrize("flow", [False])
-    @pytest.mark.parametrize("ompt", [sys.maxsize, 1])
-    @pytest.mark.parametrize("func", [pg.histogram2d, pg.fix2d])
-    def test_no_weight_and_single_weight(self, xtype, ytype, wtype, flow, ompt, func):
-        pg.FIXED_WIDTH_PARALLEL_THRESHOLD = ompt
-        x, y, w = make_data_2d(xtype, ytype, wtype)
-        nbx, xmin, xmax = 25, 40.5, 180.5
-        nby, ymin, ymax = 21, 33.3, 178.2
-        res0, err0 = func(
-            x,
-            y,
-            bins=[nbx, nby],
-            range=((xmin, xmax), (ymin, ymax)),
-            weights=w,
-            flow=flow,
-        )
-        res1, ex, ey = np.histogram2d(
-            x, y, bins=[nbx, nby], range=((xmin, xmax), (ymin, ymax)), weights=w
-        )
+# class TestFix2D:
+#     @pytest.mark.parametrize("xtype", XTYPES)
+#     @pytest.mark.parametrize("ytype", XTYPES)
+#     @pytest.mark.parametrize("wtype", [None, np.float64, np.float32])
+#     @pytest.mark.parametrize("flow", [False])
+#     @pytest.mark.parametrize("ompt", [sys.maxsize, 1])
+#     @pytest.mark.parametrize("func", [pg.histogram2d, pg.fix2d])
+#     def test_no_weight_and_single_weight(self, xtype, ytype, wtype, flow, ompt, func):
+#         pg.FIXED_WIDTH_PARALLEL_THRESHOLD = ompt
+#         x, y, w = make_data_2d(xtype, ytype, wtype)
+#         nbx, xmin, xmax = 25, 40.5, 180.5
+#         nby, ymin, ymax = 21, 33.3, 178.2
+#         res0, err0 = func(
+#             x,
+#             y,
+#             bins=[nbx, nby],
+#             range=((xmin, xmax), (ymin, ymax)),
+#             weights=w,
+#             flow=flow,
+#         )
+#         res1, ex, ey = np.histogram2d(
+#             x, y, bins=[nbx, nby], range=((xmin, xmax), (ymin, ymax)), weights=w
+#         )
 
-        npt.assert_allclose(res0, res1, rtol=1e-05, atol=1e-08)
+#         npt.assert_allclose(res0, res1, rtol=1e-05, atol=1e-08)
 
 
-class TestVar2D:
-    @pytest.mark.parametrize("xtype", XTYPES)
-    @pytest.mark.parametrize("ytype", XTYPES)
-    @pytest.mark.parametrize("wtype", [None, np.float64, np.float32])
-    @pytest.mark.parametrize("xbins", E_ARRS)
-    @pytest.mark.parametrize("ybins", E_ARRS)
-    @pytest.mark.parametrize("flow", [False])
-    @pytest.mark.parametrize("ompt", [sys.maxsize, 1])
-    @pytest.mark.parametrize("func", [pg.var2d, pg.histogram2d])
-    def test_no_weight_and_single_weight(
-        self, xtype, ytype, wtype, xbins, ybins, flow, ompt, func
-    ):
-        pg.VARIABLE_WIDTH_PARALLEL_THRESHOLD = ompt
-        x, y, w = make_data_2d(xtype, ytype, wtype)
-        if func == pg.histogram2d:
-            res0, err0 = func(x, y, bins=[xbins, ybins], weights=w, flow=flow)
-        elif func == pg.var2d:
-            res0, err0 = func(x, y, xbins, ybins, weights=w, flow=flow)
-        res1, edgex, edgey = np.histogram2d(x, y, bins=[xbins, ybins], weights=w)
+# class TestVar2D:
+#     @pytest.mark.parametrize("xtype", XTYPES)
+#     @pytest.mark.parametrize("ytype", XTYPES)
+#     @pytest.mark.parametrize("wtype", [None, np.float64, np.float32])
+#     @pytest.mark.parametrize("xbins", E_ARRS)
+#     @pytest.mark.parametrize("ybins", E_ARRS)
+#     @pytest.mark.parametrize("flow", [False])
+#     @pytest.mark.parametrize("ompt", [sys.maxsize, 1])
+#     @pytest.mark.parametrize("func", [pg.var2d, pg.histogram2d])
+#     def test_no_weight_and_single_weight(
+#         self, xtype, ytype, wtype, xbins, ybins, flow, ompt, func
+#     ):
+#         pg.VARIABLE_WIDTH_PARALLEL_THRESHOLD = ompt
+#         x, y, w = make_data_2d(xtype, ytype, wtype)
+#         if func == pg.histogram2d:
+#             res0, err0 = func(x, y, bins=[xbins, ybins], weights=w, flow=flow)
+#         elif func == pg.var2d:
+#             res0, err0 = func(x, y, xbins, ybins, weights=w, flow=flow)
+#         res1, edgex, edgey = np.histogram2d(x, y, bins=[xbins, ybins], weights=w)
 
-        npt.assert_allclose(res0, res1, rtol=1e-03, atol=1e-05)
+#         npt.assert_allclose(res0, res1, rtol=1e-03, atol=1e-05)
