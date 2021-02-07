@@ -829,6 +829,112 @@ inline void p_loop_incf(const Tx* x, const Ty* y, const Tw* w, py::ssize_t nx,
   }
 }
 
+/// var, serial loop, include flow, without weights
+template <typename Tx, typename Ty>
+void s_loop_incf(const Tx* x, const Ty* y, py::ssize_t nx, const std::vector<double>& edgesx,
+                 const std::vector<double>& edgesy, py::array_t<py::ssize_t>& counts) {
+  auto xmin = edgesx.front();
+  auto xmax = edgesx.back();
+  auto ymin = edgesy.front();
+  auto ymax = edgesy.back();
+  auto nbx = edgesx.size() - 1;
+  auto nby = edgesy.size() - 1;
+  auto counts_px = counts.mutable_data();
+  py::ssize_t bx, by, bin;
+  for (py::ssize_t i = 0; i < nx; ++i) {
+    bx = pg11::calc_bin(x[i], nbx, xmin, xmax, edgesx);
+    by = pg11::calc_bin(y[i], nby, ymin, ymax, edgesy);
+    bin = by + nby * bx;
+    counts_px[bin]++;
+  }
+}
+
+/// var, serial loop, include flow, with weights
+template <typename Tx, typename Ty, typename Tw>
+void s_loop_incf(const Tx* x, const Ty* y, const Tw* w, py::ssize_t nx,
+                 const std::vector<double>& edgesx, const std::vector<double>& edgesy,
+                 py::array_t<Tw>& counts, py::array_t<Tw>& variances) {
+  auto xmin = edgesx.front();
+  auto xmax = edgesx.back();
+  auto ymin = edgesy.front();
+  auto ymax = edgesy.back();
+  auto nbx = edgesx.size() - 1;
+  auto nby = edgesy.size() - 1;
+  auto counts_px = counts.mutable_data();
+  auto variances_px = variances.mutable_data();
+  py::ssize_t bx, by, bin;
+  for (py::ssize_t i = 0; i < nx; ++i) {
+    bx = pg11::calc_bin(x[i], nbx, xmin, xmax, edgesx);
+    by = pg11::calc_bin(y[i], nby, ymin, ymax, edgesy);
+    bin = by + nby * bx;
+    counts_px[bin] += w[i];
+    variances_px[bin] += w[i] * w[i];
+  }
+}
+
+/// var, parallel loop, include flow, without weights
+template <typename Tx, typename Ty>
+void p_loop_incf(const Tx* x, const Ty* y, py::ssize_t nx, const std::vector<double>& edgesx,
+                 const std::vector<double>& edgesy, py::array_t<py::ssize_t>& counts) {
+  auto xmin = edgesx.front();
+  auto xmax = edgesx.back();
+  auto ymin = edgesy.front();
+  auto ymax = edgesy.back();
+  auto nbx = edgesx.size() - 1;
+  auto nby = edgesy.size() - 1;
+  auto counts_px = counts.mutable_data();
+#pragma omp parallel
+  {
+    std::vector<py::ssize_t> counts_ot(nbx * nby, 0);
+    py::ssize_t bx, by, bin;
+#pragma omp for nowait
+    for (py::ssize_t i = 0; i < nx; ++i) {
+      bx = pg11::calc_bin(x[i], nbx, xmin, xmax, edgesx);
+      by = pg11::calc_bin(y[i], nby, ymin, ymax, edgesy);
+      bin = by + nby * bx;
+      counts_ot[bin]++;
+    }
+#pragma omp critical
+    for (std::size_t i = 0; i < (nbx * nby); ++i) {
+      counts_px[i] += counts_ot[i];
+    }
+  }
+}
+
+/// var, parallel loop, include flow, with weights
+template <typename Tx, typename Ty, typename Tw>
+void p_loop_incf(const Tx* x, const Ty* y, const Tw* w, py::ssize_t nx,
+                 const std::vector<double>& edgesx, const std::vector<double>& edgesy,
+                 py::array_t<Tw>& counts, py::array_t<Tw>& variances) {
+  auto xmin = edgesx.front();
+  auto xmax = edgesx.back();
+  auto ymin = edgesy.front();
+  auto ymax = edgesy.back();
+  auto nbx = edgesx.size() - 1;
+  auto nby = edgesy.size() - 1;
+  auto counts_px = counts.mutable_data();
+  auto variances_px = variances.mutable_data();
+#pragma omp parallel
+  {
+    std::vector<Tw> counts_ot(nbx * nby, 0);
+    std::vector<Tw> variances_ot(nbx * nby, 0);
+    py::ssize_t bx, by, bin;
+#pragma omp for nowait
+    for (py::ssize_t i = 0; i < nx; ++i) {
+      bx = pg11::calc_bin(x[i], nbx, xmin, xmax, edgesx);
+      by = pg11::calc_bin(y[i], nby, ymin, ymax, edgesy);
+      bin = by + nby * bx;
+      counts_ot[bin] += w[i];
+      variances_ot[bin] += w[i] * w[i];
+    }
+#pragma omp critical
+    for (std::size_t i = 0; i < (nbx * nby); ++i) {
+      counts_px[i] += counts_ot[i];
+      variances_px[i] += variances_ot[i];
+    }
+  }
+}
+
 /// fix, serial loop, exclude flow, no weights
 template <typename Tx, typename Ty, typename Ta>
 inline void s_loop_excf(const Tx* x, const Ty* y, py::ssize_t nx, faxis_t<Ta> axx,
@@ -927,6 +1033,114 @@ inline void p_loop_excf(const Tx* x, const Ty* y, const Tw* w, py::ssize_t nx,
     }
 #pragma omp critical
     for (py::ssize_t i = 0; i < (nbx * nby); ++i) {
+      counts_px[i] += counts_ot[i];
+      variances_px[i] += variances_ot[i];
+    }
+  }
+}
+
+/// var, serial loop, exclude flow, without weights
+template <typename Tx, typename Ty>
+void s_loop_excf(const Tx* x, const Ty* y, py::ssize_t nx, std::vector<double> edgesx,
+                 std::vector<double> edgesy, py::array_t<py::ssize_t>& counts) {
+  auto xmin = edgesx.front();
+  auto xmax = edgesx.back();
+  auto ymin = edgesy.front();
+  auto ymax = edgesy.back();
+  auto nby = edgesy.size() - 1;
+  auto counts_px = counts.mutable_data();
+  py::ssize_t bx, by, bin;
+  for (py::ssize_t i = 0; i < nx; ++i) {
+    if (x[i] < xmin || x[i] >= xmax || y[i] < ymin || y[i] >= ymax) continue;
+    bx = pg11::calc_bin(x[i], edgesx);
+    by = pg11::calc_bin(y[i], edgesy);
+    bin = by + nby * bx;
+    counts_px[bin]++;
+  }
+}
+
+/// var, serial loop, exclude flow, with weights
+template <typename Tx, typename Ty, typename Tw>
+void s_loop_excf(const Tx* x, const Ty* y, const Tw* w, py::ssize_t nx,
+                 std::vector<double> edgesx, std::vector<double> edgesy,
+                 py::array_t<Tw>& counts, py::array_t<Tw>& variances) {
+  auto xmin = edgesx.front();
+  auto xmax = edgesx.back();
+  auto ymin = edgesy.front();
+  auto ymax = edgesy.back();
+  auto nby = edgesy.size() - 1;
+  auto counts_px = counts.mutable_data();
+  auto variances_px = variances.mutable_data();
+  py::ssize_t bx, by, bin;
+  for (py::ssize_t i = 0; i < nx; ++i) {
+    if (x[i] < xmin || x[i] >= xmax || y[i] < ymin || y[i] >= ymax) continue;
+    bx = pg11::calc_bin(x[i], edgesx);
+    by = pg11::calc_bin(y[i], edgesy);
+    bin = by + nby * bx;
+    counts_px[bin] += w[i];
+    variances_px[bin] += w[i] * w[i];
+  }
+}
+
+/// var, parallel loop, exclude flow, without weights
+template <typename Tx, typename Ty>
+void p_loop_excf(const Tx* x, const Ty* y, py::ssize_t nx, std::vector<double> edgesx,
+                 std::vector<double> edgesy, py::array_t<py::ssize_t>& counts) {
+  auto xmin = edgesx.front();
+  auto xmax = edgesx.back();
+  auto ymin = edgesy.front();
+  auto ymax = edgesy.back();
+  auto nbx = edgesx.size() - 1;
+  auto nby = edgesy.size() - 1;
+  auto counts_px = counts.mutable_data();
+#pragma omp parallel
+  {
+    std::vector<py::ssize_t> counts_ot(nbx * nby, 0);
+    py::ssize_t bx, by, bin;
+#pragma omp for nowait
+    for (py::ssize_t i = 0; i < nx; ++i) {
+      if (x[i] < xmin || x[i] >= xmax || y[i] < ymin || y[i] >= ymax) continue;
+      bx = pg11::calc_bin(x[i], edgesx);
+      by = pg11::calc_bin(y[i], edgesy);
+      bin = by + nby * bx;
+      counts_ot[bin]++;
+    }
+#pragma omp critical
+    for (std::size_t i = 0; i < (nbx * nby); ++i) {
+      counts_px[i] += counts_ot[i];
+    }
+  }
+}
+
+/// var, parallel loop, exclude flow, with weights
+template <typename Tx, typename Ty, typename Tw>
+void p_loop_excf(const Tx* x, const Ty* y, const Tw* w, py::ssize_t nx,
+                 std::vector<double> edgesx, std::vector<double> edgesy,
+                 py::array_t<Tw>& counts, py::array_t<Tw>& variances) {
+  auto xmin = edgesx.front();
+  auto xmax = edgesx.back();
+  auto ymin = edgesy.front();
+  auto ymax = edgesy.back();
+  auto nbx = edgesx.size() - 1;
+  auto nby = edgesy.size() - 1;
+  auto counts_px = counts.mutable_data();
+  auto variances_px = variances.mutable_data();
+#pragma omp parallel
+  {
+    std::vector<Tw> counts_ot(nbx * nby, 0);
+    std::vector<Tw> variances_ot(nbx * nby, 0);
+    py::ssize_t bx, by, bin;
+#pragma omp for nowait
+    for (py::ssize_t i = 0; i < nx; ++i) {
+      if (x[i] < xmin || x[i] >= xmax || y[i] < ymin || y[i] >= ymax) continue;
+      bx = pg11::calc_bin(x[i], edgesx);
+      by = pg11::calc_bin(y[i], edgesy);
+      bin = by + nby * bx;
+      counts_ot[bin] += w[i];
+      variances_ot[bin] += w[i] * w[i];
+    }
+#pragma omp critical
+    for (std::size_t i = 0; i < (nbx * nby); ++i) {
       counts_px[i] += counts_ot[i];
       variances_px[i] += variances_ot[i];
     }
@@ -1132,18 +1346,62 @@ py::tuple f2dw(py::array_t<Tx> x, py::array_t<Ty> y, py::array_t<Tw> w, py::ssiz
   return py::make_tuple(counts, variances);
 }
 
-// template <typename Tx, typename Ty>
-// py::array_t<py::ssize_t> v2d(py::array_t<Tx> x, py::array_t<Ty>, py::array_t<double> xbins,
-//                              py::array_t<double> ybins, bool flow) {
-//   py::ssize_t nedgesx = xbins.shape(0);
-//   py::ssize_t nedgesy = ybins.shape(0);
-//   py::ssize_t nbinsx = nedgesx - 1;
-//   py::ssize_t nbinsy = nedgesy - 1;
-//   auto counts = pg11::zeros<Tw>(nbinsx, nbinsy);
-//   std::vector<double> edgesx_v(xbins.data(), xbins.data() + nedgesx);
-//   std::vector<double> edgesy_v(ybins.data(), ybins.data() + nedgesy);
-//   return counts;
-// }
+template <typename Tx, typename Ty>
+py::array_t<py::ssize_t> v2d(py::array_t<Tx> x, py::array_t<Ty> y,
+                             py::array_t<double> xbins, py::array_t<double> ybins,
+                             bool flow) {
+  py::ssize_t nedgesx = xbins.shape(0);
+  py::ssize_t nedgesy = ybins.shape(0);
+  py::ssize_t nbinsx = nedgesx - 1;
+  py::ssize_t nbinsy = nedgesy - 1;
+  auto counts = pg11::zeros<py::ssize_t>(nbinsx, nbinsy);
+  std::vector<double> edgesx_v(xbins.data(), xbins.data() + nedgesx);
+  std::vector<double> edgesy_v(ybins.data(), ybins.data() + nedgesy);
+  if (x.shape(0) < pg11::vwpt()) {
+    if (flow)
+      pg11::two::s_loop_incf(x.data(), y.data(), x.shape(0), edgesx_v, edgesy_v, counts);
+    else
+      pg11::two::s_loop_excf(x.data(), y.data(), x.shape(0), edgesx_v, edgesy_v, counts);
+  }
+  else {
+    if (flow)
+      pg11::two::p_loop_incf(x.data(), y.data(), x.shape(0), edgesx_v, edgesy_v, counts);
+    else
+      pg11::two::p_loop_excf(x.data(), y.data(), x.shape(0), edgesx_v, edgesy_v, counts);
+  }
+  return counts;
+}
+
+template <typename Tx, typename Ty, typename Tw>
+py::tuple v2dw(py::array_t<Tx> x, py::array_t<Ty> y, py::array_t<Tw> w,
+               py::array_t<double> xbins, py::array_t<double> ybins, bool flow) {
+  py::ssize_t nedgesx = xbins.shape(0);
+  py::ssize_t nedgesy = ybins.shape(0);
+  py::ssize_t nbinsx = nedgesx - 1;
+  py::ssize_t nbinsy = nedgesy - 1;
+  auto counts = pg11::zeros<Tw>(nbinsx, nbinsy);
+  auto variances = pg11::zeros<Tw>(nbinsx, nbinsy);
+  std::vector<double> edgesx_v(xbins.data(), xbins.data() + nedgesx);
+  std::vector<double> edgesy_v(ybins.data(), ybins.data() + nedgesy);
+  if (x.shape(0) < pg11::vwpt()) {
+    if (flow)
+      pg11::two::s_loop_incf(x.data(), y.data(), w.data(), x.shape(0), edgesx_v, edgesy_v,
+                             counts, variances);
+    else
+      pg11::two::s_loop_excf(x.data(), y.data(), w.data(), x.shape(0), edgesx_v, edgesy_v,
+                             counts, variances);
+  }
+  else {
+    if (flow)
+      pg11::two::p_loop_incf(x.data(), y.data(), w.data(), x.shape(0), edgesx_v, edgesy_v,
+                             counts, variances);
+    else
+      pg11::two::p_loop_excf(x.data(), y.data(), w.data(), x.shape(0), edgesx_v, edgesy_v,
+                             counts, variances);
+  }
+  pg11::arr_sqrt(variances);
+  return py::make_tuple(counts, variances);
+}
 
 using namespace pybind11::literals;
 using boost::mp11::mp_for_each;
@@ -1156,6 +1414,7 @@ using pg_types = type_list<double, float, py::ssize_t, int, unsigned long, unsig
 using pg_weights = type_list<double, float>;
 using pg_types_and_weight = mp_product<type_list, pg_types, pg_weights>;
 using pg_type_pairs = mp_product<type_list, pg_types, pg_types>;
+using pg_type_pairs_and_weight = mp_product<type_list, pg_types, pg_types, pg_weights>;
 
 // clang-format off
 template <typename Tx>
@@ -1176,18 +1435,25 @@ template <typename Tx, typename Ty>
 void inject2d(py::module_& m, const type_list<Tx, Ty>&) {
   m.def("_f2d", &f2d<Tx, Ty>, "x"_a.noconvert(), "y"_a.noconvert(),
         "bx"_a, "x1"_a, "x2"_a, "by"_a, "y1"_a, "y2"_a, "f"_a);
-  m.def("_f2dw", &f2dw<Tx, Ty, double>,"x"_a.noconvert(), "y"_a.noconvert(), "w"_a.noconvert(),
-        "bx"_a, "x1"_a, "x2"_a, "by"_a, "y1"_a, "y2"_a, "f"_a);
-  m.def("_f2dw", &f2dw<Tx, Ty, float>, "x"_a.noconvert(), "y"_a.noconvert(), "w"_a.noconvert(),
-        "bx"_a, "x1"_a, "x2"_a, "by"_a, "y1"_a, "y2"_a, "f"_a);
+  m.def("_v2d", &v2d<Tx, Ty>, "x"_a.noconvert(), "y"_a.noconvert(),
+        "ex"_a, "ey"_a, "f"_a);
 }
+
+template <typename Tx, typename Ty, typename Tw>
+void inject2dw(py::module_& m, const type_list<Tx, Ty, Tw>&) {
+  m.def("_f2dw", &f2dw<Tx, Ty, Tw>,"x"_a.noconvert(), "y"_a.noconvert(), "w"_a.noconvert(),
+        "bx"_a, "x1"_a, "x2"_a, "by"_a, "y1"_a, "y2"_a, "f"_a);
+  m.def("_v2dw", &v2dw<Tx, Ty, Tw>, "x"_a.noconvert(), "y"_a.noconvert(), "w"_a.noconvert(),
+        "ex"_a, "ey"_a, "f"_a);
+}
+
 // clang-format on
 
 PYBIND11_MODULE(_backend, m) {
   m.doc() = "pygram11 C++ backend.";
   m.def("_omp_get_max_threads", []() { return omp_get_max_threads(); });
-
-  mp_for_each<pg_types>([&](const auto& x) { inject1d(m, x); });
-  mp_for_each<pg_types_and_weight>([&](const auto& x) { inject1dw(m, x); });
-  mp_for_each<pg_type_pairs>([&](const auto& x) { inject2d(m, x); });
+  mp_for_each<pg_types>([&](const auto& Ts) { inject1d(m, Ts); });
+  mp_for_each<pg_types_and_weight>([&](const auto& Ts) { inject1dw(m, Ts); });
+  mp_for_each<pg_type_pairs>([&](const auto& Ts) { inject2d(m, Ts); });
+  mp_for_each<pg_type_pairs_and_weight>([&](const auto& Ts) { inject2dw(m, Ts); });
 }
