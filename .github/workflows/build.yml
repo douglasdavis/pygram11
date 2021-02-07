@@ -24,7 +24,7 @@ jobs:
 
         - os: macos-latest
           type: Standard
-          arch: universal2
+          arch: auto
 
     steps:
     - uses: actions/checkout@v1
