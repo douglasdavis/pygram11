@@ -37,6 +37,7 @@ from .hist import (
     histogram,
     histogram2d,
 )
+from .misc import force_omp, disable_omp
 from pygram11._backend import _omp_get_max_threads
 
 version_info = tuple(__version__.split("."))
