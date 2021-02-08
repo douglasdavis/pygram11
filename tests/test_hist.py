@@ -20,6 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+import struct
 import sys
 from pathlib import Path
 
@@ -43,6 +44,9 @@ E_ARRS = (
               170.5, 172.1, 173.1, 279.2]),
 )
 XTYPES = (np.float32, np.float64, np.int32, np.int64, np.uint32, np.uint64)
+Psize = struct.calcsize("P") * 8
+if Psize == 32:
+    XTYPES = (np.float32, np.int32, np.uint32)
 # fmt: on
 
 
