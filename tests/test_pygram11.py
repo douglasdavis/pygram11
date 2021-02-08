@@ -20,38 +20,45 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+import os
+import multiprocessing
 import struct
 import sys
 
 import numpy as np
 import numpy.testing as npt
 import pygram11 as pg
-
 import pytest
 
-rng = np.random.default_rng()
-
+RNG = np.random.default_rng()
 XTYPES = (np.float32, np.float64, np.int32, np.int64, np.uint32, np.uint64)
-Psize = struct.calcsize("P") * 8
-if Psize == 32:
+if (struct.calcsize("P") * 8) == 32:
     XTYPES = (np.float32, np.int32, np.uint32)
-# fmt: on
+
+
+class TestMisc:
+    @pytest.mark.misc
+    def test_omp_get_max_threads(self):
+        nthreads = os.getenv("OMP_NUM_THREADS")
+        if nthreads is None:
+            nthreads = multiprocessing.cpu_count()
+        assert int(nthreads) == pg.omp_get_max_threads()
 
 
 class TestFix1D:
-    XD = rng.standard_normal(10000)
-    WD = rng.uniform(0.8, 1.2, XD.shape[0])
+    XD = RNG.standard_normal(10000)
+    WD = RNG.uniform(0.8, 1.2, XD.shape[0])
 
     def make_data(self, xtype, wtype):
-        x = (self.XD * rng.uniform(0.9, 1.1, self.XD.shape[0])).astype(xtype)
-        w = (self.WD * rng.uniform(0.9, 1.1, self.XD.shape[0])).astype(wtype)
+        x = (self.XD * RNG.uniform(0.9, 1.1, self.XD.shape[0])).astype(xtype)
+        w = (self.WD * RNG.uniform(0.9, 1.1, self.XD.shape[0])).astype(wtype)
         return x, w
 
     def make_data_mw(self, xtype, wtype):
         x = self.XD.astype(dtype=xtype)
         w1 = (self.WD * 0.1).astype(wtype)
         w2 = (self.WD * 1.1).astype(wtype)
-        w3 = (self.WD * rng.uniform(-0.3, 4.1, w1.shape[0])).astype(wtype)
+        w3 = (self.WD * RNG.uniform(-0.3, 4.1, w1.shape[0])).astype(wtype)
         w = np.transpose(np.array([w1, w2, w3], dtype=wtype))
         return x, w
 
@@ -104,21 +111,21 @@ class TestFix1D:
 
 
 class TestVar1D:
-    XD = rng.standard_normal(10000)
-    WD = rng.uniform(0.8, 1.2, XD.shape[0])
+    XD = RNG.standard_normal(10000)
+    WD = RNG.uniform(0.8, 1.2, XD.shape[0])
     E1 = np.array([-3.1, -2.2, -2.1, -1.975, -0.9, -0.5, 0.1, 1.5, 2.9, 3.1])
     E2 = np.array([-3.1, -2.1, -1.9, -1.451, -0.5, -0.1, 0.4, 2.2, 2.8, 3.1])
 
     def make_data(self, xtype, wtype):
-        x = (self.XD * rng.uniform(0.9, 1.1, self.XD.shape[0])).astype(xtype)
-        w = (self.WD * rng.uniform(0.9, 1.1, self.XD.shape[0])).astype(wtype)
+        x = (self.XD * RNG.uniform(0.9, 1.1, self.XD.shape[0])).astype(xtype)
+        w = (self.WD * RNG.uniform(0.9, 1.1, self.XD.shape[0])).astype(wtype)
         return x, w
 
     def make_data_mw(self, xtype, wtype):
         x = self.XD.astype(dtype=xtype)
         w1 = (self.WD * 0.1).astype(wtype)
         w2 = (self.WD * 1.1).astype(wtype)
-        w3 = (self.WD * rng.uniform(-0.3, 4.1, w1.shape[0])).astype(wtype)
+        w3 = (self.WD * RNG.uniform(-0.3, 4.1, w1.shape[0])).astype(wtype)
         w = np.transpose(np.array([w1, w2, w3], dtype=wtype))
         return x, w
 
@@ -171,14 +178,14 @@ class TestVar1D:
 
 
 class TestFix2D:
-    XD = rng.standard_normal(10000)
-    YD = rng.standard_normal(10000)
-    WD = rng.uniform(0.8, 1.2, XD.shape[0])
+    XD = RNG.standard_normal(10000)
+    YD = RNG.standard_normal(10000)
+    WD = RNG.uniform(0.8, 1.2, XD.shape[0])
 
     def make_data(self, xtype, ytype, wtype):
-        x = (self.XD * rng.uniform(0.9, 1.1, self.XD.shape[0])).astype(xtype)
-        y = (self.YD * rng.uniform(0.9, 1.1, self.YD.shape[0])).astype(ytype)
-        w = (self.WD * rng.uniform(0.9, 1.1, self.XD.shape[0])).astype(wtype)
+        x = (self.XD * RNG.uniform(0.9, 1.1, self.XD.shape[0])).astype(xtype)
+        y = (self.YD * RNG.uniform(0.9, 1.1, self.YD.shape[0])).astype(ytype)
+        w = (self.WD * RNG.uniform(0.9, 1.1, self.XD.shape[0])).astype(wtype)
         return x, y, w
 
     @pytest.mark.parametrize("xtype", XTYPES)
@@ -209,16 +216,16 @@ class TestFix2D:
 
 
 class TestVar2D:
-    XD = rng.standard_normal(10000)
-    YD = rng.standard_normal(10000)
-    WD = rng.uniform(0.8, 1.2, XD.shape[0])
+    XD = RNG.standard_normal(10000)
+    YD = RNG.standard_normal(10000)
+    WD = RNG.uniform(0.8, 1.2, XD.shape[0])
     E1 = np.array([-3.1, -2.2, -2.1, -1.975, -0.9, -0.5, 0.1, 1.5, 2.9, 3.1])
     E2 = np.array([-3.1, -2.1, -1.9, -1.451, -0.5, -0.1, 0.4, 2.2, 2.8, 3.1])
 
     def make_data(self, xtype, ytype, wtype):
-        x = (self.XD * rng.uniform(0.9, 1.1, self.XD.shape[0])).astype(xtype)
-        y = (self.YD * rng.uniform(0.9, 1.1, self.YD.shape[0])).astype(ytype)
-        w = (self.WD * rng.uniform(0.9, 1.1, self.XD.shape[0])).astype(wtype)
+        x = (self.XD * RNG.uniform(0.9, 1.1, self.XD.shape[0])).astype(xtype)
+        y = (self.YD * RNG.uniform(0.9, 1.1, self.YD.shape[0])).astype(ytype)
+        w = (self.WD * RNG.uniform(0.9, 1.1, self.XD.shape[0])).astype(wtype)
         return x, y, w
 
     @pytest.mark.parametrize("xtype", XTYPES)
