@@ -30,7 +30,7 @@ import numpy.testing as npt
 import pygram11 as pg
 import pytest
 
-RNG = np.random.default_rng()
+RNG = np.random.default_rng(1234)
 XTYPES = (np.float32, np.float64, np.int32, np.int64, np.uint32, np.uint64)
 if (struct.calcsize("P") * 8) == 32:
     XTYPES = (np.float32, np.int32, np.uint32)
@@ -46,7 +46,7 @@ class TestMisc:
 
 
 class TestFix1D:
-    XD = RNG.standard_normal(10000)
+    XD = RNG.normal(scale=5, size=8000)
     WD = RNG.uniform(0.8, 1.2, XD.shape[0])
 
     def make_data(self, xtype, wtype):
@@ -75,7 +75,7 @@ class TestFix1D:
             assert True
             return
         x, w = self.make_data(xtype, wtype)
-        n, xmin, xmax = 25, -3.1, 3.1
+        n, xmin, xmax = 50, -10.1, 10.1
         res0, err0 = func(
             x, weights=w, bins=n, range=(xmin, xmax), density=density, flow=flow
         )
@@ -89,7 +89,7 @@ class TestFix1D:
             else:
                 res1[0] += w[x < xmin].sum()
                 res1[-1] += w[x >= xmax].sum()
-        npt.assert_allclose(res0, res1, rtol=1e-05, atol=1e-08)
+        npt.assert_allclose(res0, res1, atol=0.01, rtol=1.0e-3)
 
     @pytest.mark.parametrize("xtype", XTYPES)
     @pytest.mark.parametrize("wtype", [np.float32, np.float64])
@@ -100,21 +100,25 @@ class TestFix1D:
     def test_multiple_weights(self, xtype, wtype, flow, ompt, func):
         pg.FIXED_WIDTH_MW_PARALLEL_THRESHOLD = ompt
         x, w = self.make_data_mw(xtype, wtype)
-        n, xmin, xmax = 25, -3.1, 3.1
+        n, xmin, xmax = 50, -10.1, 10.1
         res0, err0 = func(x, weights=w, bins=n, range=(xmin, xmax), flow=flow)
         for i in range(res0.shape[1]):
             res1, edge = np.histogram(x, weights=w[:, i], bins=n, range=(xmin, xmax))
             if flow:
                 res1[0] += np.sum(w[:, i][x < xmin])
                 res1[-1] += np.sum(w[:, i][x >= xmax])
-            npt.assert_allclose(res0[:, i], res1, rtol=1e-05, atol=1e-08)
+            npt.assert_allclose(res0[:, i], res1, atol=0.01, rtol=1.0e-3)
 
 
 class TestVar1D:
-    XD = RNG.standard_normal(10000)
+    XD = RNG.normal(scale=0.8, size=2000)
     WD = RNG.uniform(0.8, 1.2, XD.shape[0])
-    E1 = np.array([-3.1, -2.2, -2.1, -1.975, -0.9, -0.5, 0.1, 1.5, 2.9, 3.1])
-    E2 = np.array([-3.1, -2.1, -1.9, -1.451, -0.5, -0.1, 0.4, 2.2, 2.8, 3.1])
+    E1 = np.array(
+        [-3.1, -2.2, -2.1, -1.975, -1.1, -0.9, -0.5, 0.05, 0.1, 1.5, 2.9, 3.1]
+    )
+    E2 = np.array(
+        [-3.1, -2.1, -1.9, -1.451, -1.1, -0.5, -0.1, 0.09, 0.4, 2.2, 2.8, 3.1]
+    )
 
     def make_data(self, xtype, wtype):
         x = (self.XD * RNG.uniform(0.9, 1.1, self.XD.shape[0])).astype(xtype)
@@ -125,7 +129,7 @@ class TestVar1D:
         x = self.XD.astype(dtype=xtype)
         w1 = (self.WD * 0.1).astype(wtype)
         w2 = (self.WD * 1.1).astype(wtype)
-        w3 = (self.WD * RNG.uniform(-0.3, 4.1, w1.shape[0])).astype(wtype)
+        w3 = (self.WD * RNG.uniform(-0.3, 3.1, w1.shape[0])).astype(wtype)
         w = np.transpose(np.array([w1, w2, w3], dtype=wtype))
         return x, w
 
@@ -155,7 +159,7 @@ class TestVar1D:
             else:
                 res1[0] += w[x < xmin].sum()
                 res1[-1] += w[x >= xmax].sum()
-        npt.assert_allclose(res0, res1, rtol=1e-03, atol=1e-05)
+        npt.assert_allclose(res0, res1, atol=0.01, rtol=1.0e-3)
 
     @pytest.mark.parametrize("xtype", XTYPES)
     @pytest.mark.parametrize("wtype", [np.float32, np.float64])
@@ -174,12 +178,12 @@ class TestVar1D:
             if flow:
                 res1[0] += np.sum(w[:, i][x < xmin])
                 res1[-1] += np.sum(w[:, i][x >= xmax])
-            npt.assert_allclose(res0[:, i], res1, rtol=1e-03, atol=1e-05)
+            npt.assert_allclose(res0[:, i], res1, atol=0.01, rtol=1.0e-3)
 
 
 class TestFix2D:
-    XD = RNG.standard_normal(10000)
-    YD = RNG.standard_normal(10000)
+    XD = RNG.normal(scale=5.0, size=8000)
+    YD = RNG.normal(scale=6.0, size=8000)
     WD = RNG.uniform(0.8, 1.2, XD.shape[0])
 
     def make_data(self, xtype, ytype, wtype):
@@ -198,8 +202,8 @@ class TestFix2D:
     def test_no_weight_and_single_weight(self, xtype, ytype, wtype, flow, ompt, func):
         pg.FIXED_WIDTH_PARALLEL_THRESHOLD = ompt
         x, y, w = self.make_data(xtype, ytype, wtype)
-        nbx, xmin, xmax = 25, -3.1, 3.1
-        nby, ymin, ymax = 15, -3.1, 3.1
+        nbx, xmin, xmax = 25, -10.1, 10.1
+        nby, ymin, ymax = 15, -10.1, 10.1
         res0, err0 = func(
             x,
             y,
@@ -212,15 +216,19 @@ class TestFix2D:
             x, y, bins=[nbx, nby], range=((xmin, xmax), (ymin, ymax)), weights=w
         )
 
-        npt.assert_allclose(res0, res1, rtol=1e-05, atol=1e-08)
+        npt.assert_allclose(res0, res1, atol=0.01, rtol=1.0e-3)
 
 
 class TestVar2D:
-    XD = RNG.standard_normal(10000)
-    YD = RNG.standard_normal(10000)
+    XD = RNG.normal(scale=0.9, size=2000)
+    YD = RNG.normal(scale=0.9, size=2000)
     WD = RNG.uniform(0.8, 1.2, XD.shape[0])
-    E1 = np.array([-3.1, -2.2, -2.1, -1.975, -0.9, -0.5, 0.1, 1.5, 2.9, 3.1])
-    E2 = np.array([-3.1, -2.1, -1.9, -1.451, -0.5, -0.1, 0.4, 2.2, 2.8, 3.1])
+    E1 = np.array(
+        [-3.1, -2.2, -2.1, -1.975, -1.1, -0.9, -0.5, 0.05, 0.1, 1.5, 2.9, 3.1]
+    )
+    E2 = np.array(
+        [-3.1, -2.1, -1.9, -1.451, -1.1, -0.5, -0.1, 0.09, 0.4, 2.2, 2.8, 3.1]
+    )
 
     def make_data(self, xtype, ytype, wtype):
         x = (self.XD * RNG.uniform(0.9, 1.1, self.XD.shape[0])).astype(xtype)
@@ -248,4 +256,4 @@ class TestVar2D:
             res0, err0 = func(x, y, xbins, ybins, weights=w, flow=flow)
         res1, edgex, edgey = np.histogram2d(x, y, bins=[xbins, ybins], weights=w)
 
-        npt.assert_allclose(res0, res1, rtol=1e-03, atol=1e-05)
+        npt.assert_allclose(res0, res1, atol=0.01, rtol=1.0e-3)
