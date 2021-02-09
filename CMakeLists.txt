@@ -13,8 +13,3 @@ set_target_properties(_backend PROPERTIES CXX_STANDARD 14)
 target_link_libraries(_backend PUBLIC OpenMP::OpenMP_CXX)
 target_compile_options(_backend PRIVATE -Wall -Wextra -pedantic)
 target_include_directories(_backend PRIVATE extern/mp11/include)
-
-pybind11_add_module(_backend2d src/_backend2d.cpp)
-set_target_properties(_backend2d PROPERTIES CXX_STANDARD 14)
-target_link_libraries(_backend2d PUBLIC OpenMP::OpenMP_CXX)
-target_compile_options(_backend2d PRIVATE -Wall -Wextra -pedantic)
