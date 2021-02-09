@@ -831,8 +831,9 @@ inline void p_loop_incf(const Tx* x, const Ty* y, const Tw* w, py::ssize_t nx,
 
 /// var, serial loop, include flow, without weights
 template <typename Tx, typename Ty>
-void s_loop_incf(const Tx* x, const Ty* y, py::ssize_t nx, const std::vector<double>& edgesx,
-                 const std::vector<double>& edgesy, py::array_t<py::ssize_t>& counts) {
+void s_loop_incf(const Tx* x, const Ty* y, py::ssize_t nx,
+                 const std::vector<double>& edgesx, const std::vector<double>& edgesy,
+                 py::array_t<py::ssize_t>& counts) {
   auto xmin = edgesx.front();
   auto xmax = edgesx.back();
   auto ymin = edgesy.front();
@@ -874,8 +875,9 @@ void s_loop_incf(const Tx* x, const Ty* y, const Tw* w, py::ssize_t nx,
 
 /// var, parallel loop, include flow, without weights
 template <typename Tx, typename Ty>
-void p_loop_incf(const Tx* x, const Ty* y, py::ssize_t nx, const std::vector<double>& edgesx,
-                 const std::vector<double>& edgesy, py::array_t<py::ssize_t>& counts) {
+void p_loop_incf(const Tx* x, const Ty* y, py::ssize_t nx,
+                 const std::vector<double>& edgesx, const std::vector<double>& edgesy,
+                 py::array_t<py::ssize_t>& counts) {
   auto xmin = edgesx.front();
   auto xmax = edgesx.back();
   auto ymin = edgesy.front();
@@ -1403,47 +1405,63 @@ py::tuple v2dw(py::array_t<Tx> x, py::array_t<Ty> y, py::array_t<Tw> w,
   return py::make_tuple(counts, variances);
 }
 
-using namespace pybind11::literals;
-using boost::mp11::mp_for_each;
 using boost::mp11::mp_product;
 
 template <typename... Ts>
 struct type_list {};
 
-using pg_types = type_list<double, float, py::ssize_t, int, unsigned long, unsigned int>;
+using pg_types = type_list<double, int64_t, uint64_t, float, int32_t, uint32_t>;
 using pg_weights = type_list<double, float>;
 using pg_types_and_weight = mp_product<type_list, pg_types, pg_weights>;
 using pg_type_pairs = mp_product<type_list, pg_types, pg_types>;
 using pg_type_pairs_and_weight = mp_product<type_list, pg_types, pg_types, pg_weights>;
 
+using namespace pybind11::literals;
+
 // clang-format off
 template <typename Tx>
 void inject1d(py::module_& m, const Tx&) {
-  m.def("_f1d", &f1d<Tx>, "x"_a.noconvert(), "b"_a, "x1"_a, "x2"_a, "f"_a);
-  m.def("_v1d", &v1d<Tx>, "x"_a.noconvert(), "b"_a, "f"_a);
+  m.def("_f1d", &f1d<Tx>,
+        "x"_a.noconvert(),
+        "b"_a, "x1"_a, "x2"_a, "f"_a);
+  m.def("_v1d", &v1d<Tx>,
+        "x"_a.noconvert(),
+        "b"_a, "f"_a);
 }
 
 template <typename Tx, typename Tw>
-void inject1dw(py::module_& m, const type_list<Tx, Tw>&) {
-  m.def("_f1dw", &f1dw<Tx, Tw>, "x"_a.noconvert(), "w"_a.noconvert(), "b"_a, "x1"_a, "x2"_a, "f"_a);
-  m.def("_f1dmw", &f1dmw<Tx, Tw>, "x"_a.noconvert(), "w"_a.noconvert(), "b"_a, "x1"_a, "x2"_a, "f"_a);
-  m.def("_v1dw", &v1dw<Tx, Tw>, "x"_a.noconvert(), "w"_a.noconvert(), "b"_a, "f"_a);
-  m.def("_v1dmw", &v1dmw<Tx, Tw>, "x"_a.noconvert(), "w"_a.noconvert(), "b"_a, "f"_a);
+void inject_1dw(py::module_& m, const type_list<Tx, Tw>&) {
+  m.def("_f1dw", &f1dw<Tx, Tw>,
+        "x"_a.noconvert(), "w"_a.noconvert(),
+        "b"_a, "x1"_a, "x2"_a, "f"_a);
+  m.def("_f1dmw", &f1dmw<Tx, Tw>,
+        "x"_a.noconvert(), "w"_a.noconvert(),
+        "b"_a, "x1"_a, "x2"_a, "f"_a);
+  m.def("_v1dw", &v1dw<Tx, Tw>,
+        "x"_a.noconvert(), "w"_a.noconvert(),
+        "b"_a, "f"_a);
+  m.def("_v1dmw", &v1dmw<Tx, Tw>,
+        "x"_a.noconvert(), "w"_a.noconvert(),
+        "b"_a, "f"_a);
 }
 
 template <typename Tx, typename Ty>
-void inject2d(py::module_& m, const type_list<Tx, Ty>&) {
-  m.def("_f2d", &f2d<Tx, Ty>, "x"_a.noconvert(), "y"_a.noconvert(),
+void inject_2d(py::module_& m, const type_list<Tx, Ty>&) {
+  m.def("_f2d", &f2d<Tx, Ty>,
+        "x"_a.noconvert(), "y"_a.noconvert(),
         "bx"_a, "x1"_a, "x2"_a, "by"_a, "y1"_a, "y2"_a, "f"_a);
-  m.def("_v2d", &v2d<Tx, Ty>, "x"_a.noconvert(), "y"_a.noconvert(),
+  m.def("_v2d", &v2d<Tx, Ty>,
+        "x"_a.noconvert(), "y"_a.noconvert(),
         "ex"_a, "ey"_a, "f"_a);
 }
 
 template <typename Tx, typename Ty, typename Tw>
-void inject2dw(py::module_& m, const type_list<Tx, Ty, Tw>&) {
-  m.def("_f2dw", &f2dw<Tx, Ty, Tw>,"x"_a.noconvert(), "y"_a.noconvert(), "w"_a.noconvert(),
+void inject_2dw(py::module_& m, const type_list<Tx, Ty, Tw>&) {
+  m.def("_f2dw", &f2dw<Tx, Ty, Tw>,
+        "x"_a.noconvert(), "y"_a.noconvert(), "w"_a.noconvert(),
         "bx"_a, "x1"_a, "x2"_a, "by"_a, "y1"_a, "y2"_a, "f"_a);
-  m.def("_v2dw", &v2dw<Tx, Ty, Tw>, "x"_a.noconvert(), "y"_a.noconvert(), "w"_a.noconvert(),
+  m.def("_v2dw", &v2dw<Tx, Ty, Tw>,
+        "x"_a.noconvert(), "y"_a.noconvert(), "w"_a.noconvert(),
         "ex"_a, "ey"_a, "f"_a);
 }
 
@@ -1452,8 +1470,10 @@ void inject2dw(py::module_& m, const type_list<Tx, Ty, Tw>&) {
 PYBIND11_MODULE(_backend, m) {
   m.doc() = "pygram11 C++ backend.";
   m.def("_omp_get_max_threads", []() { return omp_get_max_threads(); });
+
+  using boost::mp11::mp_for_each;
   mp_for_each<pg_types>([&](const auto& Ts) { inject1d(m, Ts); });
-  mp_for_each<pg_types_and_weight>([&](const auto& Ts) { inject1dw(m, Ts); });
-  mp_for_each<pg_type_pairs>([&](const auto& Ts) { inject2d(m, Ts); });
-  mp_for_each<pg_type_pairs_and_weight>([&](const auto& Ts) { inject2dw(m, Ts); });
+  mp_for_each<pg_types_and_weight>([&](const auto& Ts) { inject_1dw(m, Ts); });
+  mp_for_each<pg_type_pairs>([&](const auto& Ts) { inject_2d(m, Ts); });
+  mp_for_each<pg_type_pairs_and_weight>([&](const auto& Ts) { inject_2dw(m, Ts); });
 }
