@@ -96,7 +96,7 @@ def _get_limits_1d(
     """Get bin limits given an optional range and 1D data."""
     if range is None:
         return (float(np.amin(x)), float(np.amax(x)))
-    return range[0], range[1]
+    return float(range[0]), float(range[1])
 
 
 def _get_limits_2d(
@@ -113,7 +113,12 @@ def _get_limits_2d(
             float(np.amin(y)),
         )
     else:
-        return range[0][0], range[0][1], range[1][0], range[1][1]
+        return (
+            float(range[0][0]),
+            float(range[0][1]),
+            float(range[1][0]),
+            float(range[1][1]),
+        )
 
 
 def fix1d(
@@ -133,34 +138,29 @@ def fix1d(
     bins : int
         The number of bins.
     range : (float, float), optional
-        The minimum and maximum of the histogram axis. If these are
-        not defined the min and max of the input data is used
+        The minimum and maximum of the histogram axis. If ``None``,
+        min and max of ``x`` will be used.
     weights : numpy.ndarray, optional
         The weights for each element of ``x``. If weights are absent,
-        the second return type is ``None``.
+        the second return type will be ``None``.
     density : bool
-        If True, normalize histogram bins as value of PDF such that
-        the integral over the range is unity.
+        Normalize histogram counts as value of PDF such that the
+        integral over the range is unity.
     flow : bool
-        If True, the under and overflow bin contents are added to the
-        first and last bins, respectively.
+        Include under/overflow in the first/last bins.
 
     Raises
     ------
-    TypeError
-        If the dtype of either ``x`` or ``weights`` is unsupported.
     ValueError
-        If the shapes of ``x`` and ``weights`` are unequal (when
-        ``weights`` is not ``None``).
+        If ``x`` and ``weights`` have incompatible shapes.
 
     Returns
     -------
     :py:obj:`numpy.ndarray`
         The resulting histogram bin counts.
-    :py:obj:`numpy.ndarray`
-        The standard error of each bin count,
-        :math:`\sqrt{\sum_iw_i^2}`. (If weights are not used this
-        return is ``None``
+    :py:obj:`numpy.ndarray`, optional
+        The standard error of each bin count, :math:`\sqrt{\sum_i
+        w_i^2}`. The return is ``None`` if weights are not used.
 
     Examples
     --------
@@ -184,10 +184,10 @@ def fix1d(
             result = _densify_fixed_counts(result, width)
         return result, None
 
-    if weights.shape != x.shape:
+    if np.shape(x) != np.shape(weights):
         raise ValueError("x and weights must have the same shape")
 
-    result = _f1dw(x, weights, bins, xmin, xmax, flow)
+    result = _f1dw(x, weights, int(bins), xmin, xmax, flow)
     if density:
         width = (xmax - xmin) / bins
         result = _densify_fixed_weighted_counts(result, width)
@@ -203,10 +203,16 @@ def fix1dmw(
 ) -> Tuple[np.ndarray, np.ndarray]:
     r"""Histogram data with multiple weight variations and fixed width bins.
 
+    The weights array must have a total number of rows equal to the
+    length of the input data. The number of columns in the weights
+    array is equal to the number of weight variations. (The weights
+    array must be an M x N matrix where M is the length of x and N is
+    the number of weight variations).
+
     Parameters
     ----------
     x : numpy.ndarray
-        data to histogram.
+        Data to histogram.
     weights : numpy.ndarray
         The weight variations for the elements of ``x``, first
         dimension is the length of ``x``, second dimension is the
@@ -214,18 +220,16 @@ def fix1dmw(
     bins : int
         The number of bins.
     range : (float, float), optional
-        The minimum and maximumm of the histogram axis.
+        The minimum and maximum of the histogram axis. If ``None``,
+        min and max of ``x`` will be used.
     flow : bool
-        If True, the under and overflow bin contents are added to the
-        first and last bins, respectively.
+        Include under/overflow in the first/last bins.
 
     Raises
     ------
-    TypeError
-        If the dtype of either ``x`` or ``weights`` is unsupported.
     ValueError
-        If the ``x`` and ``weights`` arrays have incompatible shapes
-        (if ``x.shape[0] != weights.shape[0]``).
+        If ``x`` and ``weights`` have incompatible shapes (if
+        ``x.shape[0] != weights.shape[0]``).
 
     Returns
     -------
@@ -247,11 +251,11 @@ def fix1dmw(
     represents the histogram of the data using its respective weight.
 
     """
-    if x.shape[0] != weights.shape[0]:
+    if np.shape(x)[0] != np.shape(weights)[0]:
         raise ValueError("x and weights have incompatible shapes.")
 
     xmin, xmax = _get_limits_1d(x, range)
-    return _f1dmw(x, weights, bins, xmin, xmax, flow)
+    return _f1dmw(x, weights, int(bins), xmin, xmax, flow)
 
 
 def var1d(
@@ -270,29 +274,28 @@ def var1d(
     bins : numpy.ndarray
         Bin edges
     weights : numpy.ndarray, optional
-        weight for each element of ``x``
+        The weights for each element of ``x``. If weights are absent,
+        the second return type will be ``None``.
     density : bool
-        Normalize histogram bins as value of PDF such that the integral
-        over the range is equal to unity.
+        Normalize histogram counts as value of PDF such that the
+        integral over the range is unity.
     flow : bool
-        If ``True`` the under and overflow bin contents are added to the first
-        and last bins, respectively
+        Include under/overflow in the first/last bins.
 
     Raises
     ------
-    TypeError
-        If the dtype of ``x`` or ``weights`` is unsupported.
     ValueError
-        If bins array is not monotonically increasing.
+        If the array of bin edges is not monotonically increasing.
     ValueError
-        If the ``x`` and ``weights`` have incompatible shapes.
+        If ``x`` and ``weights`` have incompatible shapes.
 
     Returns
     -------
     :py:obj:`numpy.ndarray`
         The bin counts.
-    :py:obj:`numpy.ndarray`
-        The standard error of each bin count, :math:`\sqrt{\sum_i w_i^2}`.
+    :py:obj:`numpy.ndarray`, optional
+        The standard error of each bin count, :math:`\sqrt{\sum_i
+        w_i^2}`. The return is ``None`` if weights are not used.
 
     Examples
     --------
@@ -307,7 +310,7 @@ def var1d(
         raise ValueError("bins sequence must monotonically increase")
 
     if _likely_uniform_bins(bins):
-        nbins = bins.shape[0] - 1
+        nbins = np.shape(bins)[0] - 1
         return fix1d(
             x,
             bins=nbins,
@@ -317,13 +320,14 @@ def var1d(
             density=density,
         )
 
+    bins = np.array(bins, dtype=np.float64, copy=False)
     if weights is None:
         result = _v1d(x, bins, flow)
         if density:
             result = _densify_variable_counts(result, bins)
         return result, None
 
-    if x.shape != weights.shape:
+    if np.shape(x) != np.shape(weights):
         raise ValueError("x and weights have incompatible shapes.")
 
     result = _v1dw(x, weights, bins, flow)
@@ -340,27 +344,30 @@ def var1dmw(
 ) -> Tuple[np.ndarray, np.ndarray]:
     r"""Histogram data with multiple weight variations and variable width bins.
 
+    The weights array must have a total number of rows equal to the
+    length of the input data. The number of columns in the weights
+    array is equal to the number of weight variations. (The weights
+    array must be an M x N matrix where M is the length of x and N is
+    the number of weight variations).
+
     Parameters
     ----------
     x : numpy.ndarray
-        Data to histogram
+        Data to histogram.
     weights : numpy.ndarray
         Weight variations for the elements of ``x``, first dimension
         is the shape of ``x``, second dimension is the number of weights.
     bins : numpy.ndarray
-        Bin edges
+        Bin edges.
     flow : bool
-        If ``True`` the under and overflow bin contents are added to the first
-        and last bins, respectively
+        Include under/overflow in the first/last bins.
 
     Raises
     ------
-    TypeError
-        If the dtype of ``x`` or ``weights`` is unsupported.
     ValueError
-        If bins array is not monotonically increasing.
+        If the array of bin edges is not monotonically increasing.
     ValueError
-        If the ``x`` and ``weights`` have incompatible shapes.
+        If ``x`` and ``weights`` have incompatible shapes.
 
     Returns
     -------
@@ -386,11 +393,17 @@ def var1dmw(
     if not np.all(bins[1:] >= bins[:-1]):
         raise ValueError("bins sequence must monotonically increase")
 
-    if x.shape[0] != weights.shape[0]:
+    if np.shape(x)[0] != np.shape(weights)[0]:
         raise ValueError("x and weights have incompatible shapes.")
 
     if _likely_uniform_bins(bins):
-        return _f1dmw(x, weights, len(bins) - 1, bins[0], bins[-1], flow)
+        return fix1dmw(
+            x,
+            weights,
+            bins=(len(bins) - 1),
+            range=(bins[0], bins[-1]),
+            flow=flow,
+        )
 
     return _v1dmw(x, weights, bins, flow)
 
@@ -401,39 +414,53 @@ def histogram(x, bins=10, range=None, weights=None, density=False, flow=False):
     Parameters
     ----------
     x : array_like
-        data to histogram.
+        Data to histogram.
     bins : int or array_like
-        if int: the number of bins; if array_like: the bin edges.
-    range : tuple(float, float), optional
-        the definition of the edges of the bin range (start, stop).
+        If int: the number of bins; if array_like: the bin edges.
+    range : (float, float), optional
+        The minimum and maximum of the histogram axis. If ``None``
+        with integer ``bins``, min and max of ``x`` will be used. If
+        ``bins`` is an array this is expected to be ``None``.
     weights : array_like, optional
-        a set of weights associated with the elements of ``x``. This
-        can also be a two dimensional set of multiple weights
-        varitions with shape (len(x), n_weight_variations).
+        Weight variations for the elements of ``x``. For single weight
+        histograms the shape must be the same shape as ``x``. For
+        multiweight histograms the first dimension is the length of
+        ``x``, second dimension is the number of weights variations.
     density : bool
-        normalize counts such that the integral over the range is
-        equal to 1. If ``weights`` is two dimensional this argument is
-        ignored.
+        Normalize histogram counts as value of PDF such that the
+        integral over the range is unity.
     flow : bool
-        if ``True``, include under/overflow in the first/last bins.
+        Include under/overflow in the first/last bins.
 
     Raises
     ------
-    TypeError
-        If bins input defines edges and range is not None.
-    TypeError
-        If the dtype of ``x`` or ``weights`` is unsupported.
     ValueError
-        If bins array is not monotonically increasing.
+        If ``bins`` defines edges while ``range`` is also not
+        ``None``.
     ValueError
-        If the ``x`` and ``weights`` have incompatible shapes.
+        If the array of bin edges is not monotonically increasing.
+    ValueError
+        If ``x`` and ``weights`` have incompatible shapes.
 
     Returns
     -------
     :py:obj:`numpy.ndarray`
         The bin counts.
-    :py:obj:`numpy.ndarray`
-        The standard error of each bin count, :math:`\sqrt{\sum_i w_i^2}`.
+    :py:obj:`numpy.ndarray`, optional
+        The standard error of each bin count, :math:`\sqrt{\sum_i
+        w_i^2}`. The return is ``None`` if weights are not used.
+
+    See Also
+    --------
+    fix1d
+        Used for no weight or single weight fixed bin width histograms
+    fix1dmw
+        Used for multiweight fixed bin width histograms.
+    var1d
+        Used for no weight or single weight variable bin width
+        histograms.
+    var1dmw
+        Used for multiweight variable bin width histograms.
 
     Examples
     --------
@@ -451,7 +478,7 @@ def histogram(x, bins=10, range=None, weights=None, density=False, flow=False):
     x = np.array(x)
     if weights is not None:
         weights = np.asarray(weights)
-        is_multiweight = weights.shape != x.shape
+        is_multiweight = np.shape(weights) != np.shape(x)
 
     # fixed bins
     if isinstance(bins, int):
@@ -466,7 +493,7 @@ def histogram(x, bins=10, range=None, weights=None, density=False, flow=False):
     else:
         bins = np.asarray(bins)
         if range is not None:
-            raise TypeError("range must be None if bins is non-int")
+            raise ValueError("range must be None if bins is non-int")
         if weights is not None:
             if is_multiweight:
                 return var1dmw(x, weights, bins=bins, flow=flow)
@@ -483,33 +510,39 @@ def fix2d(
 ) -> Tuple[np.ndarray, Optional[np.ndarray]]:
     r"""Histogram the ``x``, ``y`` data with fixed (uniform) binning.
 
+    The two input arrays (``x`` and ``y``) must be the same length
+    (shape).
+
     Parameters
     ----------
     x : numpy.ndarray
-       First entries in data pairs to histogram
+        First entries in data pairs to histogram.
     y : numpy.ndarray
-       Second entries in data pairs to histogram
-    bins : int or Tuple[int, int]
-       if int, both dimensions will have that many bins,
-       if iterable, the number of bins for each dimension
+        Second entries in data pairs to histogram.
+    bins : int or (int, int)
+        If int, both dimensions will have that many bins;
+        if tuple, the number of bins for each dimension
     range : Sequence[Tuple[float, float]], optional
-       axis limits to histogram over in the form [(xmin, xmax), (ymin, ymax)]
-    weights : numpy.ndarray, optional
-       Weight for each :math:`(x_i, y_i)` pair.
+        Axis limits in the form ``[(xmin, xmax), (ymin, ymax)]``. If
+        ``None`` the input data min and max will be used.
+    weights : array_like, optional
+        The weights for data element. If weights are absent, the
+        second return type will be ``None``.
     flow : bool
-       Include over/underflow.
+        Include over/underflow.
 
     Raises
     ------
     ValueError
-        If x and y have different shape (or if weights is not None and
-        the same is different)
+        If ``x`` and ``y`` have incompatible shapes.
+    ValueError
+        If the shape of ``weights`` is incompatible with ``x`` and ``y``
 
     Returns
     -------
     :py:obj:`numpy.ndarray`
         The bin counts.
-    :py:obj:`numpy.ndarray`
+    :py:obj:`numpy.ndarray`, optional
         The standard error of each bin count, :math:`\sqrt{\sum_i w_i^2}`.
 
     Examples
@@ -525,10 +558,10 @@ def fix2d(
     >>> h, err = fix2d(x, y, bins=(20, 10), range=((0, 100), (0, 50)), weights=w)
 
     """
-    if x.shape != y.shape:
+    if np.shape(x) != np.shape(y):
         raise ValueError("x and y must be the same shape.")
     if weights is not None:
-        if weights.shape != x.shape:
+        if np.shape(weights) != np.shape(x):
             raise ValueError("data and weights must be the same shape.")
 
     if isinstance(bins, int):
@@ -539,10 +572,10 @@ def fix2d(
     xmin, xmax, ymin, ymax = _get_limits_2d(x, y, range)
 
     if weights is None:
-        result = _f2d(x, y, nx, xmin, xmax, ny, ymin, ymax, flow)
+        result = _f2d(x, y, int(nx), xmin, xmax, int(ny), ymin, ymax, flow)
         return result, None
 
-    return _f2dw(x, y, weights, nx, xmin, xmax, ny, ymin, ymax, flow)
+    return _f2dw(x, y, weights, int(nx), xmin, xmax, int(ny), ymin, ymax, flow)
 
 
 def var2d(
@@ -555,32 +588,37 @@ def var2d(
 ) -> Tuple[np.ndarray, Optional[np.ndarray]]:
     r"""Histogram the ``x``, ``y`` data with variable width binning.
 
+    The two input arrays (``x`` and ``y``) must be the same length
+    (shape).
+
     Parameters
     ----------
-    x : array_like
-        The :math:`x_i`'s in the :math:`(x_i, y_i)` pairs.
-    y : array_like
-        The :math:`y_i`'s in the :math:`(x_i, y_i)` pairs.
-    xbins : array_like
-        Bin edges for the ``x`` dimension
-    ybins : array_like
-        Bin edges for the ``y`` dimension
+    x : numpy.ndarray
+        First entries in data pairs to histogram.
+    y : numpy.ndarray
+        Second entries in data pairs to histogram.
+    xbins : numpy.ndarray
+        Bin edges for the ``x`` dimension.
+    ybins : np.ndarray
+        Bin edges for the ``y`` dimension.
     weights : array_like, optional
-        Weights for each :math:`(x_i, y_i)` pair.
+        The weights for data element. If weights are absent, the
+        second return type will be ``None``.
     flow : bool
         Include under/overflow.
 
     Raises
     ------
     ValueError
-        If x and y have different shape or either bin edge definition
-        is not monotonically increasing.
+        If ``x`` and ``y`` have different shape.
+    ValueError
+        If either bin edge definition is not monotonically increasing.
 
     Returns
     -------
     :py:obj:`numpy.ndarray`
         The bin counts.
-    :py:obj:`numpy.ndarray`
+    :py:obj:`numpy.ndarray`, optional
         The standard error of each bin count, :math:`\sqrt{\sum_i w_i^2}`.
 
     Examples
@@ -592,7 +630,7 @@ def var2d(
     >>> h, __ = var2d(x, y, bins, bins)
 
     """
-    if x.shape != y.shape:
+    if np.shape(x) != np.shape(y):
         raise ValueError("x and y must be the same shape.")
     if not np.all(xbins[1:] >= xbins[:-1]):
         raise ValueError("xbins sequence must monotonically increase.")
@@ -600,7 +638,7 @@ def var2d(
         raise ValueError("ybins sequence must monotonically increase.")
     if weights is not None:
         weights = np.asarray(weights)
-        if weights.shape != x.shape:
+        if np.shape(weights) != np.shape(x):
             raise ValueError("data and weights must be the same shape.")
 
     if weights is None:
