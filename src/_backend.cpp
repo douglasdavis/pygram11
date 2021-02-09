@@ -1416,53 +1416,31 @@ using pg_types_and_weight = mp_product<type_list, pg_types, pg_weights>;
 using pg_type_pairs = mp_product<type_list, pg_types, pg_types>;
 using pg_type_pairs_and_weight = mp_product<type_list, pg_types, pg_types, pg_weights>;
 
-using namespace pybind11::literals;
-
 // clang-format off
 template <typename Tx>
 void inject1d(py::module_& m, const Tx&) {
-  m.def("_f1d", &f1d<Tx>,
-        "x"_a.noconvert(),
-        "b"_a, "x1"_a, "x2"_a, "f"_a);
-  m.def("_v1d", &v1d<Tx>,
-        "x"_a.noconvert(),
-        "b"_a, "f"_a);
+  m.def("_f1d", &f1d<Tx>);
+  m.def("_v1d", &v1d<Tx>);
 }
 
 template <typename Tx, typename Tw>
 void inject_1dw(py::module_& m, const type_list<Tx, Tw>&) {
-  m.def("_f1dw", &f1dw<Tx, Tw>,
-        "x"_a.noconvert(), "w"_a.noconvert(),
-        "b"_a, "x1"_a, "x2"_a, "f"_a);
-  m.def("_f1dmw", &f1dmw<Tx, Tw>,
-        "x"_a.noconvert(), "w"_a.noconvert(),
-        "b"_a, "x1"_a, "x2"_a, "f"_a);
-  m.def("_v1dw", &v1dw<Tx, Tw>,
-        "x"_a.noconvert(), "w"_a.noconvert(),
-        "b"_a, "f"_a);
-  m.def("_v1dmw", &v1dmw<Tx, Tw>,
-        "x"_a.noconvert(), "w"_a.noconvert(),
-        "b"_a, "f"_a);
+  m.def("_f1dw", &f1dw<Tx, Tw>);
+  m.def("_f1dmw", &f1dmw<Tx, Tw>);
+  m.def("_v1dw", &v1dw<Tx, Tw>);
+  m.def("_v1dmw", &v1dmw<Tx, Tw>);
 }
 
 template <typename Tx, typename Ty>
 void inject_2d(py::module_& m, const type_list<Tx, Ty>&) {
-  m.def("_f2d", &f2d<Tx, Ty>,
-        "x"_a.noconvert(), "y"_a.noconvert(),
-        "bx"_a, "x1"_a, "x2"_a, "by"_a, "y1"_a, "y2"_a, "f"_a);
-  m.def("_v2d", &v2d<Tx, Ty>,
-        "x"_a.noconvert(), "y"_a.noconvert(),
-        "ex"_a, "ey"_a, "f"_a);
+  m.def("_f2d", &f2d<Tx, Ty>);
+  m.def("_v2d", &v2d<Tx, Ty>);
 }
 
 template <typename Tx, typename Ty, typename Tw>
 void inject_2dw(py::module_& m, const type_list<Tx, Ty, Tw>&) {
-  m.def("_f2dw", &f2dw<Tx, Ty, Tw>,
-        "x"_a.noconvert(), "y"_a.noconvert(), "w"_a.noconvert(),
-        "bx"_a, "x1"_a, "x2"_a, "by"_a, "y1"_a, "y2"_a, "f"_a);
-  m.def("_v2dw", &v2dw<Tx, Ty, Tw>,
-        "x"_a.noconvert(), "y"_a.noconvert(), "w"_a.noconvert(),
-        "ex"_a, "ey"_a, "f"_a);
+  m.def("_f2dw", &f2dw<Tx, Ty, Tw>);
+  m.def("_v2dw", &v2dw<Tx, Ty, Tw>);
 }
 
 // clang-format on
