@@ -53,7 +53,7 @@ Source
 
 .. code-block:: none
 
-   $ pip install git+https://github.com/douglasdavis/pygram11.git@master
+   $ pip install git+https://github.com/douglasdavis/pygram11.git@main
 
 .. _pybind11: https://github.com/pybind/pybind11
 .. _NumPy: http://www.numpy.org/

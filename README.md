@@ -65,7 +65,7 @@ install `libomp` from Homebrew. With those dependencies met, simply
 run:
 
 ```none
-pip install git+https://github.com/douglasdavis/pygram11.git@master
+pip install git+https://github.com/douglasdavis/pygram11.git@main
 ```
 
 ## In Action
