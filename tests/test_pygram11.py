@@ -257,3 +257,45 @@ class TestVar2D:
         res1, edgex, edgey = np.histogram2d(x, y, bins=[xbins, ybins], weights=w)
 
         npt.assert_allclose(res0, res1, atol=0.01, rtol=1.0e-3)
+
+
+BAD_TYPES = (np.int8, np.int16, np.uint8, np.uint16, np.float16)
+
+
+class TestExceptions:
+    X = RNG.uniform(0, 100, 50)
+    W1 = RNG.uniform(0.5, 1.5, 50).astype(np.float64)
+    W2 = np.abs(RNG.standard_normal(size=(50, 3)))
+
+    @pytest.mark.parametrize("xtype", BAD_TYPES)
+    @pytest.mark.misc
+    def test_f1d(self, xtype):
+        x = self.X.astype(xtype)
+        w1 = self.W1
+        w2 = self.W2
+        ## bad type
+        with pytest.raises(TypeError) as err:
+            pg.fix1d(x)
+
+        ## bad type
+        with pytest.raises(TypeError) as err:
+            pg.fix1d(x, weights=w1)
+
+        ## bad shape
+        with pytest.raises(ValueError) as err:
+            pg.fix1d(x, weights=w2)
+
+        ## bad type
+        with pytest.raises(TypeError) as err:
+            pg.fix1dmw(x, weights=w2)
+
+    @pytest.mark.parametrize("xtype", BAD_TYPES)
+    @pytest.mark.misc
+    def test_v1d(self, xtype):
+        x = self.X.astype(xtype)
+        w1 = self.W1
+        w2 = self.W2
+
+        ## bad range
+        with pytest.raises(ValueError) as err:
+            pg.histogram(x.astype(np.float32), bins=[1.0, 2.0, 3.0, 5.0], range=(-1, 1))

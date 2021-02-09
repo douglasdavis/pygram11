@@ -55,22 +55,22 @@ inline Ta anorm(faxis_t<Ta> ax) {
 }
 
 template <typename T, typename = enable_if_arithmetic_t<T>>
-inline py::array_t<T> zeros(py::ssize_t n) {
+inline py::array_t<T> zeros(std::size_t n) {
   py::array_t<T> arr(n);
   std::memset(arr.mutable_data(), 0, sizeof(T) * n);
   return arr;
 }
 
 template <typename T, typename = enable_if_arithmetic_t<T>>
-inline py::array_t<T> zeros(py::ssize_t n, py::ssize_t m) {
+inline py::array_t<T> zeros(std::size_t n, std::size_t m) {
   py::array_t<T> arr({n, m});
   std::memset(arr.mutable_data(), 0, sizeof(T) * n * m);
   return arr;
 }
 
 template <typename T, typename = enable_if_arithmetic_t<T>>
-inline void arr_sqrt(T* arr, py::ssize_t n) {
-  for (py::ssize_t i = 0; i < n; ++i) {
+inline void arr_sqrt(T* arr, std::size_t n) {
+  for (std::size_t i = 0; i < n; ++i) {
     arr[i] = std::sqrt(arr[i]);
   }
 }
@@ -1416,33 +1416,60 @@ using pg_types_and_weight = mp_product<type_list, pg_types, pg_weights>;
 using pg_type_pairs = mp_product<type_list, pg_types, pg_types>;
 using pg_type_pairs_and_weight = mp_product<type_list, pg_types, pg_types, pg_weights>;
 
+using namespace pybind11::literals;
+
 // clang-format off
 template <typename Tx>
 void inject1d(py::module_& m, const Tx&) {
-  m.def("_f1d", &f1d<Tx>);
-  m.def("_v1d", &v1d<Tx>);
+  m.def("_f1d", &f1d<Tx>,
+        "x"_a.noconvert(),
+        "nbins"_a, "xmin"_a, "xmax"_a, "flow"_a);
+  m.def("_v1d", &v1d<Tx>,
+        "x"_a.noconvert(),
+        "bins"_a, "flow"_a);
 }
 
 template <typename Tx, typename Tw>
 void inject_1dw(py::module_& m, const type_list<Tx, Tw>&) {
-  m.def("_f1dw", &f1dw<Tx, Tw>);
-  m.def("_f1dmw", &f1dmw<Tx, Tw>);
-  m.def("_v1dw", &v1dw<Tx, Tw>);
-  m.def("_v1dmw", &v1dmw<Tx, Tw>);
+  m.def("_f1dw", &f1dw<Tx, Tw>,
+        "x"_a.noconvert(), "weights"_a.noconvert(),
+        "nbins"_a, "xmin"_a, "xmax"_a, "flow"_a);
+  m.def("_f1dmw", &f1dmw<Tx, Tw>,
+        "x"_a.noconvert(), "weights"_a.noconvert(),
+        "nbins"_a, "xmin"_a, "xmax"_a, "flow"_a);
+  m.def("_v1dw", &v1dw<Tx, Tw>,
+        "x"_a.noconvert(), "weights"_a.noconvert(),
+        "bins"_a, "flow"_a);
+  m.def("_v1dmw", &v1dmw<Tx, Tw>,
+        "x"_a.noconvert(), "weights"_a.noconvert(),
+        "bins"_a, "flow"_a);
 }
 
 template <typename Tx, typename Ty>
 void inject_2d(py::module_& m, const type_list<Tx, Ty>&) {
-  m.def("_f2d", &f2d<Tx, Ty>);
-  m.def("_v2d", &v2d<Tx, Ty>);
+  m.def("_f2d", &f2d<Tx, Ty>,
+        "x"_a.noconvert(), "y"_a.noconvert(),
+        "nbinsx"_a, "xmin"_a, "xmax"_a,
+        "nbinsy"_a, "ymin"_a, "ymax"_a,
+        "flow"_a);
+  m.def("_v2d", &v2d<Tx, Ty>,
+        "x"_a.noconvert(), "y"_a.noconvert(),
+        "binsx"_a, "binsy"_a,
+        "flow"_a);
 }
 
 template <typename Tx, typename Ty, typename Tw>
 void inject_2dw(py::module_& m, const type_list<Tx, Ty, Tw>&) {
-  m.def("_f2dw", &f2dw<Tx, Ty, Tw>);
-  m.def("_v2dw", &v2dw<Tx, Ty, Tw>);
+  m.def("_f2dw", &f2dw<Tx, Ty, Tw>,
+        "x"_a.noconvert(), "y"_a.noconvert(), "weights"_a.noconvert(),
+        "nbinsx"_a, "xmin"_a, "xmax"_a,
+        "nbinsy"_a, "ymin"_a, "ymax"_a,
+        "flow"_a);
+  m.def("_v2dw", &v2dw<Tx, Ty, Tw>,
+        "x"_a.noconvert(), "y"_a.noconvert(), "w"_a.noconvert(),
+        "binsx"_a, "binsy"_a,
+        "flow"_a);
 }
-
 // clang-format on
 
 PYBIND11_MODULE(_backend, m) {

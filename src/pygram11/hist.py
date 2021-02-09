@@ -230,6 +230,8 @@ def fix1dmw(
     ValueError
         If ``x`` and ``weights`` have incompatible shapes (if
         ``x.shape[0] != weights.shape[0]``).
+    ValueError
+        If ``weights`` is not a two dimensional array.
 
     Returns
     -------
@@ -251,6 +253,9 @@ def fix1dmw(
     represents the histogram of the data using its respective weight.
 
     """
+    if len(np.shape(weights)) != 2:
+        raise ValueError("weights must be a two dimensional array.")
+
     if np.shape(x)[0] != np.shape(weights)[0]:
         raise ValueError("x and weights have incompatible shapes.")
 
@@ -368,6 +373,8 @@ def var1dmw(
         If the array of bin edges is not monotonically increasing.
     ValueError
         If ``x`` and ``weights`` have incompatible shapes.
+    ValueError
+        If ``weights`` is not a two dimensional array.
 
     Returns
     -------
@@ -390,11 +397,12 @@ def var1dmw(
     (6, 3)
 
     """
-    if not np.all(bins[1:] >= bins[:-1]):
-        raise ValueError("bins sequence must monotonically increase")
-
+    if len(np.shape(weights)) != 2:
+        raise ValueError("weights must be a two dimensional array.")
     if np.shape(x)[0] != np.shape(weights)[0]:
         raise ValueError("x and weights have incompatible shapes.")
+    if not np.all(bins[1:] >= bins[:-1]):
+        raise ValueError("bins sequence must monotonically increase.")
 
     if _likely_uniform_bins(bins):
         return fix1dmw(
@@ -441,6 +449,9 @@ def histogram(x, bins=10, range=None, weights=None, density=False, flow=False):
         If the array of bin edges is not monotonically increasing.
     ValueError
         If ``x`` and ``weights`` have incompatible shapes.
+    ValueError
+        If multiweight histogramming is detected and ``weights`` is
+        not a two dimensional array.
 
     Returns
     -------
@@ -479,6 +490,8 @@ def histogram(x, bins=10, range=None, weights=None, density=False, flow=False):
     if weights is not None:
         weights = np.asarray(weights)
         is_multiweight = np.shape(weights) != np.shape(x)
+        if is_multiweight and len(np.shape(weights)) != 2:
+            raise ValueError("weight must be a 2D array for multiweight histograms.")
 
     # fixed bins
     if isinstance(bins, int):
