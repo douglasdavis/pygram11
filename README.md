@@ -59,7 +59,7 @@ with Python version 3.9 and `libomp` installed from Homebrew). With
 those dependencies met, simply run:
 
 ```none
-git clone https://github.com/douglasdavis/pygram11.git --recurse-submodes
+git clone https://github.com/douglasdavis/pygram11.git --recurse-submodules
 cd pygram11
 pip install .
 ```
