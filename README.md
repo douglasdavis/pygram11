@@ -57,7 +57,7 @@ about the OpenMP dependency. If you are on macOS, you can install
 `libomp` from Homebrew. With those dependencies met, simply run:
 
 ```none
-git clone https://github.com/douglasdavis/pygram11.git
+git clone https://github.com/douglasdavis/pygram11.git --recurse-submodes
 cd pygram11
 pip install .
 ```
