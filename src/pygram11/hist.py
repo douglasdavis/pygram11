@@ -153,6 +153,8 @@ def fix1d(
     ------
     ValueError
         If ``x`` and ``weights`` have incompatible shapes.
+    TypeError
+        If ``x`` or ``weights`` are unsupported types
 
     Returns
     -------
@@ -232,6 +234,8 @@ def fix1dmw(
         ``x.shape[0] != weights.shape[0]``).
     ValueError
         If ``weights`` is not a two dimensional array.
+    TypeError
+        If ``x`` or ``weights`` are unsupported types
 
     Returns
     -------
@@ -293,6 +297,8 @@ def var1d(
         If the array of bin edges is not monotonically increasing.
     ValueError
         If ``x`` and ``weights`` have incompatible shapes.
+    TypeError
+        If ``x`` or ``weights`` are unsupported types
 
     Returns
     -------
@@ -375,6 +381,8 @@ def var1dmw(
         If ``x`` and ``weights`` have incompatible shapes.
     ValueError
         If ``weights`` is not a two dimensional array.
+    TypeError
+        If ``x`` or ``weights`` are unsupported types
 
     Returns
     -------
@@ -452,6 +460,8 @@ def histogram(x, bins=10, range=None, weights=None, density=False, flow=False):
     ValueError
         If multiweight histogramming is detected and ``weights`` is
         not a two dimensional array.
+    TypeError
+        If ``x`` or ``weights`` are unsupported types
 
     Returns
     -------
@@ -550,6 +560,8 @@ def fix2d(
         If ``x`` and ``y`` have incompatible shapes.
     ValueError
         If the shape of ``weights`` is incompatible with ``x`` and ``y``
+    TypeError
+        If ``x``, ``y``, or ``weights`` are unsupported types
 
     Returns
     -------
@@ -626,6 +638,8 @@ def var2d(
         If ``x`` and ``y`` have different shape.
     ValueError
         If either bin edge definition is not monotonically increasing.
+    TypeError
+        If ``x``, ``y``, or ``weights`` are unsupported types
 
     Returns
     -------
@@ -671,36 +685,39 @@ def histogram2d(x, y, bins=10, range=None, weights=None, flow=False):
     Parameters
     ----------
     x: array_like
-       Array representing the ``x`` coordinate of the data to histogram.
+        Array representing the ``x`` coordinate of the data to histogram.
     y: array_like
-       Array representing the ``y`` coordinate of the data to histogram.
+        Array representing the ``y`` coordinate of the data to histogram.
     bins: int or array_like or [int, int] or [array, array], optional
-       The bin specification:
-          * If `int`, the number of bins for the two dimensions
-            (``nx = ny = bins``).
-          * If `array_like`, the bin edges for the two dimensions
-            (``x_edges = y_edges = bins``).
-          * If [int, int], the number of bins in each dimension
-            (``nx, ny = bins``).
-          * If [`array_like`, `array_like`], the bin edges in each
-            dimension (``x_edges, y_edges = bins``).
+        The bin specification:
+           * If int, the number of bins for the two dimensions
+             (``nx = ny = bins``).
+           * If `array_like`, the bin edges for the two dimensions
+             (``x_edges = y_edges = bins``).
+           * If [int, int], the number of bins in each dimension
+             (``nx, ny = bins``).
+           * If [`array_like`, `array_like`], the bin edges in each
+             dimension (``x_edges, y_edges = bins``).
     range: array_like, shape(2,2), optional
-       The edges of this histogram along each dimension. If ``bins``
-       is not integral, then this parameter is ignored. If None, the
-       default is ``[[x.min(), x.max()], [y.min(), y.max()]]``.
+        The edges of this histogram along each dimension. If ``bins``
+        is not integral, then this parameter is ignored. If None, the
+        default is ``[[x.min(), x.max()], [y.min(), y.max()]]``.
     weights: array_like
-       An array of weights associated to each element :math:`(x_i,
-       y_i)` pair.  Each pair of the data will contribute its
-       associated weight to the bin count.
+        An array of weights associated to each element :math:`(x_i,
+        y_i)` pair.  Each pair of the data will contribute its
+        associated weight to the bin count.
     flow : bool
-       Include over/underflow.
-
+        Include over/underflow.
 
     Raises
     ------
     ValueError
-        If x and y have different shape or either bin edge definition
+        If ``x`` and ``y`` have different shape or either bin edge definition
         is not monotonically increasing.
+    ValueError
+        If the shape of ``weights`` is not compatible with ``x`` and ``y``.
+    TypeError
+        If ``x``, ``y``, or ``weights`` are unsupported types
 
     Returns
     -------
