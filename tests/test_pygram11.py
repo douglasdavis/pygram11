@@ -36,15 +36,6 @@ if (struct.calcsize("P") * 8) == 32:
     XTYPES = (np.float32, np.int32, np.uint32)
 
 
-class TestMisc:
-    @pytest.mark.misc
-    def test_omp_get_max_threads(self):
-        nthreads = os.getenv("OMP_NUM_THREADS")
-        if nthreads is None:
-            nthreads = multiprocessing.cpu_count()
-        assert int(nthreads) == pg.omp_get_max_threads()
-
-
 class TestFix1D:
     XD = RNG.normal(scale=5, size=8000)
     WD = RNG.uniform(0.8, 1.2, XD.shape[0])
@@ -70,7 +61,7 @@ class TestFix1D:
     @pytest.mark.parametrize("func", [pg.histogram, pg.fix1d])
     @pytest.mark.OD
     def test_no_weight_and_single_weight(self, xtype, wtype, density, flow, ompt, func):
-        pg.FIXED_WIDTH_PARALLEL_THRESHOLD = ompt
+        pg.FIXED_WIDTH_PARALLEL_THRESHOLD_1D = ompt
         if density and flow:
             assert True
             return
@@ -98,7 +89,7 @@ class TestFix1D:
     @pytest.mark.parametrize("func", [pg.histogram, pg.fix1dmw])
     @pytest.mark.OD
     def test_multiple_weights(self, xtype, wtype, flow, ompt, func):
-        pg.FIXED_WIDTH_MW_PARALLEL_THRESHOLD = ompt
+        pg.FIXED_WIDTH_MW_PARALLEL_THRESHOLD_1D = ompt
         x, w = self.make_data_mw(xtype, wtype)
         n, xmin, xmax = 50, -10.1, 10.1
         res0, err0 = func(x, weights=w, bins=n, range=(xmin, xmax), flow=flow)
@@ -144,7 +135,7 @@ class TestVar1D:
     def test_no_weight_and_single_weight(
         self, xtype, wtype, bins, density, flow, ompt, func
     ):
-        pg.VARIABLE_WIDTH_PARALLEL_THRESHOLD = ompt
+        pg.VARIABLE_WIDTH_PARALLEL_THRESHOLD_1D = ompt
         if density and flow:
             assert True
             return
@@ -169,7 +160,7 @@ class TestVar1D:
     @pytest.mark.parametrize("func", [pg.var1dmw, pg.histogram])
     @pytest.mark.OD
     def test_multiple_weights(self, xtype, wtype, bins, flow, ompt, func):
-        pg.VARIABLE_WIDTH_MW_PARALLEL_THRESHOLD = ompt
+        pg.VARIABLE_WIDTH_MW_PARALLEL_THRESHOLD_1D = ompt
         x, w = self.make_data_mw(xtype, wtype)
         xmin, xmax = bins[0], bins[-1]
         res0, err0 = func(x, weights=w, bins=bins, flow=flow)
@@ -200,7 +191,7 @@ class TestFix2D:
     @pytest.mark.parametrize("func", [pg.histogram2d, pg.fix2d])
     @pytest.mark.TD
     def test_no_weight_and_single_weight(self, xtype, ytype, wtype, flow, ompt, func):
-        pg.FIXED_WIDTH_PARALLEL_THRESHOLD = ompt
+        pg.FIXED_WIDTH_PARALLEL_THRESHOLD_2D = ompt
         x, y, w = self.make_data(xtype, ytype, wtype)
         nbx, xmin, xmax = 25, -10.1, 10.1
         nby, ymin, ymax = 15, -10.1, 10.1
@@ -248,7 +239,7 @@ class TestVar2D:
     def test_no_weight_and_single_weight(
         self, xtype, ytype, wtype, xbins, ybins, flow, ompt, func
     ):
-        pg.VARIABLE_WIDTH_PARALLEL_THRESHOLD = ompt
+        pg.VARIABLE_WIDTH_PARALLEL_THRESHOLD_2D = ompt
         x, y, w = self.make_data(xtype, ytype, wtype)
         if func == pg.histogram2d:
             res0, err0 = func(x, y, bins=[xbins, ybins], weights=w, flow=flow)
@@ -299,3 +290,12 @@ class TestExceptions:
         ## bad range
         with pytest.raises(ValueError) as err:
             pg.histogram(x.astype(np.float32), bins=[1.0, 2.0, 3.0, 5.0], range=(-1, 1))
+
+
+class TestMisc:
+    @pytest.mark.misc
+    def test_omp_get_max_threads(self):
+        nthreads = os.getenv("OMP_NUM_THREADS")
+        if nthreads is None:
+            nthreads = multiprocessing.cpu_count()
+        assert int(nthreads) == pg.omp_get_max_threads()

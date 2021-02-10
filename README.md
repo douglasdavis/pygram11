@@ -78,8 +78,9 @@ pip install git+https://github.com/douglasdavis/pygram11.git@main
 A histogram (with fixed bin width) of weighted data in one dimension:
 
 ```python
->>> x = np.random.randn(10000)
->>> w = np.random.uniform(0.8, 1.2, 10000)
+>>> rng = np.random.default_rng(123)
+>>> x = rng.standard_normal(10000)
+>>> w = rng.uniform(0.8, 1.2, x.shape[0])
 >>> h, err = pygram11.histogram(x, bins=40, range=(-4, 4), weights=w)
 ```
 
@@ -87,17 +88,18 @@ A histogram with fixed bin width which saves the under and overflow in
 the first and last bins:
 
 ```python
->>> x = np.random.randn(1000000)
->>> h, err = pygram11.histogram(x, bins=20, range=(-3, 3), flow=True)
+>>> x = rng.standard_normal(1000000)
+>>> h, __ = pygram11.histogram(x, bins=20, range=(-3, 3), flow=True)
 ```
 
-A histogram in two dimensions with variable width bins:
+where we've used `__` to catch the `None` returned when weights are
+absent. A histogram in two dimensions with variable width bins:
 
 ```python
->>> x = np.random.randn(10000)
->>> y = np.random.randn(10000)
->>> xbins = [-2.0, -1.0, -0.5, 1.5, 2.0]
->>> ybins = [-3.0, -1.5, -0.1, 0.8, 2.0]
+>>> x = rng.standard_normal(1000)
+>>> y = rng.standard_normal(1000)
+>>> xbins = [-2.0, -1.0, -0.5, 1.5, 2.0, 3.1]
+>>> ybins = [-3.0, -1.5, -0.1, 0.8, 2.0, 2.8]
 >>> h, err = pygram11.histogram2d(x, y, bins=[xbins, ybins])
 ```
 
@@ -106,10 +108,11 @@ putting the result in a DataFrame (the input pandas DataFrame will be
 interpreted as a NumPy array):
 
 ```python
->>> weights = pd.DataFrame({"weight_a" : np.abs(np.random.randn(10000)),
-...                         "weight_b" : np.random.uniform(0.5, 0.8, 10000),
-...                         "weight_c" : np.random.rand(10000)})
->>> data = np.random.randn(10000)
+>>> N = 10000
+>>> weights = pd.DataFrame({"weight_a": np.abs(rng.standard_normal(N)),
+...                         "weight_b": rng.uniform(0.5, 0.8, N),
+...                         "weight_c": rng.uniform(0.0, 1.0, N)})
+>>> data = rng.standard_normal(N)
 >>> count, err = pygram11.histogram(data, bins=20, range=(-3, 3), weights=weights, flow=True)
 >>> count_df = pd.DataFrame(count, columns=weights.columns)
 >>> err_df = pd.DataFrame(err, columns=weights.columns)

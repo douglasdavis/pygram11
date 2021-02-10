@@ -173,7 +173,8 @@ def fix1d(
     When weights are absent the second return is ``None``. The same
     data, now histogrammed with weights and over/underflow included:
 
-    >>> w = np.abs(np.random.randn(x.shape[0]))
+    >>> rng = np.random.default_rng(123)
+    >>> w = rng.uniform(0.1, 0.9, x.shape[0]))
     >>> h, stderr = fix1d(x, bins=20, range=(0, 100), weights=w, flow=True)
 
     """
@@ -246,12 +247,12 @@ def fix1dmw(
 
     Examples
     --------
-    Multiple histograms of ``x`` with 50 bins between 0 and 100; using
-    20 different weight variations:
+    Multiple histograms of ``x`` using 20 different weight variations:
 
-    >>> x = np.random.randn(10000)
-    >>> twenty_weights = np.random.rand(x.shape[0], 20)
-    >>> h, err = fix1dmw(x, w, bins=50, range=(-3, 3))
+    >>> rng = np.random.default_rng(123)
+    >>> x = rng.standard_normal(10000)
+    >>> twenty_weights = np.abs(rng.standard_normal((x.shape[0], 20)))
+    >>> h, err = fix1dmw(x, twenty_weights, bins=50, range=(-3, 3))
 
     ``h`` and ``err`` are now shape ``(50, 20)``. Each column
     represents the histogram of the data using its respective weight.
@@ -312,9 +313,10 @@ def var1d(
     --------
     A simple histogram with variable width bins:
 
-    >>> x = np.random.randn(10000)
-    >>> bin_edges = [-3.0, -2.5, -1.5, -0.25, 0.25, 2.0, 3.0]
-    >>> h, __ = var1d(x, bin_edges)
+    >>> rng = np.random.default_rng(123)
+    >>> x = rng.standard_normal(1000)
+    >>> edges = np.array([-3.0, -2.5, -1.5, -0.25, 0.25, 2.0, 3.0])
+    >>> h, __ = var1d(x, edges)
 
     """
     if not np.all(bins[1:] >= bins[:-1]):
@@ -395,10 +397,11 @@ def var1dmw(
     --------
     Using three different weight variations:
 
-    >>> x = np.random.randn(10000)
-    >>> weights = np.abs(np.random.randn(x.shape[0], 3))
-    >>> bin_edges = [-3.0, -2.5, -1.5, -0.25, 0.25, 2.0, 3.0]
-    >>> h, err = var1dmw(x, weights, bin_edges)
+    >>> rng = np.random.default_rng(123)
+    >>> x = rng.standard_normal(10000)
+    >>> weights = nb.abs(rng.standard_normal((x.shape[0], 3)))
+    >>> edges = np.array([-3.0, -2.5, -1.5, -0.25, 0.25, 2.0, 3.0])
+    >>> h, err = var1dmw(x, weights, edges)
     >>> h.shape
     (6, 3)
     >>> err.shape

@@ -8,6 +8,7 @@ import sys
 from timeit import timeit, repeat
 import pygram11 as pg
 import numpy as np
+rng = np.random.default_rng(123)
 
 SETUP_F_1D = """
 import numpy as np
@@ -15,8 +16,8 @@ import boost_histogram as bh
 from numpy import histogram as np_hist
 from pygram11 import histogram as pg_hist
 from fast_histogram import histogram1d as fh_hist
-x = np.random.randn({size})
-w = np.random.uniform(0.4, 0.8, {size})
+x = rng.standard_normal({size})
+w = rng.uniform(0.4, 0.8, {size})
 bh_hist = bh.Histogram(bh.axis.Regular(25, -3, 3), storage=bh.storage.Weight())
 """
 
@@ -32,9 +33,9 @@ import numpy as np
 import boost_histogram as bh
 from numpy import histogram as np_hist
 from pygram11 import histogram as pg_hist
-edges = np.unique(np.round(sorted(np.random.uniform(-3, 3, 26)), 2))
-x = np.random.randn({size})
-w = np.random.uniform(0.4, 0.8, {size})
+edges = np.unique(np.round(sorted(rng.uniform(-3, 3, 26)), 2))
+x = rng.standard_normal({size})
+w = rng.uniform(0.4, 0.8, {size})
 bh_hist = bh.Histogram(bh.axis.Variable(edges), storage=bh.storage.Weight())
 """
 
@@ -50,9 +51,9 @@ import boost_histogram as bh
 from numpy import histogram2d as np_hist
 from pygram11 import histogram2d as pg_hist
 from fast_histogram import histogram2d as fh_hist
-x = np.random.randn({size})
-y = np.random.randn({size})
-w = np.random.uniform(0.4, 0.8, {size})
+x = rng.standard_normal({size})
+y = rng.standard_normal({size})
+w = rng.uniform(0.4, 0.8, {size})
 bh_hist = bh.Histogram(bh.axis.Regular(25, -3, 3),
                        bh.axis.Regular(25, -3, 3),
                        storage=bh.storage.Weight())
@@ -70,10 +71,10 @@ import numpy as np
 import boost_histogram as bh
 from numpy import histogram as np_hist
 from pygram11 import histogram as pg_hist
-edges = np.unique(np.round(sorted(np.random.uniform(-3, 3, 26)), 2))
-x = np.random.randn({size})
-y = np.random.randn({size})
-w = np.random.uniform(0.4, 0.8, {size})
+edges = np.unique(np.round(sorted(rng.uniform(-3, 3, 26)), 2))
+x = rng.standard_normal({size})
+y = rng.standard_normal({size})
+w = rng.uniform(0.4, 0.8, {size})
 bh_hist = bh.Histogram(bh.axis.Variable(edges),
                        bh.axis.Variable(edges),
                        storage=bh.storage.Weight())
