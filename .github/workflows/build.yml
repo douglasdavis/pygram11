@@ -14,7 +14,6 @@ jobs:
       matrix:
         os: [ubuntu-latest, macos-latest]
         arch: [auto]
-        type: [Standard]
 
         include:
         - os: ubuntu-latest
@@ -22,7 +21,6 @@ jobs:
           CIBW_MANYLINUX_X86_64_IMAGE: manylinux2010
 
         - os: macos-latest
-          type: Standard
           arch: auto
 
     steps:
@@ -40,7 +38,8 @@ jobs:
 
     - name: Install cibuildwheel
       run: |
-        python -m pip install pip setuptools pytest cibuildwheel==1.9.0
+        python -m pip install pip setuptools
+        python -m pip install cibuildwheel==1.9.0
 
     - name: Build wheels
       env:
