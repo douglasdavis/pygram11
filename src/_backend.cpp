@@ -85,42 +85,42 @@ inline void arr_sqrt(py::array_t<T>& arr) {
   }
 }
 
-/// Threshold for running parallel loops to calculate fixed width histograms in 1D.
+/// Threshold for parallel loops for fixed width histograms in 1D.
 inline py::ssize_t fwpt1d() {
   return py::module_::import("pygram11")
       .attr("FIXED_WIDTH_PARALLEL_THRESHOLD_1D")
       .cast<py::ssize_t>();
 }
 
-/// Threshold for running parallel loops to calculate fixed width histograms in 2D.
+/// Threshold for parallel loops for fixed width histograms in 2D.
 inline py::ssize_t fwpt2d() {
   return py::module_::import("pygram11")
       .attr("FIXED_WIDTH_PARALLEL_THRESHOLD_2D")
       .cast<py::ssize_t>();
 }
 
-/// Threshold for running parallel loops to calculate multiweight fixed width histograms in 1D.
+/// Threshold for parallel loops for multiweight fixed width histograms in 1D.
 inline py::ssize_t fwmwpt1d() {
   return py::module_::import("pygram11")
       .attr("FIXED_WIDTH_MW_PARALLEL_THRESHOLD_1D")
       .cast<py::ssize_t>();
 }
 
-/// Threshold for running parallel loops to calculate variable width histograms in 1D.
+/// Threshold for parallel loops for variable width histograms in 1D.
 inline py::ssize_t vwpt1d() {
   return py::module_::import("pygram11")
       .attr("VARIABLE_WIDTH_PARALLEL_THRESHOLD_1D")
       .cast<py::ssize_t>();
 }
 
-/// Threshold for running parallel loops to calculate variable width histograms in 2D.
+/// Threshold for parallel loops for variable width histograms in 2D.
 inline py::ssize_t vwpt2d() {
   return py::module_::import("pygram11")
       .attr("VARIABLE_WIDTH_PARALLEL_THRESHOLD_2D")
       .cast<py::ssize_t>();
 }
 
-/// Threshold for running parallel loops to calculate multiweight variable width histograms in 1D.
+/// Threshold for parallel loops for multiweight variable width histograms in 1D.
 inline py::ssize_t vwmwpt1d() {
   return py::module_::import("pygram11")
       .attr("VARIABLE_WIDTH_MW_PARALLEL_THRESHOLD_1D")
@@ -1057,8 +1057,9 @@ inline void p_loop_excf(const Tx* x, const Ty* y, const Tw* w, py::ssize_t nx,
 
 /// var, serial loop, exclude flow, without weights
 template <typename Tx, typename Ty>
-void s_loop_excf(const Tx* x, const Ty* y, py::ssize_t nx, std::vector<double> edgesx,
-                 std::vector<double> edgesy, py::array_t<py::ssize_t>& counts) {
+void s_loop_excf(const Tx* x, const Ty* y, py::ssize_t nx,
+                 const std::vector<double>& edgesx, const std::vector<double>& edgesy,
+                 py::array_t<py::ssize_t>& counts) {
   auto xmin = edgesx.front();
   auto xmax = edgesx.back();
   auto ymin = edgesy.front();
@@ -1078,7 +1079,7 @@ void s_loop_excf(const Tx* x, const Ty* y, py::ssize_t nx, std::vector<double> e
 /// var, serial loop, exclude flow, with weights
 template <typename Tx, typename Ty, typename Tw>
 void s_loop_excf(const Tx* x, const Ty* y, const Tw* w, py::ssize_t nx,
-                 std::vector<double> edgesx, std::vector<double> edgesy,
+                 const std::vector<double>& edgesx, const std::vector<double>& edgesy,
                  py::array_t<Tw>& counts, py::array_t<Tw>& variances) {
   auto xmin = edgesx.front();
   auto xmax = edgesx.back();
@@ -1100,8 +1101,9 @@ void s_loop_excf(const Tx* x, const Ty* y, const Tw* w, py::ssize_t nx,
 
 /// var, parallel loop, exclude flow, without weights
 template <typename Tx, typename Ty>
-void p_loop_excf(const Tx* x, const Ty* y, py::ssize_t nx, std::vector<double> edgesx,
-                 std::vector<double> edgesy, py::array_t<py::ssize_t>& counts) {
+void p_loop_excf(const Tx* x, const Ty* y, py::ssize_t nx,
+                 const std::vector<double>& edgesx, const std::vector<double>& edgesy,
+                 py::array_t<py::ssize_t>& counts) {
   auto xmin = edgesx.front();
   auto xmax = edgesx.back();
   auto ymin = edgesy.front();
@@ -1131,7 +1133,7 @@ void p_loop_excf(const Tx* x, const Ty* y, py::ssize_t nx, std::vector<double> e
 /// var, parallel loop, exclude flow, with weights
 template <typename Tx, typename Ty, typename Tw>
 void p_loop_excf(const Tx* x, const Ty* y, const Tw* w, py::ssize_t nx,
-                 std::vector<double> edgesx, std::vector<double> edgesy,
+                 const std::vector<double>& edgesx, const std::vector<double>& edgesy,
                  py::array_t<Tw>& counts, py::array_t<Tw>& variances) {
   auto xmin = edgesx.front();
   auto xmax = edgesx.back();
