@@ -8,8 +8,8 @@
 [![Python Version](https://img.shields.io/pypi/pyversions/pygram11)](https://pypi.org/project/pygram11/)
 
 Simple and fast histogramming in Python accelerated with
-[OpenMP](https://www.openmp.org/) (with help from
-[pybind11](https://github.com/pybind/pybind11)).
+[OpenMP](https://www.openmp.org/) with help from
+[pybind11](https://github.com/pybind/pybind11).
 
 `pygram11` provides functions for very fast histogram calculations
 (and the variance in each bin) in one and two dimensions. The API is
@@ -20,17 +20,14 @@ there).
 
 ## Installing
 
-Python 3 releases supported by both pybind11 and
-[NumPy](https://www.numpy.org/) should be compatible with pygram11.
-Python version 3.7 (or later) and NumPy version 1.16 (or later) are
-supported by tests (and have binary releases). To build and install
-from source you'll just need a compiler with support for C++14 and
-OpenMP. The only runtime dependency is NumPy.
+Python 3.7 is the minimum supported version. To build and install from
+source you'll need a compiler with support for C++14 and OpenMP. The
+only runtime dependency is NumPy.
 
 ### From PyPI
 
 Binary wheels are provided for Linux and macOS. They can be installed
-from [PyPI](https://pypi.org/project/pygram11/) via pip.
+from [PyPI](https://pypi.org/project/pygram11/) via pip:
 
 ```
 pip install pygram11
@@ -58,15 +55,23 @@ conda install nomkl ## sometimes necessary fix (macOS only)
 
 ### From Source
 
-All you need is a C++14 compiler and OpenMP. If you are using a
-relatively modern GCC release on Linux then you probably don't have to
-worry about the OpenMP dependency. If you are on macOS, you can
-install `libomp` from Homebrew. With those dependencies met, simply
-run:
+You need is a C++14 compiler and OpenMP. If you are using a relatively
+modern GCC release on Linux then you probably don't have to worry
+about the OpenMP dependency. If you are on macOS, you can install
+`libomp` from Homebrew. With those dependencies met, simply run:
+
+```none
+git clone https://github.com/douglasdavis/pygram11.git@main
+cd pygram11
+pip install .
+```
+
+Or let pip handle the cloning procedure:
 
 ```none
 pip install git+https://github.com/douglasdavis/pygram11.git@main
 ```
+
 
 ## In Action
 
@@ -116,17 +121,14 @@ examples.
 
 ## Other Libraries
 
-- There is an effort to develop an object oriented histogramming
-  library for Python called
-  [boost-histogram](https://indico.cern.ch/event/803122/contributions/3339214/attachments/1830213/2997039/bhandhist.pdf). This
-  library will be feature complete w.r.t. everything a physicist needs
-  with histograms.
+- [boost-histogram](https://github.com/scikit-hep/boost-histogram)
+  provides Pythonic object oriented histograms.
 - Simple and fast histogramming in Python using the NumPy C API:
   [fast-histogram](https://github.com/astrofrog/fast-histogram) (no
   variance or overflow support).
 - If you want to calculate histograms on a GPU in Python, check out
-  [cupy.histogram](https://docs-cupy.chainer.org/en/stable/reference/generated/cupy.histogram.html#cupy.histogram). They
-  only have 1D histograms (no weights or overflow).
+  [cupy.histogram](https://docs-cupy.chainer.org/en/stable/reference/generated/cupy.histogram.html#cupy.histogram).
+  They only have 1D histograms (no weights or overflow).
 
 ---
 
