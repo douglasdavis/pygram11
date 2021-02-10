@@ -20,7 +20,7 @@ there).
 
 ## Installing
 
-Python 3.7 is the minimum supported version. To build and install from
+Python 3.6 is the minimum supported version. To build and install from
 source you'll need a compiler with support for C++14 and OpenMP. The
 only runtime dependency is NumPy.
 
