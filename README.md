@@ -20,10 +20,6 @@ there).
 
 ## Installing
 
-Python 3.6 is the minimum supported version. To build and install from
-source you'll need a compiler with support for C++14 and OpenMP. The
-only runtime dependency is NumPy.
-
 ### From PyPI
 
 Binary wheels are provided for Linux and macOS. They can be installed
@@ -72,6 +68,10 @@ Or let pip handle the cloning procedure:
 pip install git+https://github.com/douglasdavis/pygram11.git@main
 ```
 
+Tests are run on Python versions 3.6 through 3.9 (binary wheels are
+provided for those versions); an earlier version of Python 3 might
+work, but this is not guaranteed (and you will have to manually remove
+the `>= 3.6` requirement in the `setup.cfg` file).
 
 ## In Action
 
