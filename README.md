@@ -54,7 +54,9 @@ conda install nomkl ## sometimes necessary fix (macOS only)
 You need is a C++14 compiler and OpenMP. If you are using a relatively
 modern GCC release on Linux then you probably don't have to worry
 about the OpenMP dependency. If you are on macOS, you can install
-`libomp` from Homebrew. With those dependencies met, simply run:
+`libomp` from Homebrew (pygram11 does compile on Apple Silicon devices
+with Python version 3.9 and `libomp` installed from Homebrew). With
+those dependencies met, simply run:
 
 ```none
 git clone https://github.com/douglasdavis/pygram11.git --recurse-submodes
