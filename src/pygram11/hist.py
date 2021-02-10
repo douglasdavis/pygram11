@@ -722,6 +722,13 @@ def histogram2d(x, y, bins=10, range=None, weights=None, flow=False):
     TypeError
         If ``x``, ``y``, or ``weights`` are unsupported types
 
+    See Also
+    --------
+    fix2d
+        Used for no weight or single weight fixed bin width histograms
+    var2d
+        Used for no weight or single weight variable bin width histograms.
+
     Returns
     -------
     :py:obj:`numpy.ndarray`
