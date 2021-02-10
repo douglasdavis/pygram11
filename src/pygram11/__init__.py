@@ -2,7 +2,7 @@
 
 MIT License
 
-Copyright (c) 2020 Douglas Davis
+Copyright (c) 2021 Douglas Davis
 
 Permission is hereby granted, free of charge, to any person
 obtaining a copy of this software and associated documentation files
@@ -27,38 +27,35 @@ SOFTWARE.
 """
 
 from .version import version as __version__  # noqa
-from pygram11._backend1d import _omp_get_max_threads
-from .hist import fix1d, fix1dmw, var1d, var1dmw
-from .hist import fix2d, var2d
-from .hist import histogram, histogram2d
+from .hist import (
+    fix1d,
+    fix1dmw,
+    var1d,
+    var1dmw,
+    fix2d,
+    var2d,
+    histogram,
+    histogram2d,
+)
+from .misc import force_omp, disable_omp, omp_get_max_threads
+
 
 version_info = tuple(__version__.split("."))
 
+FIXED_WIDTH_PARALLEL_THRESHOLD_1D: int = 10_000
+"""int: Threshold for running OpenMP acceleration for fixed width histograms in 1D."""
 
-__all__ = [
-    "fix1d",
-    "fix1dmw",
-    "var1d",
-    "var1dmw",
-    "fix2d",
-    "var2d",
-    "histogram",
-    "histogram2d",
-    "omp_get_max_threads",
-]
+FIXED_WIDTH_MW_PARALLEL_THRESHOLD_1D: int = 10_000
+"""int: Threshold for running OpenMP acceleration for multiweight fixed width histograms."""
 
+FIXED_WIDTH_PARALLEL_THRESHOLD_2D: int = 10_000
+"""int: Threshold for running OpenMP acceleration for fixed with histograms in 2D."""
 
-def omp_get_max_threads() -> int:
-    """Get the number of threads available to OpenMP.
+VARIABLE_WIDTH_PARALLEL_THRESHOLD_1D: int = 5_000
+"""int: Threshold for running OpenMP acceleration for variable width histograms in 1D."""
 
-    This returns the result of calling the OpenMP C API function `of
-    the same name
-    <https://www.openmp.org/spec-html/5.0/openmpsu112.html>`_.
+VARIABLE_WIDTH_MW_PARALLEL_THRESHOLD_1D: int = 5_000
+"""int: Threshold for running OpenMP acceleration for multiweight variable width histograms."""
 
-    Returns
-    -------
-    int
-        the maximum number of available threads
-
-    """
-    return _omp_get_max_threads()
+VARIABLE_WIDTH_PARALLEL_THRESHOLD_2D: int = 5_000
+"""int: Threshold for running OpenMP acceleration for variable width histograms in 2D."""

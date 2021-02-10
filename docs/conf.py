@@ -21,7 +21,7 @@ import pygram11
 # -- Project information -----------------------------------------------------
 
 project = "pygram11"
-copyright = "2020, Doug Davis"
+copyright = "2021, Doug Davis"
 author = "Doug Davis"
 
 
@@ -45,6 +45,8 @@ extensions = [
     "sphinx.ext.mathjax",
     "sphinx.ext.viewcode",
     "sphinx_issues",
+    "IPython.sphinxext.ipython_console_highlighting",
+    "IPython.sphinxext.ipython_directive",
 ]
 
 # Add any paths that contain templates here, relative to this directory.

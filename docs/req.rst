@@ -11,7 +11,7 @@ required dependency.
 Extras for Source Builds
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-When building from source, all you need is a C++ compiler with C++11
+When building from source, all you need is a C++ compiler with C++14
 support. The ``setup.py`` script will test to see if OpenMP is
 available. If it's not, then the installation will abort. Most Linux
 distributions with modern GCC versions should provide OpenMP
@@ -53,7 +53,7 @@ Source
 
 .. code-block:: none
 
-   $ pip install git+https://github.com/douglasdavis/pygram11.git@master
+   $ pip install git+https://github.com/douglasdavis/pygram11.git@main
 
 .. _pybind11: https://github.com/pybind/pybind11
 .. _NumPy: http://www.numpy.org/

@@ -8,22 +8,28 @@ on:
 
 jobs:
   build_wheels:
-    name: Build wheels on ${{ matrix.os }}
+    name: Wheels on ${{ matrix.os }} for architecture ${{ matrix.arch }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-18.04, macos-latest]
+        os: [ubuntu-latest, macos-latest]
+        arch: [auto]
+
+        include:
+        - os: ubuntu-latest
+          arch: auto
+          CIBW_MANYLINUX_X86_64_IMAGE: manylinux2010
+
+        - os: macos-latest
+          arch: auto
 
     steps:
     - uses: actions/checkout@v1
       with:
         submodules: true
 
-
     - uses: actions/setup-python@v2
       name: Install Python
-      with:
-        python-version: '3.7'
 
     - name: Install OpenMP on macOS
       if: startsWith(matrix.os, 'macOS')
@@ -32,11 +38,17 @@ jobs:
 
     - name: Install cibuildwheel
       run: |
-        python -m pip install cibuildwheel==1.7.3
+        python -m pip install pip setuptools
+        python -m pip install cibuildwheel==1.9.0
 
     - name: Build wheels
       env:
-        CIBW_SKIP: pp* cp27* cp35* cp36*
+        CIBW_SKIP: pp* cp27* cp35* *-manylinux_i686
+        CIBW_MANYLINUX_X86_64_IMAGE: ${{ matrix.CIBW_MANYLINUX_X86_64_IMAGE }}
+        CIBW_ARCHS: ${{ matrix.arch }}
+        CIBW_TEST_REQUIRES: pytest
+        CIBW_TEST_COMMAND: "pytest {project}/tests"
+        CIBW_TEST_SKIP: "pp*macos* *universal2:arm64"
       run: |
         python -m cibuildwheel --output-dir wheelhouse
 
@@ -58,8 +70,6 @@ jobs:
 
     - uses: actions/setup-python@v2
       name: Install Python
-      with:
-        python-version: '3.7'
 
     - name: Build sdist
       run: |

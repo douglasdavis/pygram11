@@ -13,12 +13,6 @@ Fast-histogram does not provide calculations for variable width bins,
 so, when benchmarking variable width bins, we only compare to NumPy
 and boost-histogram.
 
-.. note::
-
-   pygram11 is designed for arrays of floats (``np.float32`` or
-   ``np.float64``). The benchmarks use only arrays of floats. See
-   :issue:`10` for more context.
-
 Results
 -------
 

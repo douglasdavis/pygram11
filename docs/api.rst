@@ -12,3 +12,5 @@ API Reference
    api/var2d.rst
    api/histogram.rst
    api/histogram2d.rst
+   api/force_omp.rst
+   api/disable_omp.rst

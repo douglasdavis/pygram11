@@ -9,6 +9,11 @@ build-backend = "setuptools.build_meta"
 
 [tool.pytest.ini_options]
 norecursedirs = ["extern"]
+markers = [
+    "misc: Miscellaneous",
+    "OD: One dimensional histograms",
+    "TD: Two dimensional histograms",
+]
 
 [tool.setuptools_scm]
 write_to = "src/pygram11/version.py"
