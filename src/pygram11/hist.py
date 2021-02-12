@@ -40,10 +40,7 @@ from pygram11._backend import _f2d, _f2dw, _v2d, _v2dw
 def _likely_uniform_bins(edges: np.ndarray) -> bool:
     """Test if bin edges describe a set of fixed width bins."""
     diffs = np.ediff1d(edges)
-    ones = np.ones_like(diffs)
-    max_close = np.allclose(ones, diffs / np.amax(diffs))
-    min_close = np.allclose(ones, diffs / np.amin(diffs))
-    return max_close and min_close
+    return np.all(np.isclose(diffs, diffs[0]))
 
 
 def _densify_fixed_counts(counts: np.ndarray, width: float) -> np.ndarray:
