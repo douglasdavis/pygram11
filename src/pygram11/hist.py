@@ -494,7 +494,6 @@ def histogram(x, bins=10, range=None, weights=None, density=False, flow=False):
     >>> h, err = histogram(x, bins=[-3, -2, -1.5, 1.5, 3.5], weights=w)
 
     """
-
     # make sure x and weight data are NumPy arrays.
     x = np.array(x)
     if weights is not None:
