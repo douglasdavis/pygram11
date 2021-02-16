@@ -1,3 +1,5 @@
+"""pygram11 miscellaneous API."""
+
 # MIT License
 #
 # Copyright (c) 2021 Douglas Davis
