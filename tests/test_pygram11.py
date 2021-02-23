@@ -299,3 +299,21 @@ class TestMisc:
         if nthreads is None:
             nthreads = multiprocessing.cpu_count()
         assert int(nthreads) == pg.omp_get_max_threads()
+
+
+class TestConvenience:
+    @pytest.mark.misc
+    def test_bin_centers(self):
+        edges = [1, 2, 3, 4, 5, 6]
+        c = pg.bin_centers(edges)
+        c2 = np.array([1.5, 2.5, 3.5, 4.5, 5.5])
+        npt.assert_allclose(c, c2)
+        c = pg.bin_centers(5, (-3, 2))
+        c2 = np.array([-2.5, -1.5, -0.5, 0.5, 1.5])
+        npt.assert_allclose(c, c2)
+
+    @pytest.mark.misc
+    def test_bin_edges(self):
+        edges = pg.bin_edges(8, (-4, 4))
+        e2 = np.array([-4.0, -3.0, -2.0, -1.0, 0.0, 1.0, 2.0, 3.0, 4.0])
+        npt.assert_allclose(edges, e2)
