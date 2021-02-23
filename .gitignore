@@ -1,3 +1,6 @@
+# Emacs
+.dir-locals.el
+
 # setuptools_scm generated
 src/pygram11/version.py
 
