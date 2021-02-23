@@ -28,6 +28,8 @@ SOFTWARE.
 
 from .version import version as __version__  # noqa
 from .hist import (
+    bin_centers,
+    bin_edges,
     fix1d,
     fix1dmw,
     var1d,

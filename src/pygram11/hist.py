@@ -118,6 +118,74 @@ def _get_limits_2d(
         )
 
 
+def bin_edges(bins: int, range: Tuple[float, float]) -> np.ndarray:
+    """Construct bin edges given number of bins and axis limits.
+
+    Parameters
+    ----------
+    bins : int
+        Total number of bins.
+    range : (float, float)
+        Minimum and maximum of the histogram axis.
+
+    Returns
+    -------
+    numpy.ndarray
+        Edges defined by the number of bins and axis limits.
+
+    Examples
+    --------
+    >>> bin_edges(bins=8, range=(-2, 2))
+    array([-2. , -1.5, -1. , -0.5,  0. ,  0.5,  1. ,  1.5,  2. ])
+
+    """
+    return np.linspace(range[0], range[1], bins + 1)
+
+
+def bin_centers(
+    bins: Union[int, Sequence[float]],
+    range: Optional[Tuple[float, float]] = None,
+) -> np.ndarray:
+    """Construct array of center values for each bin.
+
+    Parameters
+    ----------
+    bins : int or array_like
+        Number of bins or bin edges array.
+    range : (float, float), optional
+        The minimum and maximum of the histogram axis.
+
+    Returns
+    -------
+    numpy.ndarray
+        Array of bin centers.
+
+    Raises
+    ------
+    ValueError
+        If ``bins`` is an integer and range is undefined (``None``).
+
+    Examples
+    --------
+    The centers given the number of bins and max/min:
+
+    >>> bin_centers(10, range=(-3, 3))
+    array([-2.7, -2.1, -1.5, -0.9, -0.3,  0.3,  0.9,  1.5,  2.1,  2.7])
+
+    Or given bin edges:
+
+    >>> bin_centers([0, 1, 2, 3, 4])
+    array([0.5, 1.5, 2.5, 3.5])
+
+    """
+    if isinstance(bins, int):
+        if range is None:
+            raise ValueError("Integer bins requires defining range")
+        bins = bin_edges(bins, range=range)
+    bins = np.asarray(bins)
+    return 0.5 * (bins[1:] + bins[:-1])
+
+
 def fix1d(
     x: np.ndarray,
     bins: int = 10,

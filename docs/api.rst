@@ -14,3 +14,5 @@ API Reference
    api/histogram2d.rst
    api/force_omp.rst
    api/disable_omp.rst
+   api/bin_centers.rst
+   api/bin_edges.rst
