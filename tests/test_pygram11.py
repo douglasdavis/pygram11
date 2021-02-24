@@ -311,9 +311,15 @@ class TestConvenience:
         c = pg.bin_centers(5, (-3, 2))
         c2 = np.array([-2.5, -1.5, -0.5, 0.5, 1.5])
         npt.assert_allclose(c, c2)
+        c = pg.bin_centers([1, 3, 4, 8, 9, 9.2])
+        c2 = np.array([2.0, 3.5, 6.0, 8.5, 9.1])
+        npt.assert_allclose(c, c2)
 
     @pytest.mark.misc
     def test_bin_edges(self):
         edges = pg.bin_edges(8, (-4, 4))
         e2 = np.array([-4.0, -3.0, -2.0, -1.0, 0.0, 1.0, 2.0, 3.0, 4.0])
+        npt.assert_allclose(edges, e2)
+        edges = pg.bin_edges(3, (0, 3))
+        e2 = np.array([0.0, 1.0, 2.0, 3.0])
         npt.assert_allclose(edges, e2)
