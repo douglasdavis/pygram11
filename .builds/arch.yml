@@ -1,23 +1,18 @@
 image: archlinux
 packages:
-- python
 - gcc
+- python-pip
+- python-setuptools
+- python-wheel
+- python-pytest
+- python-numpy
 sources:
 - https://github.com/douglasdavis/pygram11.git
 tasks:
-- setup: |
-    curl https://pyenv.run | bash
-    export PATH=$HOME/.pyenv/bin:$PATH
-    eval "$(pyenv init -)"
-    pyenv install 3.9.1
-- build: |
-    export PATH=$HOME/.pyenv/bin:$PATH
-    eval "$(pyenv init -)"
+- test: |
     cd pygram11
-    pyenv shell 3.9.1
-    pip install pip pytest setuptools wheel numpy -U
-    pip install .
-    python -m pytest
+    python3 -m pip install . -vv
+    python3 -m pytest
 triggers:
 - action: email
   condition: failure
