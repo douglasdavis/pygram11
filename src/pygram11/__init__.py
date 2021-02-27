@@ -27,7 +27,7 @@ SOFTWARE.
 """
 
 from .version import version as __version__  # noqa
-from .hist import (
+from ._hist import (
     bin_centers,
     bin_edges,
     fix1d,
@@ -39,7 +39,7 @@ from .hist import (
     histogram,
     histogram2d,
 )
-from .misc import force_omp, disable_omp, omp_get_max_threads
+from ._misc import force_omp, disable_omp, omp_get_max_threads
 
 
 version_info = tuple(__version__.split("."))
