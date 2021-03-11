@@ -24,6 +24,7 @@ import os
 import multiprocessing
 import struct
 import sys
+from typing import Sequence, Any
 
 import numpy as np
 import numpy.testing as npt
@@ -31,7 +32,7 @@ import pygram11 as pg
 import pytest
 
 RNG = np.random.default_rng(1234)
-XTYPES = (np.float32, np.float64, np.int32, np.int64, np.uint32, np.uint64)
+XTYPES: Sequence[Any] = (np.float32, np.float64, np.int32, np.int64, np.uint32, np.uint64)
 if (struct.calcsize("P") * 8) == 32:
     XTYPES = (np.float32, np.int32, np.uint32)
 

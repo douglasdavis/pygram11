@@ -40,7 +40,7 @@ from pygram11._backend import _f2d, _f2dw, _v2d, _v2dw
 def _likely_uniform_bins(edges: np.ndarray) -> bool:
     """Test if bin edges describe a set of fixed width bins."""
     diffs = np.ediff1d(edges)
-    return np.all(np.isclose(diffs, diffs[0]))
+    return bool(np.all(np.isclose(diffs, diffs[0])))
 
 
 def _densify_fixed_counts(counts: np.ndarray, width: float) -> np.ndarray:
@@ -143,7 +143,7 @@ def bin_edges(bins: int, range: Tuple[float, float]) -> np.ndarray:
 
 
 def bin_centers(
-    bins: Union[int, Sequence[float]],
+    bins: Union[int, Sequence[float], np.ndarray],
     range: Optional[Tuple[float, float]] = None,
 ) -> np.ndarray:
     """Construct array of center values for each bin.
@@ -182,8 +182,8 @@ def bin_centers(
         if range is None:
             raise ValueError("Integer bins requires defining range")
         bins = bin_edges(bins, range=range)
-    bins = np.asarray(bins)
-    return 0.5 * (bins[1:] + bins[:-1])
+    b = np.asarray(bins)
+    return 0.5 * (b[1:] + b[:-1])
 
 
 def fix1d(
@@ -564,6 +564,7 @@ def histogram(x, bins=10, range=None, weights=None, density=False, flow=False):
     """
     # make sure x and weight data are NumPy arrays.
     x = np.array(x)
+    is_multiweight = False
     if weights is not None:
         weights = np.asarray(weights)
         is_multiweight = np.shape(weights) != np.shape(x)
@@ -572,9 +573,8 @@ def histogram(x, bins=10, range=None, weights=None, density=False, flow=False):
 
     # fixed bins
     if isinstance(bins, int):
-        if weights is not None:
-            if is_multiweight:
-                return fix1dmw(x, weights, bins=bins, range=range, flow=flow)
+        if is_multiweight:
+            return fix1dmw(x, weights, bins=bins, range=range, flow=flow)
         return fix1d(
             x, weights=weights, bins=bins, range=range, density=density, flow=flow
         )
@@ -584,9 +584,8 @@ def histogram(x, bins=10, range=None, weights=None, density=False, flow=False):
         bins = np.asarray(bins)
         if range is not None:
             raise ValueError("range must be None if bins is non-int")
-        if weights is not None:
-            if is_multiweight:
-                return var1dmw(x, weights, bins=bins, flow=flow)
+        if is_multiweight:
+            return var1dmw(x, weights, bins=bins, flow=flow)
         return var1d(x, weights=weights, bins=bins, density=density, flow=flow)
 
 
