@@ -597,7 +597,7 @@ def fix2d(
     weights: Optional[np.ndarray] = None,
     flow: bool = False,
 ) -> Tuple[np.ndarray, Optional[np.ndarray]]:
-    r"""Histogram the ``x``, ``y`` data with fixed (uniform) binning.
+    r"""Histogram two dimensional data with fixed (uniform) binning.
 
     The two input arrays (``x`` and ``y``) must be the same length
     (shape).
@@ -677,7 +677,7 @@ def var2d(
     weights: Optional[np.ndarray] = None,
     flow: bool = False,
 ) -> Tuple[np.ndarray, Optional[np.ndarray]]:
-    r"""Histogram the ``x``, ``y`` data with variable width binning.
+    r"""Histogram two dimensional data with variable width binning.
 
     The two input arrays (``x`` and ``y``) must be the same length
     (shape).
