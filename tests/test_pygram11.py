@@ -260,7 +260,7 @@ class TestExceptions:
     W2 = np.abs(RNG.standard_normal(size=(50, 3)))
 
     @pytest.mark.parametrize("xtype", BAD_TYPES)
-    @pytest.mark.misc
+    @pytest.mark.misci
     def test_f1d(self, xtype):
         x = self.X.astype(xtype)
         w1 = self.W1
@@ -282,7 +282,7 @@ class TestExceptions:
             pg.fix1dmw(x, weights=w2)
 
     @pytest.mark.parametrize("xtype", BAD_TYPES)
-    @pytest.mark.misc
+    @pytest.mark.misci
     def test_v1d(self, xtype):
         x = self.X.astype(xtype)
         w1 = self.W1
@@ -294,7 +294,7 @@ class TestExceptions:
 
 
 class TestMisc:
-    @pytest.mark.misc
+    @pytest.mark.misci
     def test_omp_get_max_threads(self):
         nthreads = os.getenv("OMP_NUM_THREADS")
         if nthreads is None:
@@ -303,7 +303,7 @@ class TestMisc:
 
 
 class TestConvenience:
-    @pytest.mark.misc
+    @pytest.mark.misci
     def test_bin_centers(self):
         edges = [1, 2, 3, 4, 5, 6]
         c = pg.bin_centers(edges)
@@ -316,7 +316,7 @@ class TestConvenience:
         c2 = np.array([2.0, 3.5, 6.0, 8.5, 9.1])
         npt.assert_allclose(c, c2)
 
-    @pytest.mark.misc
+    @pytest.mark.misci
     def test_bin_edges(self):
         edges = pg.bin_edges(8, (-4, 4))
         e2 = np.array([-4.0, -3.0, -2.0, -1.0, 0.0, 1.0, 2.0, 3.0, 4.0])
