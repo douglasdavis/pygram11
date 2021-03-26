@@ -24,8 +24,10 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+import functools
+import contextlib
 import sys
-import pygram11
+import pygram11.config
 from pygram11._backend import _omp_get_max_threads
 
 
@@ -55,16 +57,12 @@ def disable_omp() -> None:
     acceleration).
 
     """
-    # fixed
-    pygram11.FIXED_WIDTH_PARALLEL_THRESHOLD_1D = sys.maxsize
-    pygram11.FIXED_WIDTH_PARALLEL_THRESHOLD_2D = sys.maxsize
-    # parallel
-    pygram11.VARIABLE_WIDTH_PARALLEL_THRESHOLD_1D = sys.maxsize
-    pygram11.VARIABLE_WIDTH_PARALLEL_THRESHOLD_2D = sys.maxsize
-    # multiweight fixed
-    pygram11.FIXED_WIDTH_MW_PARALLEL_THRESHOLD_1D = sys.maxsize
-    # multiweight variable
-    pygram11.VARIABLE_WIDTH_MW_PARALLEL_THRESHOLD_1D = sys.maxsize
+    pygram11.config.FIXED_WIDTH_PARALLEL_THRESHOLD_1D = sys.maxsize
+    pygram11.config.FIXED_WIDTH_PARALLEL_THRESHOLD_2D = sys.maxsize
+    pygram11.config.VARIABLE_WIDTH_PARALLEL_THRESHOLD_1D = sys.maxsize
+    pygram11.config.VARIABLE_WIDTH_PARALLEL_THRESHOLD_2D = sys.maxsize
+    pygram11.config.FIXED_WIDTH_MW_PARALLEL_THRESHOLD_1D = sys.maxsize
+    pygram11.config.VARIABLE_WIDTH_MW_PARALLEL_THRESHOLD_1D = sys.maxsize
 
 
 def force_omp() -> None:
@@ -76,13 +74,141 @@ def force_omp() -> None:
     thresholds to be the 1 (always use OpenMP acceleration).
 
     """
-    # fixed
-    pygram11.FIXED_WIDTH_PARALLEL_THRESHOLD_1D = 0
-    pygram11.FIXED_WIDTH_PARALLEL_THRESHOLD_2D = 0
-    # parallel
-    pygram11.VARIABLE_WIDTH_PARALLEL_THRESHOLD_1D = 0
-    pygram11.VARIABLE_WIDTH_PARALLEL_THRESHOLD_2D = 0
-    # multiweight fixed
-    pygram11.FIXED_WIDTH_MW_PARALLEL_THRESHOLD_1D = 0
-    # multiweight variable
-    pygram11.VARIABLE_WIDTH_MW_PARALLEL_THRESHOLD_1D = 0
+    pygram11.config.FIXED_WIDTH_PARALLEL_THRESHOLD_1D = 0
+    pygram11.config.FIXED_WIDTH_PARALLEL_THRESHOLD_2D = 0
+    pygram11.config.VARIABLE_WIDTH_PARALLEL_THRESHOLD_1D = 0
+    pygram11.config.VARIABLE_WIDTH_PARALLEL_THRESHOLD_2D = 0
+    pygram11.config.FIXED_WIDTH_MW_PARALLEL_THRESHOLD_1D = 0
+    pygram11.config.VARIABLE_WIDTH_MW_PARALLEL_THRESHOLD_1D = 0
+
+
+def omp_off(func):
+    """Wrap a function to disable OpenMP while it's called.
+
+    The settings of the pygram11 OpenMP threshold configurations will
+    be restored to their previous values at the end of the function
+    that is being wrapped.
+
+    Examples
+    --------
+    Writing a function with this decorator:
+
+    >>> from pygram11 import histogram, omp_off
+    >>> @omp_off
+    ... def single_threaded_histogram():
+    ...     data = get_some_data()
+    ...     return pygram11.histogram(data, bins=10, range=(-5, 5), flow=True)
+
+    """
+    @functools.wraps(func)
+    def decorator(*args, **kwargs):
+        previous = (
+            pygram11.config.FIXED_WIDTH_PARALLEL_THRESHOLD_1D,
+            pygram11.config.FIXED_WIDTH_MW_PARALLEL_THRESHOLD_1D,
+            pygram11.config.FIXED_WIDTH_PARALLEL_THRESHOLD_2D,
+            pygram11.config.VARIABLE_WIDTH_PARALLEL_THRESHOLD_1D,
+            pygram11.config.VARIABLE_WIDTH_MW_PARALLEL_THRESHOLD_1D,
+            pygram11.config.VARIABLE_WIDTH_PARALLEL_THRESHOLD_2D,
+        )
+        disable_omp()
+        res = func(*args, **kwargs)
+        (
+            pygram11.config.FIXED_WIDTH_PARALLEL_THRESHOLD_1D,
+            pygram11.config.FIXED_WIDTH_MW_PARALLEL_THRESHOLD_1D,
+            pygram11.config.FIXED_WIDTH_PARALLEL_THRESHOLD_2D,
+            pygram11.config.VARIABLE_WIDTH_PARALLEL_THRESHOLD_1D,
+            pygram11.config.VARIABLE_WIDTH_MW_PARALLEL_THRESHOLD_1D,
+            pygram11.config.VARIABLE_WIDTH_PARALLEL_THRESHOLD_2D,
+        ) = previous
+        return res
+    return decorator
+
+
+def omp_on(func):
+    """Wrap a function to enable OpenMP while it's called.
+
+    The settings of the pygram11 OpenMP threshold configurations will
+    be restored to their previous values at the end of the function
+    that is being wrapped.
+
+    Examples
+    --------
+    Writing a function with this decorator:
+
+    >>> from pygram11 import histogram, omp_on
+    >>> @omp_on
+    ... def single_threaded_histogram():
+    ...     data = get_some_data()
+    ...     return pygram11.histogram(data, bins=10, range=(-5, 5), flow=True)
+
+    """
+    @functools.wraps(func)
+    def decorator(*args, **kwargs):
+        previous = (
+            pygram11.config.FIXED_WIDTH_PARALLEL_THRESHOLD_1D,
+            pygram11.config.FIXED_WIDTH_MW_PARALLEL_THRESHOLD_1D,
+            pygram11.config.FIXED_WIDTH_PARALLEL_THRESHOLD_2D,
+            pygram11.config.VARIABLE_WIDTH_PARALLEL_THRESHOLD_1D,
+            pygram11.config.VARIABLE_WIDTH_MW_PARALLEL_THRESHOLD_1D,
+            pygram11.config.VARIABLE_WIDTH_PARALLEL_THRESHOLD_2D,
+        )
+        force_omp()
+        res = func(*args, **kwargs)
+        (
+            pygram11.config.FIXED_WIDTH_PARALLEL_THRESHOLD_1D,
+            pygram11.config.FIXED_WIDTH_MW_PARALLEL_THRESHOLD_1D,
+            pygram11.config.FIXED_WIDTH_PARALLEL_THRESHOLD_2D,
+            pygram11.config.VARIABLE_WIDTH_PARALLEL_THRESHOLD_1D,
+            pygram11.config.VARIABLE_WIDTH_MW_PARALLEL_THRESHOLD_1D,
+            pygram11.config.VARIABLE_WIDTH_PARALLEL_THRESHOLD_2D,
+        ) = previous
+        return res
+    return decorator
+
+
+@contextlib.contextmanager
+def omp_disabled():
+    """Context manager to disable OpenMP."""
+    try:
+        previous = (
+            pygram11.config.FIXED_WIDTH_PARALLEL_THRESHOLD_1D,
+            pygram11.config.FIXED_WIDTH_MW_PARALLEL_THRESHOLD_1D,
+            pygram11.config.FIXED_WIDTH_PARALLEL_THRESHOLD_2D,
+            pygram11.config.VARIABLE_WIDTH_PARALLEL_THRESHOLD_1D,
+            pygram11.config.VARIABLE_WIDTH_MW_PARALLEL_THRESHOLD_1D,
+            pygram11.config.VARIABLE_WIDTH_PARALLEL_THRESHOLD_2D,
+        )
+        disable_omp()
+    finally:
+        (
+            pygram11.config.FIXED_WIDTH_PARALLEL_THRESHOLD_1D,
+            pygram11.config.FIXED_WIDTH_MW_PARALLEL_THRESHOLD_1D,
+            pygram11.config.FIXED_WIDTH_PARALLEL_THRESHOLD_2D,
+            pygram11.config.VARIABLE_WIDTH_PARALLEL_THRESHOLD_1D,
+            pygram11.config.VARIABLE_WIDTH_MW_PARALLEL_THRESHOLD_1D,
+            pygram11.config.VARIABLE_WIDTH_PARALLEL_THRESHOLD_2D,
+        ) = previous
+
+
+@contextlib.contextmanager
+def omp_enabled():
+    """Context manager to enable OpenMP."""
+    try:
+        previous = (
+            pygram11.config.FIXED_WIDTH_PARALLEL_THRESHOLD_1D,
+            pygram11.config.FIXED_WIDTH_MW_PARALLEL_THRESHOLD_1D,
+            pygram11.config.FIXED_WIDTH_PARALLEL_THRESHOLD_2D,
+            pygram11.config.VARIABLE_WIDTH_PARALLEL_THRESHOLD_1D,
+            pygram11.config.VARIABLE_WIDTH_MW_PARALLEL_THRESHOLD_1D,
+            pygram11.config.VARIABLE_WIDTH_PARALLEL_THRESHOLD_2D,
+        )
+        force_omp()
+    finally:
+        (
+            pygram11.config.FIXED_WIDTH_PARALLEL_THRESHOLD_1D,
+            pygram11.config.FIXED_WIDTH_MW_PARALLEL_THRESHOLD_1D,
+            pygram11.config.FIXED_WIDTH_PARALLEL_THRESHOLD_2D,
+            pygram11.config.VARIABLE_WIDTH_PARALLEL_THRESHOLD_1D,
+            pygram11.config.VARIABLE_WIDTH_MW_PARALLEL_THRESHOLD_1D,
+            pygram11.config.VARIABLE_WIDTH_PARALLEL_THRESHOLD_2D,
+        ) = previous
