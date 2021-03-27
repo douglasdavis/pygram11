@@ -47,16 +47,18 @@ def omp_get_max_threads() -> int:
     return _omp_get_max_threads()
 
 
+def default_omp() -> None:
+    """Turn OpenMP acceleration thresholds to the default values."""
+    pygram11.config.FIXED_WIDTH_PARALLEL_THRESHOLD_1D = 10_000
+    pygram11.config.FIXED_WIDTH_MW_PARALLEL_THRESHOLD_1D = 10_000
+    pygram11.config.FIXED_WIDTH_PARALLEL_THRESHOLD_2D = 10_000
+    pygram11.config.VARIABLE_WIDTH_PARALLEL_THRESHOLD_1D = 5_000
+    pygram11.config.VARIABLE_WIDTH_MW_PARALLEL_THRESHOLD_1D = 5_000
+    pygram11.config.VARIABLE_WIDTH_PARALLEL_THRESHOLD_2D = 5_000
+
+
 def disable_omp() -> None:
-    """Disable OpenMP acceleration by maximizing the parallel thresholds.
-
-    The default behavior is to avoid OpenMP acceleration for input
-    data with length below about 10,000 for fixed with histograms and
-    5,000 for variable width histograms. This function forces all
-    thresholds to be the ``sys.maxsize`` (never use OpenMP
-    acceleration).
-
-    """
+    """Disable OpenMP acceleration by maximizing the parallel thresholds."""
     pygram11.config.FIXED_WIDTH_PARALLEL_THRESHOLD_1D = sys.maxsize
     pygram11.config.FIXED_WIDTH_PARALLEL_THRESHOLD_2D = sys.maxsize
     pygram11.config.VARIABLE_WIDTH_PARALLEL_THRESHOLD_1D = sys.maxsize
@@ -66,14 +68,7 @@ def disable_omp() -> None:
 
 
 def force_omp() -> None:
-    """Force OpenMP acceleration by minimizing the parallel thresholds.
-
-    The default behavior is to avoid OpenMP acceleration for input
-    data with length below about 10,000 for fixed with histograms and
-    5,000 for variable width histograms. This function forces all
-    thresholds to be the 1 (always use OpenMP acceleration).
-
-    """
+    """Force OpenMP acceleration by minimizing the parallel thresholds."""
     pygram11.config.FIXED_WIDTH_PARALLEL_THRESHOLD_1D = 0
     pygram11.config.FIXED_WIDTH_PARALLEL_THRESHOLD_2D = 0
     pygram11.config.VARIABLE_WIDTH_PARALLEL_THRESHOLD_1D = 0
@@ -100,6 +95,7 @@ def omp_off(func):
     ...     return pygram11.histogram(data, bins=10, range=(-5, 5), flow=True)
 
     """
+
     @functools.wraps(func)
     def decorator(*args, **kwargs):
         previous = (
@@ -121,6 +117,7 @@ def omp_off(func):
             pygram11.config.VARIABLE_WIDTH_PARALLEL_THRESHOLD_2D,
         ) = previous
         return res
+
     return decorator
 
 
@@ -142,6 +139,7 @@ def omp_on(func):
     ...     return pygram11.histogram(data, bins=10, range=(-5, 5), flow=True)
 
     """
+
     @functools.wraps(func)
     def decorator(*args, **kwargs):
         previous = (
@@ -163,6 +161,7 @@ def omp_on(func):
             pygram11.config.VARIABLE_WIDTH_PARALLEL_THRESHOLD_2D,
         ) = previous
         return res
+
     return decorator
 
 
@@ -178,7 +177,7 @@ def omp_disabled():
             pygram11.config.VARIABLE_WIDTH_MW_PARALLEL_THRESHOLD_1D,
             pygram11.config.VARIABLE_WIDTH_PARALLEL_THRESHOLD_2D,
         )
-        disable_omp()
+        yield disable_omp()
     finally:
         (
             pygram11.config.FIXED_WIDTH_PARALLEL_THRESHOLD_1D,
@@ -202,7 +201,7 @@ def omp_enabled():
             pygram11.config.VARIABLE_WIDTH_MW_PARALLEL_THRESHOLD_1D,
             pygram11.config.VARIABLE_WIDTH_PARALLEL_THRESHOLD_2D,
         )
-        force_omp()
+        yield force_omp()
     finally:
         (
             pygram11.config.FIXED_WIDTH_PARALLEL_THRESHOLD_1D,
