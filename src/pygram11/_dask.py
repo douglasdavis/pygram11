@@ -1,7 +1,7 @@
 from types import ModuleType
 from typing import Any, Optional, Tuple, Union
 
-from ._hist import fix1d
+from pygram11._backend import _f1d, _f1dw
 import pygram11
 
 try:
@@ -32,18 +32,14 @@ def delayed_fix1d(
     flow: bool = False,
 ) -> Tuple[Any, Any]:
     _check_chunks(x, weights)
-
     x = x.to_delayed()
-
     if weights is None:
-        result_pairs = [
-            delayed(fix1d)(x_i, bins, range, None, False, flow) for x_i in x
-        ]
-        counts = [dc for dc, _ in result_pairs]
+        results = [delayed(_f1d)(x_i, bins, range[0], range[1], flow) for x_i in x]
+        return delayed(sum)(results)
     else:
         w = weights.to_delayed()
         result_pairs = [
-            delayed(fix1d)(x_i, bins, range, w_i, False, flow) for x_i, w_i in zip(x, w)
+            delayed(fix1d)(x_i, w_i, bins, range[0], range[1], flow) for x_i, w_i in zip(x, w)
         ]
 
     return None, None
