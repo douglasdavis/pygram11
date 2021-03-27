@@ -1,6 +1,5 @@
 from types import ModuleType
-from typing import Tuple, Union
-import functools
+from typing import Any, Optional, Tuple, Union
 
 from ._hist import fix1d
 import pygram11
@@ -9,8 +8,6 @@ try:
     import dask.array as da
     import dask.dataframe as dd
     from dask.delayed import delayed
-    from dask.core import flatten
-    from dask.base import tokenize
 except ImportError:
     da: Union[ModuleType, bool] = False
     dd = False
@@ -37,20 +34,20 @@ def delayed_fix1d(
     _check_chunks(x, weights)
 
     x = x.to_delayed()
-    if weights is not None:
-        w = weights.to_delayed()
 
-    if weights is not None:
+    if weights is None:
         result_pairs = [
-            delayed(fix1d)(x_i, bins, range, None, False, flow)
-            for x_i in x
+            delayed(fix1d)(x_i, bins, range, None, False, flow) for x_i in x
         ]
         counts = [dc for dc, _ in result_pairs]
-
     else:
-        result_pairs = [delayed(fix1d)(x_i, bins, range, w_i, False, flow)]
+        w = weights.to_delayed()
+        result_pairs = [
+            delayed(fix1d)(x_i, bins, range, w_i, False, flow) for x_i, w_i in zip(x, w)
+        ]
 
     return None, None
+
 
 # def fixed_1d(x, bins, range, weights=None, flow=False) -> Tuple[da.Array, da.Array]:
 #     token = tokenize(x, bins, range, weights, flow)

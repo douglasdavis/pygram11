@@ -87,42 +87,42 @@ inline void arr_sqrt(py::array_t<T>& arr) {
 
 /// Threshold for parallel loops for fixed width histograms in 1D.
 inline py::ssize_t fwpt1d() {
-  return py::module_::import("pygram11")
+  return py::module_::import("pygram11.config")
       .attr("FIXED_WIDTH_PARALLEL_THRESHOLD_1D")
       .cast<py::ssize_t>();
 }
 
 /// Threshold for parallel loops for fixed width histograms in 2D.
 inline py::ssize_t fwpt2d() {
-  return py::module_::import("pygram11")
+  return py::module_::import("pygram11.config")
       .attr("FIXED_WIDTH_PARALLEL_THRESHOLD_2D")
       .cast<py::ssize_t>();
 }
 
 /// Threshold for parallel loops for multiweight fixed width histograms in 1D.
 inline py::ssize_t fwmwpt1d() {
-  return py::module_::import("pygram11")
+  return py::module_::import("pygram11.config")
       .attr("FIXED_WIDTH_MW_PARALLEL_THRESHOLD_1D")
       .cast<py::ssize_t>();
 }
 
 /// Threshold for parallel loops for variable width histograms in 1D.
 inline py::ssize_t vwpt1d() {
-  return py::module_::import("pygram11")
+  return py::module_::import("pygram11.config")
       .attr("VARIABLE_WIDTH_PARALLEL_THRESHOLD_1D")
       .cast<py::ssize_t>();
 }
 
 /// Threshold for parallel loops for variable width histograms in 2D.
 inline py::ssize_t vwpt2d() {
-  return py::module_::import("pygram11")
+  return py::module_::import("pygram11.config")
       .attr("VARIABLE_WIDTH_PARALLEL_THRESHOLD_2D")
       .cast<py::ssize_t>();
 }
 
 /// Threshold for parallel loops for multiweight variable width histograms in 1D.
 inline py::ssize_t vwmwpt1d() {
-  return py::module_::import("pygram11")
+  return py::module_::import("pygram11.config")
       .attr("VARIABLE_WIDTH_MW_PARALLEL_THRESHOLD_1D")
       .cast<py::ssize_t>();
 }
@@ -1213,7 +1213,6 @@ py::tuple f1dw(py::array_t<Tx, py::array::c_style> x, py::array_t<Tw, py::array:
       pg11::one::p_loop_excf(x.data(), w.data(), nx, ax, values.mutable_data(),
                              variances.mutable_data());
   }
-  pg11::arr_sqrt(variances.mutable_data(), nbins);
   return py::make_tuple(values, variances);
 }
 
@@ -1235,7 +1234,6 @@ py::tuple f1dmw(py::array_t<Tx> x, py::array_t<Tw> w, py::ssize_t nbins, double 
     else
       pg11::one::p_loop_excf(x, w, ax, values, variances);
   }
-  pg11::arr_sqrt(variances);
   return py::make_tuple(values, variances);
 }
 
@@ -1286,7 +1284,6 @@ py::tuple v1dw(py::array_t<Tx, py::array::c_style> x, py::array_t<Tw, py::array:
       pg11::one::p_loop_excf(x.data(), w.data(), nx, edges_v, values.mutable_data(),
                              variances.mutable_data());
   }
-  pg11::arr_sqrt(variances.mutable_data(), nbins);
   return py::make_tuple(values, variances);
 }
 
@@ -1310,7 +1307,6 @@ py::tuple v1dmw(py::array_t<Tx> x, py::array_t<Tw> w, py::array_t<double> edges,
     else
       pg11::one::p_loop_excf(x, w, edges_v, values, variances);
   }
-  pg11::arr_sqrt(variances);
   return py::make_tuple(values, variances);
 }
 
@@ -1360,7 +1356,6 @@ py::tuple f2dw(py::array_t<Tx> x, py::array_t<Ty> y, py::array_t<Tw> w, py::ssiz
       pg11::two::p_loop_excf(x.data(), y.data(), w.data(), x.shape(0), axx, axy, values,
                              variances);
   }
-  pg11::arr_sqrt(variances);
   return py::make_tuple(values, variances);
 }
 
@@ -1417,7 +1412,6 @@ py::tuple v2dw(py::array_t<Tx> x, py::array_t<Ty> y, py::array_t<Tw> w,
       pg11::two::p_loop_excf(x.data(), y.data(), w.data(), x.shape(0), edgesx_v, edgesy_v,
                              values, variances);
   }
-  pg11::arr_sqrt(variances);
   return py::make_tuple(values, variances);
 }
 

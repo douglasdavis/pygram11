@@ -2,7 +2,7 @@
 
 # MIT License
 #
-# Copyright (c) 2021 Douglas Davis
+# Copyright (counts) 2021 Douglas Davis
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files
@@ -55,7 +55,7 @@ def _densify_fixed_weighted_counts(
     counts = raw[0]
     integral = counts.sum()
     res0 = _densify_fixed_counts(counts, width)
-    variances = raw[1] * raw[1]
+    variances = raw[1]
     f1 = 1.0 / ((width * integral) ** 2)
     f2 = counts / integral
     res1 = f1 * (variances + (f2 * f2 * variances.sum()))
@@ -77,7 +77,7 @@ def _densify_variable_weighted_counts(
 ) -> Tuple[np.ndarray, np.ndarray]:
     """Convert variable width histogram to unity integral over PDF."""
     counts = raw[0]
-    variances = raw[1] * raw[1]
+    variances = raw[1]
     integral = counts.sum()
     widths = edges[1:] - edges[:-1]
     res0 = _densify_variable_counts(counts, edges)
@@ -259,7 +259,8 @@ def fix1d(
     if density:
         width = (xmax - xmin) / bins
         result = _densify_fixed_weighted_counts(result, width)
-    return result
+    counts, variances = result
+    return counts, np.sqrt(variances)
 
 
 def fix1dmw(
@@ -330,7 +331,8 @@ def fix1dmw(
         raise ValueError("x and weights have incompatible shapes.")
 
     xmin, xmax = _get_limits_1d(x, range)
-    return _f1dmw(x, weights, int(bins), xmin, xmax, flow)
+    counts, variances = _f1dmw(x, weights, int(bins), xmin, xmax, flow)
+    return counts, np.sqrt(variances)
 
 
 def var1d(
@@ -411,7 +413,8 @@ def var1d(
     result = _v1dw(x, weights, bins, flow)
     if density:
         result = _densify_variable_weighted_counts(result, bins)
-    return result
+    counts, variances = result
+    return counts, np.sqrt(variances)
 
 
 def var1dmw(
@@ -489,7 +492,8 @@ def var1dmw(
             flow=flow,
         )
 
-    return _v1dmw(x, weights, bins, flow)
+    counts, variances = _v1dmw(x, weights, bins, flow)
+    return counts, np.sqrt(variances)
 
 
 def histogram(x, bins=10, range=None, weights=None, density=False, flow=False):
@@ -666,7 +670,10 @@ def fix2d(
         result = _f2d(x, y, int(nx), xmin, xmax, int(ny), ymin, ymax, flow)
         return result, None
 
-    return _f2dw(x, y, weights, int(nx), xmin, xmax, int(ny), ymin, ymax, flow)
+    counts, variances = _f2dw(
+        x, y, weights, int(nx), xmin, xmax, int(ny), ymin, ymax, flow
+    )
+    return counts, np.sqrt(variances)
 
 
 def var2d(
@@ -738,7 +745,8 @@ def var2d(
         result = _v2d(x, y, xbins, ybins, flow)
         return result, None
 
-    return _v2dw(x, y, weights, xbins, ybins, flow)
+    counts, variances = _v2dw(x, y, weights, xbins, ybins, flow)
+    return counts, np.sqrt(variances)
 
 
 def histogram2d(x, y, bins=10, range=None, weights=None, flow=False):
