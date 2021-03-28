@@ -21,5 +21,6 @@ OpenMP Configuration
 .. toctree::
    :maxdepth: 1
 
-   api/omp.rst
+   api/omp_conv.rst
+   api/omp_cnd.rst
    api/config.rst
