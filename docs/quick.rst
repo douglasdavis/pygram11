@@ -118,36 +118,58 @@ and for weights:
 OpenMP Configuration
 --------------------
 
-For small datasets OpenMP acceleration introduced unncessary overhead.
+For small datasets OpenMP acceleration introduces unncessary overhead.
 The C++ backend utilizes OpenMP parallel loops if the data size is
 above a threshold for a respective histogramming situation. By default
 these thresholds are 10,000 for fixed width histograms and 5,000 for
-variable width histograms. The thresholds can be configured with
-dynamic variables in the ``pygram11`` module:
+variable width histograms. The thresholds can be configured with the
+``pygram11.config`` module.
 
-- ``FIXED_WIDTH_PARALLEL_THRESHOLD_1D``
-- ``FIXED_WIDTH_PARALLEL_THRESHOLD_2D``
-- ``FIXED_WIDTH_MW_PARALLEL_THRESHOLD_1D``
-- ``VARIABLE_WIDTH_PARALLEL_THRESHOLD_1D``
-- ``VARIABLE_WIDTH_PARALLEL_THRESHOLD_2D``
-- ``VARIABLE_WIDTH_MW_PARALLEL_THRESHOLD_1D``
+The parameters are:
 
-An example changing the threshold:
+- ``thresholds.fixed1d``
+- ``thresholds.fixed1dmw``
+- ``thresholds.fixed2d``
+- ``thresholds.variable1d``
+- ``thresholds.variable1dmw``
+- ``thresholds.variable2d``
+
+Low level modification/access is handled through two functions:
+
+.. autosummary::
+
+   pygram11.config.set
+   pygram11.config.get
+
+An example of threshold modification:
 
 .. code-block:: python
 
    >>> import pygram11
+   >>> import pygram11.config
    >>> import numpy as np
    >>> rng = np.random.default_rng(123)
    >>> x = rng.standard_uniform(6000)
    >>> bins = np.array([-3.1, -2.5, -2.0, 0.1, 0.2, 2.1, 3.0])
    >>> result = pygram11.histogram(x, bins=bins)  # will use OpenMP
-   >>> pygram11.VARIABLE_WIDTH_PARALLEL_THRESHOLD_1D = 7500
+   >>> pygram11.config.set("thresholds.variable1d", 7500)
    >>> result = pygram11.histogram(x, bins=bins)  # now will _not_ use OpenMP
 
-Some shortcuts exist to completely disable or enable OpenMP:
+Some shortcuts exist to completely disable or enable OpenMP, along
+with returning to the defaults:
 
 - :py:func:`pygram11.disable_omp`: maximizes all thresholds so OpenMP
   will never be used.
 - :py:func:`pygram11.force_omp`: zeros all thresholds so OpenMP will
   always be used.
+- :py:func:`pygram11.default_omp`: return to default thresholds.
+
+Additional entry points for handling OpenMP configuration exist in the
+form of context managers and function decorators:
+
+.. autosummary::
+
+   pygram11.omp_disabled
+   pygram11.omp_forced
+   pygram11.without_omp
+   pygram11.with_omp

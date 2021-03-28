@@ -1,5 +1,3 @@
-"""pygram11 Histogram API."""
-
 # MIT License
 #
 # Copyright (counts) 2021 Douglas Davis
@@ -233,13 +231,16 @@ def fix1d(
     --------
     A histogram of ``x`` with 20 bins between 0 and 100:
 
+    >>> rng = np.random.default_rng(123)
+    >>> x = rng.uniform(0, 100, size=(100,))
     >>> h, __ = fix1d(x, bins=20, range=(0, 100))
 
     When weights are absent the second return is ``None``. The same
     data, now histogrammed with weights and over/underflow included:
 
     >>> rng = np.random.default_rng(123)
-    >>> w = rng.uniform(0.1, 0.9, x.shape[0]))
+    >>> x = rng.uniform(0, 100, size=(100,))
+    >>> w = rng.uniform(0.1, 0.9, x.shape[0])
     >>> h, stderr = fix1d(x, bins=20, range=(0, 100), weights=w, flow=True)
 
     """
@@ -467,7 +468,7 @@ def var1dmw(
 
     >>> rng = np.random.default_rng(123)
     >>> x = rng.standard_normal(10000)
-    >>> weights = nb.abs(rng.standard_normal((x.shape[0], 3)))
+    >>> weights = np.abs(rng.standard_normal((x.shape[0], 3)))
     >>> edges = np.array([-3.0, -2.5, -1.5, -0.25, 0.25, 2.0, 3.0])
     >>> h, err = var1dmw(x, weights, edges)
     >>> h.shape
@@ -559,10 +560,13 @@ def histogram(x, bins=10, range=None, weights=None, density=False, flow=False):
     --------
     A simple fixed width histogram:
 
-    >>> h, __ = histogram(x, bins=20, range=(0, 100))
+    >>> rng = np.random.default_rng(123)
+    >>> x = rng.standard_normal(2000)
+    >>> h, __ = histogram(x, bins=20, range=(-3, 3))
 
     And with variable width histograms and weights:
 
+    >>> w = rng.uniform(0.3, 1.1, size=x.shape)
     >>> h, err = histogram(x, bins=[-3, -2, -1.5, 1.5, 3.5], weights=w)
 
     """
@@ -646,10 +650,14 @@ def fix2d(
     the ``x`` dimention and 10 bins between 0 and 50 in the ``y``
     dimension:
 
+    >>> rng = np.random.default_rng(123)
+    >>> x = rng.uniform(0, 100, size=(200,))
+    >>> y = rng.uniform(0, 50, size=(200,))
     >>> h, __ = fix2d(x, y, bins=(20, 10), range=((0, 100), (0, 50)))
 
     The same data, now histogrammed weighted (via ``w``):
 
+    >>> w = rng.uniform(0.2, 0.9, size=x.shape)
     >>> h, err = fix2d(x, y, bins=(20, 10), range=((0, 100), (0, 50)), weights=w)
 
     """
@@ -726,7 +734,9 @@ def var2d(
     A histogram of (``x``, ``y``) where the edges are defined by a
     :func:`numpy.logspace` in both dimensions:
 
-    >>> bins = numpy.logspace(0.1, 1.0, 10, endpoint=True)
+    >>> x = np.exp(np.random.uniform(0, 1, size=(10000,)))
+    >>> y = np.exp(np.random.uniform(0, 1, size=(10000,)))
+    >>> bins = np.logspace(0.1, 1.0, 10, endpoint=True)
     >>> h, __ = var2d(x, y, bins, bins)
 
     """
@@ -809,7 +819,15 @@ def histogram2d(x, y, bins=10, range=None, weights=None, flow=False):
 
     Examples
     --------
-    >>> h, err = histogram2d(x, y, weights=w)
+    Gaussian distributions in 2D with automatic bin ranges:
+
+    >>> rng = np.random.default_rng(123)
+    >>> x = rng.standard_normal(size=(1000,))
+    >>> y = rng.standard_normal(size=(1000,))
+    >>> w = rng.uniform(0.3, 0.4, size=x.shape)
+    >>> h, err = histogram2d(x, y, bins=[10, 10], weights=w)
+    >>> h.shape
+    (10, 10)
 
     """
     try:

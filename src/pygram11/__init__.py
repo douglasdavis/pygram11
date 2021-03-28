@@ -25,6 +25,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 """
+from typing import Dict
 
 from .version import version as __version__  # noqa
 from ._hist import (
@@ -40,13 +41,14 @@ from ._hist import (
     histogram2d,
 )
 from ._misc import (
+    omp_get_max_threads,
     force_omp,
     disable_omp,
-    omp_get_max_threads,
-    omp_on,
-    omp_off,
+    default_omp,
     omp_disabled,
-    omp_enabled,
+    omp_forced,
+    without_omp,
+    with_omp,
 )
 
 

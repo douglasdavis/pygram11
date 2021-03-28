@@ -85,45 +85,10 @@ inline void arr_sqrt(py::array_t<T>& arr) {
   }
 }
 
-/// Threshold for parallel loops for fixed width histograms in 1D.
-inline py::ssize_t fwpt1d() {
+inline py::ssize_t config_threshold(const char* k) {
   return py::module_::import("pygram11.config")
-      .attr("FIXED_WIDTH_PARALLEL_THRESHOLD_1D")
-      .cast<py::ssize_t>();
-}
-
-/// Threshold for parallel loops for fixed width histograms in 2D.
-inline py::ssize_t fwpt2d() {
-  return py::module_::import("pygram11.config")
-      .attr("FIXED_WIDTH_PARALLEL_THRESHOLD_2D")
-      .cast<py::ssize_t>();
-}
-
-/// Threshold for parallel loops for multiweight fixed width histograms in 1D.
-inline py::ssize_t fwmwpt1d() {
-  return py::module_::import("pygram11.config")
-      .attr("FIXED_WIDTH_MW_PARALLEL_THRESHOLD_1D")
-      .cast<py::ssize_t>();
-}
-
-/// Threshold for parallel loops for variable width histograms in 1D.
-inline py::ssize_t vwpt1d() {
-  return py::module_::import("pygram11.config")
-      .attr("VARIABLE_WIDTH_PARALLEL_THRESHOLD_1D")
-      .cast<py::ssize_t>();
-}
-
-/// Threshold for parallel loops for variable width histograms in 2D.
-inline py::ssize_t vwpt2d() {
-  return py::module_::import("pygram11.config")
-      .attr("VARIABLE_WIDTH_PARALLEL_THRESHOLD_2D")
-      .cast<py::ssize_t>();
-}
-
-/// Threshold for parallel loops for multiweight variable width histograms in 1D.
-inline py::ssize_t vwmwpt1d() {
-  return py::module_::import("pygram11.config")
-      .attr("VARIABLE_WIDTH_MW_PARALLEL_THRESHOLD_1D")
+      .attr("config")
+      .cast<py::dict>()[k]
       .cast<py::ssize_t>();
 }
 
@@ -1175,7 +1140,7 @@ py::array_t<py::ssize_t> f1d(py::array_t<Tx, py::array::c_style> x, py::ssize_t 
   auto values = pg11::zeros<py::ssize_t>(nbins);
   pg11::faxis_t<double> ax{nbins, xmin, xmax};
   auto nx = x.shape(0);
-  if (nx < pg11::fwpt1d()) {  // serial
+  if (nx < pg11::config_threshold("thresholds.fixed1d")) {  // serial
     if (flow)
       pg11::one::s_loop_incf(x.data(), nx, ax, values.mutable_data());
     else
@@ -1197,7 +1162,7 @@ py::tuple f1dw(py::array_t<Tx, py::array::c_style> x, py::array_t<Tw, py::array:
   auto variances = pg11::zeros<Tw>(nbins);
   auto nx = x.shape(0);
   pg11::faxis_t<double> ax{nbins, xmin, xmax};
-  if (nx < pg11::fwpt1d()) {  // serial
+  if (nx < pg11::config_threshold("thresholds.fixed1d")) {  // serial
     if (flow)
       pg11::one::s_loop_incf(x.data(), w.data(), nx, ax, values.mutable_data(),
                              variances.mutable_data());
@@ -1222,7 +1187,7 @@ py::tuple f1dmw(py::array_t<Tx> x, py::array_t<Tw> w, py::ssize_t nbins, double 
   auto values = pg11::zeros<Tw>(nbins, w.shape(1));
   auto variances = pg11::zeros<Tw>(nbins, w.shape(1));
   pg11::faxis_t<double> ax{nbins, xmin, xmax};
-  if (x.shape(0) < pg11::fwmwpt1d()) {  // serial
+  if (x.shape(0) < pg11::config_threshold("thresholds.fixed1dmw")) {  // serial
     if (flow)
       pg11::one::s_loop_incf(x, w, ax, values, variances);
     else
@@ -1244,7 +1209,7 @@ py::array_t<py::ssize_t> v1d(py::array_t<Tx, py::array::c_style> x,
   std::vector<double> edges_v(edges.data(), edges.data() + nedges);
   auto values = pg11::zeros<py::ssize_t>(nedges - 1);
   auto nx = x.shape(0);
-  if (nx < pg11::vwpt1d()) {  // serial
+  if (nx < pg11::config_threshold("thresholds.variable1d")) {  // serial
     if (flow)
       pg11::one::s_loop_incf(x.data(), nx, edges_v, values.mutable_data());
     else
@@ -1268,7 +1233,7 @@ py::tuple v1dw(py::array_t<Tx, py::array::c_style> x, py::array_t<Tw, py::array:
   auto values = pg11::zeros<Tw>(nbins);
   auto variances = pg11::zeros<Tw>(nbins);
   auto nx = x.shape(0);
-  if (nx < pg11::vwpt1d()) {  // serial
+  if (nx < pg11::config_threshold("thresholds.variable1d")) {  // serial
     if (flow)
       pg11::one::s_loop_incf(x.data(), w.data(), nx, edges_v, values.mutable_data(),
                              variances.mutable_data());
@@ -1295,7 +1260,7 @@ py::tuple v1dmw(py::array_t<Tx> x, py::array_t<Tw> w, py::array_t<double> edges,
   std::vector<double> edges_v(edges.data(), edges.data() + nedges);
   auto values = pg11::zeros<Tw>(nbins, w.shape(1));
   auto variances = pg11::zeros<Tw>(nbins, w.shape(1));
-  if (x.shape(0) < pg11::vwmwpt1d()) {  // serial
+  if (x.shape(0) < pg11::config_threshold("thresholds.variable1dmw")) {  // serial
     if (flow)
       pg11::one::s_loop_incf(x, w, edges_v, values, variances);
     else
@@ -1317,7 +1282,7 @@ py::array_t<py::ssize_t> f2d(py::array_t<Tx> x, py::array_t<Ty> y, py::ssize_t n
   auto values = pg11::zeros<py::ssize_t>(nbinsx, nbinsy);
   pg11::faxis_t<double> axx{nbinsx, xmin, xmax};
   pg11::faxis_t<double> axy{nbinsy, ymin, ymax};
-  if (x.shape(0) < pg11::fwpt2d()) {  // serial
+  if (x.shape(0) < pg11::config_threshold("thresholds.fixed2d")) {  // serial
     if (flow)
       pg11::two::s_loop_incf(x.data(), y.data(), x.shape(0), axx, axy, values);
     else
@@ -1340,7 +1305,7 @@ py::tuple f2dw(py::array_t<Tx> x, py::array_t<Ty> y, py::array_t<Tw> w, py::ssiz
   auto variances = pg11::zeros<Tw>(nbinsx, nbinsy);
   pg11::faxis_t<double> axx{nbinsx, xmin, xmax};
   pg11::faxis_t<double> axy{nbinsy, ymin, ymax};
-  if (x.shape(0) < pg11::fwpt2d()) {  // serial
+  if (x.shape(0) < pg11::config_threshold("thresholds.fixed2d")) {  // serial
     if (flow)
       pg11::two::s_loop_incf(x.data(), y.data(), w.data(), x.shape(0), axx, axy, values,
                              variances);
@@ -1370,7 +1335,7 @@ py::array_t<py::ssize_t> v2d(py::array_t<Tx> x, py::array_t<Ty> y,
   auto values = pg11::zeros<py::ssize_t>(nbinsx, nbinsy);
   std::vector<double> edgesx_v(xbins.data(), xbins.data() + nedgesx);
   std::vector<double> edgesy_v(ybins.data(), ybins.data() + nedgesy);
-  if (x.shape(0) < pg11::vwpt2d()) {
+  if (x.shape(0) < pg11::config_threshold("thresholds.variable2d")) {
     if (flow)
       pg11::two::s_loop_incf(x.data(), y.data(), x.shape(0), edgesx_v, edgesy_v, values);
     else
@@ -1396,7 +1361,7 @@ py::tuple v2dw(py::array_t<Tx> x, py::array_t<Ty> y, py::array_t<Tw> w,
   auto variances = pg11::zeros<Tw>(nbinsx, nbinsy);
   std::vector<double> edgesx_v(xbins.data(), xbins.data() + nedgesx);
   std::vector<double> edgesy_v(ybins.data(), ybins.data() + nedgesy);
-  if (x.shape(0) < pg11::vwpt2d()) {
+  if (x.shape(0) < pg11::config_threshold("thresholds.variable2d")) {
     if (flow)
       pg11::two::s_loop_incf(x.data(), y.data(), w.data(), x.shape(0), edgesx_v, edgesy_v,
                              values, variances);
@@ -1485,6 +1450,9 @@ void inject_2dw(py::module_& m, const type_list<Tx, Ty, Tw>&) {
 PYBIND11_MODULE(_backend, m) {
   m.doc() = "pygram11 C++ backend.";
   m.def("_omp_get_max_threads", []() { return omp_get_max_threads(); });
+
+  m.def("_get_config_threshold",
+        [](const std::string& k) { return pg11::config_threshold(k.c_str()); });
 
   using boost::mp11::mp_for_each;
   mp_for_each<pg_types>([&](const auto& Ts) { inject1d(m, Ts); });
