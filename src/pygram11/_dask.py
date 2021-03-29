@@ -25,7 +25,6 @@ from typing import Any, Optional, Tuple, Union
 
 import numpy as np
 
-from pygram11._backend import _f1d, _f1dw
 import pygram11
 
 try:
@@ -33,8 +32,9 @@ try:
     import dask.dataframe as dd
     from dask.delayed import delayed
 except ImportError:
-    da: Union[ModuleType, bool] = False
+    da = False
     dd = False
+    delayed = False
 
 
 def _check_chunks(x: da.Array, w: Optional[da.Array] = None) -> bool:
@@ -47,7 +47,7 @@ def _check_chunks(x: da.Array, w: Optional[da.Array] = None) -> bool:
     return True
 
 
-def fix1d(
+def delayed_fix1d(
     x: da.Array,
     bins: int,
     range: Tuple[float, float],
@@ -58,7 +58,9 @@ def fix1d(
     _check_chunks(x, weights)
     if weights is None:
         x = x.to_delayed()
-        results = [delayed(_f1d)(x_i, bins, range[0], range[1], flow) for x_i in x]
+        results = [
+            delayed(pygram11.fix1d)(x_i, bins, range, None, False, flow) for x_i in x
+        ]
         return delayed(sum)(results), None
     else:
         if x.shape != weights.shape:
@@ -68,7 +70,7 @@ def fix1d(
         x = x.to_delayed()
         w = weights.to_delayed()
         result_pairs = [
-            delayed(_f1dw)(x_i, w_i, bins, range[0], range[1], flow)
+            delayed(pygram11.fix1d)(x_i, bins, range, w_i, False, flow)
             for x_i, w_i in zip(x, w)
         ]
         counts = [d[0] for d in result_pairs]
