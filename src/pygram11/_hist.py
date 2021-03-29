@@ -34,6 +34,9 @@ from pygram11._backend import _f1d, _v1d, _f1dw, _v1dw, _f1dmw, _v1dmw
 # Two dimensional backend functions
 from pygram11._backend import _f2d, _f2dw, _v2d, _v2dw
 
+# dask API
+import pygram11._dask as pgd
+
 
 def _likely_uniform_bins(edges: np.ndarray) -> bool:
     """Test if bin edges describe a set of fixed width bins."""
@@ -571,6 +574,9 @@ def histogram(x, bins=10, range=None, weights=None, density=False, flow=False):
 
     """
     # make sure x and weight data are NumPy arrays.
+    if hasattr(x, "__dask_keys__"):
+        return pgd.delayed_fix1d(x, bins, range, weights, density, flow)
+
     x = np.array(x)
     is_multiweight = False
     if weights is not None:
