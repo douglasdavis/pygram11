@@ -23,6 +23,8 @@
 from types import ModuleType
 from typing import Any, Optional, Tuple, Union
 
+import numpy as np
+
 from pygram11._backend import _f1d, _f1dw
 import pygram11
 
@@ -45,7 +47,7 @@ def _check_chunks(x: da.Array, w: Optional[da.Array] = None) -> bool:
     return True
 
 
-def delayed_fix1d(
+def fix1d(
     x: da.Array,
     bins: int,
     range: Tuple[float, float],
@@ -54,18 +56,28 @@ def delayed_fix1d(
     flow: bool = False,
 ) -> Tuple[Any, Any]:
     _check_chunks(x, weights)
-    x = x.to_delayed()
     if weights is None:
+        x = x.to_delayed()
         results = [delayed(_f1d)(x_i, bins, range[0], range[1], flow) for x_i in x]
-        return delayed(sum)(results)
+        return delayed(sum)(results), None
     else:
+        if x.shape != weights.shape:
+            raise ValueError("data and weights must have the same shape")
+        if x.chunksize != weights.chunksize:
+            raise ValueError("data and weights must have the same chunk structure")
+        x = x.to_delayed()
         w = weights.to_delayed()
         result_pairs = [
-            delayed(fix1d)(x_i, w_i, bins, range[0], range[1], flow)
+            delayed(_f1dw)(x_i, w_i, bins, range[0], range[1], flow)
             for x_i, w_i in zip(x, w)
         ]
+        counts = [d[0] for d in result_pairs]
+        variances = [d[1] for d in result_pairs]
+        counts = delayed(sum)(counts)
+        variances = delayed(sum)(variances)
+        errors = delayed(np.sqrt)(variances)
 
-    return None, None
+    return counts, errors
 
 
 # def fixed_1d(x, bins, range, weights=None, flow=False) -> Tuple[da.Array, da.Array]:
