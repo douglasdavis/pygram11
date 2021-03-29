@@ -20,9 +20,6 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from types import ModuleType
-from typing import Any, Optional, Tuple, Union
-
 import numpy as np
 
 import pygram11
@@ -37,7 +34,7 @@ except ImportError:
     delayed = False
 
 
-def _check_chunks(x: da.Array, w: Optional[da.Array] = None) -> bool:
+def _check_chunks(x, w=None) -> bool:
     if w is not None:
         if x.chunksize[0] != w.chunksize[0]:
             raise ValueError(
@@ -48,13 +45,13 @@ def _check_chunks(x: da.Array, w: Optional[da.Array] = None) -> bool:
 
 
 def delayed_fix1d(
-    x: da.Array,
-    bins: int,
-    range: Tuple[float, float],
-    weights: Optional[da.Array] = None,
-    density: bool = False,
-    flow: bool = False,
-) -> Tuple[Any, Any]:
+    x,
+    bins,
+    range,
+    weights=None,
+    density=False,
+    flow=False,
+):
     _check_chunks(x, weights)
     if weights is None:
         x = x.to_delayed()
