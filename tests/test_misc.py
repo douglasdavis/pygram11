@@ -1,3 +1,5 @@
+import os
+import multiprocessing
 import sys
 import pytest
 import pygram11
