@@ -194,6 +194,7 @@ def fix1d(
     weights: Optional[np.ndarray] = None,
     density: bool = False,
     flow: bool = False,
+    cons_var: bool = False,
 ) -> Tuple[np.ndarray, Union[np.ndarray, None]]:
     r"""Histogram data with fixed (uniform) bin widths.
 
@@ -214,6 +215,9 @@ def fix1d(
         integral over the range is unity.
     flow : bool
         Include under/overflow in the first/last bins.
+    cons_var : bool
+        If ``True``, conserve the variance rather than return the
+        standard error (square root of the variance).
 
     Raises
     ------
@@ -228,7 +232,8 @@ def fix1d(
         The resulting histogram bin counts.
     :py:obj:`numpy.ndarray`, optional
         The standard error of each bin count, :math:`\sqrt{\sum_i
-        w_i^2}`. The return is ``None`` if weights are not used.
+        w_i^2}`. The return is ``None`` if weights are not used. If
+        ``cons_var`` is ``True``, the variance is returned.
 
     Examples
     --------
@@ -264,6 +269,8 @@ def fix1d(
         width = (xmax - xmin) / bins
         result = _densify_fixed_weighted_counts(result, width)
     counts, variances = result
+    if cons_var:
+        return counts, variances
     return counts, np.sqrt(variances)
 
 
@@ -273,6 +280,7 @@ def fix1dmw(
     bins: int = 10,
     range: Optional[Tuple[float, float]] = None,
     flow: bool = False,
+    cons_var: bool = False,
 ) -> Tuple[np.ndarray, np.ndarray]:
     r"""Histogram data with multiple weight variations and fixed width bins.
 
@@ -297,6 +305,9 @@ def fix1dmw(
         min and max of ``x`` will be used.
     flow : bool
         Include under/overflow in the first/last bins.
+    cons_var : bool
+        If ``True``, conserve the variance rather than return the
+        standard error (square root of the variance).
 
     Raises
     ------
@@ -336,6 +347,8 @@ def fix1dmw(
 
     xmin, xmax = _get_limits_1d(x, range)
     counts, variances = _f1dmw(x, weights, int(bins), xmin, xmax, flow)
+    if cons_var:
+        return counts, variances
     return counts, np.sqrt(variances)
 
 
@@ -345,6 +358,7 @@ def var1d(
     weights: Optional[np.ndarray] = None,
     density: bool = False,
     flow: bool = False,
+    cons_var: bool = False,
 ) -> Tuple[np.ndarray, Optional[np.ndarray]]:
     r"""Histogram data with variable bin widths.
 
@@ -362,6 +376,9 @@ def var1d(
         integral over the range is unity.
     flow : bool
         Include under/overflow in the first/last bins.
+    cons_var : bool
+        If ``True``, conserve the variance rather than return the
+        standard error (square root of the variance).
 
     Raises
     ------
@@ -418,6 +435,8 @@ def var1d(
     if density:
         result = _densify_variable_weighted_counts(result, bins)
     counts, variances = result
+    if cons_var:
+        return counts, variances
     return counts, np.sqrt(variances)
 
 
@@ -426,6 +445,7 @@ def var1dmw(
     weights: np.ndarray,
     bins: np.ndarray,
     flow: bool = False,
+    cons_var: bool = False,
 ) -> Tuple[np.ndarray, np.ndarray]:
     r"""Histogram data with multiple weight variations and variable width bins.
 
@@ -446,6 +466,9 @@ def var1dmw(
         Bin edges.
     flow : bool
         Include under/overflow in the first/last bins.
+    cons_var : bool
+        If ``True``, conserve the variance rather than return the
+        standard error (square root of the variance).
 
     Raises
     ------
@@ -497,10 +520,20 @@ def var1dmw(
         )
 
     counts, variances = _v1dmw(x, weights, bins, flow)
+    if cons_var:
+        return counts, variances
     return counts, np.sqrt(variances)
 
 
-def histogram(x, bins=10, range=None, weights=None, density=False, flow=False):
+def histogram(
+    x,
+    bins=10,
+    range=None,
+    weights=None,
+    density=False,
+    flow=False,
+    cons_var=False,
+):
     r"""Histogram data in one dimension.
 
     Parameters
@@ -523,6 +556,9 @@ def histogram(x, bins=10, range=None, weights=None, density=False, flow=False):
         integral over the range is unity.
     flow : bool
         Include under/overflow in the first/last bins.
+    cons_var : bool
+        If ``True``, conserve the variance rather than return the
+        standard error (square root of the variance).
 
     Raises
     ------
@@ -588,9 +624,22 @@ def histogram(x, bins=10, range=None, weights=None, density=False, flow=False):
     # fixed bins
     if isinstance(bins, int):
         if is_multiweight:
-            return fix1dmw(x, weights, bins=bins, range=range, flow=flow)
+            return fix1dmw(
+                x,
+                weights,
+                bins=bins,
+                range=range,
+                flow=flow,
+                cons_var=cons_var,
+            )
         return fix1d(
-            x, weights=weights, bins=bins, range=range, density=density, flow=flow
+            x,
+            weights=weights,
+            bins=bins,
+            range=range,
+            density=density,
+            flow=flow,
+            cons_var=cons_var,
         )
 
     # variable bins
@@ -599,8 +648,15 @@ def histogram(x, bins=10, range=None, weights=None, density=False, flow=False):
         if range is not None:
             raise ValueError("range must be None if bins is non-int")
         if is_multiweight:
-            return var1dmw(x, weights, bins=bins, flow=flow)
-        return var1d(x, weights=weights, bins=bins, density=density, flow=flow)
+            return var1dmw(x, weights, bins=bins, flow=flow, cons_var=cons_var)
+        return var1d(
+            x,
+            weights=weights,
+            bins=bins,
+            density=density,
+            flow=flow,
+            cons_var=cons_var,
+        )
 
 
 def fix2d(
@@ -610,6 +666,7 @@ def fix2d(
     range: Optional[Sequence[Tuple[float, float]]] = None,
     weights: Optional[np.ndarray] = None,
     flow: bool = False,
+    cons_var: bool = False,
 ) -> Tuple[np.ndarray, Optional[np.ndarray]]:
     r"""Histogram two dimensional data with fixed (uniform) binning.
 
@@ -633,6 +690,9 @@ def fix2d(
         second return type will be ``None``.
     flow : bool
         Include over/underflow.
+    cons_var : bool
+        If ``True``, conserve the variance rather than return the
+        standard error (square root of the variance).
 
     Raises
     ------
@@ -687,6 +747,8 @@ def fix2d(
     counts, variances = _f2dw(
         x, y, weights, int(nx), xmin, xmax, int(ny), ymin, ymax, flow
     )
+    if cons_var:
+        return counts, variances
     return counts, np.sqrt(variances)
 
 
@@ -697,6 +759,7 @@ def var2d(
     ybins: np.ndarray,
     weights: Optional[np.ndarray] = None,
     flow: bool = False,
+    cons_var: bool = False,
 ) -> Tuple[np.ndarray, Optional[np.ndarray]]:
     r"""Histogram two dimensional data with variable width binning.
 
@@ -718,6 +781,9 @@ def var2d(
         second return type will be ``None``.
     flow : bool
         Include under/overflow.
+    cons_var : bool
+        If ``True``, conserve the variance rather than return the
+        standard error (square root of the variance).
 
     Raises
     ------
@@ -762,10 +828,12 @@ def var2d(
         return result, None
 
     counts, variances = _v2dw(x, y, weights, xbins, ybins, flow)
+    if cons_var:
+        return counts, variances
     return counts, np.sqrt(variances)
 
 
-def histogram2d(x, y, bins=10, range=None, weights=None, flow=False):
+def histogram2d(x, y, bins=10, range=None, weights=None, flow=False, cons_var=False):
     r"""Histogram data in two dimensions.
 
     This function provides an API very simiar to
@@ -798,6 +866,9 @@ def histogram2d(x, y, bins=10, range=None, weights=None, flow=False):
         associated weight to the bin count.
     flow : bool
         Include over/underflow.
+    cons_var : bool
+        If ``True``, conserve the variance rather than return the
+        standard error (square root of the variance).
 
     Raises
     ------
@@ -847,10 +918,18 @@ def histogram2d(x, y, bins=10, range=None, weights=None, flow=False):
         weights = np.asarray(weights)
     if N != 1 and N != 2:
         bins = np.asarray(bins)
-        return var2d(x, y, bins, bins, weights=weights, flow=flow)
+        return var2d(x, y, bins, bins, weights=weights, flow=flow, cons_var=cons_var)
 
     elif N == 1:
-        return fix2d(x, y, bins=bins, range=range, weights=weights, flow=flow)
+        return fix2d(
+            x,
+            y,
+            bins=bins,
+            range=range,
+            weights=weights,
+            flow=flow,
+            cons_var=cons_var,
+        )
 
     elif N == 2:
         if isinstance(bins[0], int) and isinstance(bins[1], int):
