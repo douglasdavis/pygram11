@@ -10,7 +10,7 @@ import pygram11 as pg
 TKEYS = list(pygram11.config.threshold_keys())
 
 
-def test_omp_get_max_threads(self):
+def test_omp_get_max_threads():
     nthreads = os.getenv("OMP_NUM_THREADS")
     if nthreads is None:
         nthreads = multiprocessing.cpu_count()
