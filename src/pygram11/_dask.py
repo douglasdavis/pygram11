@@ -1,28 +1,5 @@
-# MIT License
-#
-# Copyright (c) 2021 Douglas Davis
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
-
+# third party
 import numpy as np
-
-import pygram11
 
 try:
     import dask.array as da
@@ -33,6 +10,8 @@ except ImportError:
     dd = False
     delayed = False
 
+import pygram11._hist as pgh
+
 
 def _check_chunks(x, w=None) -> bool:
     if w is not None:
@@ -42,6 +21,10 @@ def _check_chunks(x, w=None) -> bool:
                 "equal chunks along the sample (0th) axis"
             )
     return True
+
+
+def _blocked_fix1d(x, bins, range, weights, flow):
+    pass
 
 
 def delayed_fix1d(
@@ -56,7 +39,7 @@ def delayed_fix1d(
     if weights is None:
         x = x.to_delayed()
         results = [
-            delayed(pygram11.fix1d)(x_i, bins, range, None, False, flow) for x_i in x
+            delayed(pgh.fix1d)(x_i, bins, range, None, False, flow) for x_i in x
         ]
         return delayed(sum)(results), None
     else:
@@ -67,7 +50,7 @@ def delayed_fix1d(
         x = x.to_delayed()
         w = weights.to_delayed()
         result_pairs = [
-            delayed(pygram11.fix1d)(x_i, bins, range, w_i, False, flow)
+            delayed(pgh.fix1d)(x_i, bins, range, w_i, False, flow)
             for x_i, w_i in zip(x, w)
         ]
         counts = [d[0] for d in result_pairs]

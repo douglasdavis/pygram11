@@ -25,10 +25,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 """
-from typing import Dict
 
 from .version import version as __version__  # noqa
-from ._hist import (
+
+from ._hist import (  # noqa
     bin_centers,
     bin_edges,
     fix1d,
@@ -37,10 +37,11 @@ from ._hist import (
     var1dmw,
     fix2d,
     var2d,
-    histogram,
-    histogram2d,
 )
-from ._misc import (
+
+from ._numpy import histogram, histogram2d  # noqa
+
+from ._misc import (  # noqa
     omp_get_max_threads,
     force_omp,
     disable_omp,
