@@ -25,7 +25,7 @@ def limits_2d(
             float(np.amin(x)),
             float(np.amax(x)),
             float(np.amin(y)),
-            float(np.amin(y)),
+            float(np.amax(y)),
         )
     else:
         return (

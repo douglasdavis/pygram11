@@ -360,15 +360,6 @@ class TestExceptions:
             pg.histogram(x.astype(np.float32), bins=[1.0, 2.0, 3.0, 5.0], range=(-1, 1))
 
 
-class TestMisc:
-    @pytest.mark.misci
-    def test_omp_get_max_threads(self):
-        nthreads = os.getenv("OMP_NUM_THREADS")
-        if nthreads is None:
-            nthreads = multiprocessing.cpu_count()
-        assert int(nthreads) == pg.omp_get_max_threads()
-
-
 class TestConvenience:
     @pytest.mark.misci
     def test_bin_centers(self):
