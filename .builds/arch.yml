@@ -11,7 +11,7 @@ sources:
 tasks:
 - test: |
     cd pygram11
-    python3 -m pip install . -vv
+    python3 -m pip install .[complete] -vv
     python3 -m pytest
 triggers:
 - action: email
