@@ -182,6 +182,17 @@ if not has_openmp():
     )
 
 
+extras_require = {
+    "dask": [
+        "dask[array] >=2021.1.0",
+    ],
+    "test": [
+        "pytest",
+    ],
+}
+
+extras_require["complete"] = sorted(set(sum(extras_require.values(), [])))
+
 setup(
     use_scm_version=True,
     setup_requires=["setuptools_scm"],
