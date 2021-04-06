@@ -178,7 +178,7 @@ def fix1d(
     :py:obj:`numpy.ndarray`, optional
         The standard error of each bin count, :math:`\sqrt{\sum_i
         w_i^2}`. The return is ``None`` if weights are not used. If
-        ``cons_var`` is ``True``, the variance is returned.
+        ``cons_var`` is ``True``, the variances are returned.
 
     Examples
     --------
@@ -269,7 +269,9 @@ def fix1dmw(
     :py:obj:`numpy.ndarray`
         The bin counts.
     :py:obj:`numpy.ndarray`
-        The standard error of each bin count, :math:`\sqrt{\sum_i w_i^2}`.
+        The standard error of each bin count, :math:`\sqrt{\sum_i
+        w_i^2}`. If ``cons_var`` is ``True``, the variances are
+        returned.
 
     Examples
     --------
@@ -340,7 +342,8 @@ def var1d(
         The bin counts.
     :py:obj:`numpy.ndarray`, optional
         The standard error of each bin count, :math:`\sqrt{\sum_i
-        w_i^2}`. The return is ``None`` if weights are not used.
+        w_i^2}`. If ``cons_var`` is True, the variances are returned.
+        The return is ``None`` if weights are not used.
 
     Examples
     --------
@@ -431,7 +434,9 @@ def var1dmw(
     :py:obj:`numpy.ndarray`
         The bin counts.
     :py:obj:`numpy.ndarray`
-        The standard error of each bin count, :math:`\sqrt{\sum_i w_i^2}`.
+        The standard error of each bin count, :math:`\sqrt{\sum_i
+        w_i^2}`. If ``cons_var`` is ``True``, the variances are
+        returned.
 
     Examples
     --------
@@ -519,7 +524,9 @@ def fix2d(
     :py:obj:`numpy.ndarray`
         The bin counts.
     :py:obj:`numpy.ndarray`, optional
-        The standard error of each bin count, :math:`\sqrt{\sum_i w_i^2}`.
+        The standard error of each bin count, :math:`\sqrt{\sum_i
+        w_i^2}`. If ``cons_var`` is ``True``, the variances are
+        returned.
 
     Examples
     --------
@@ -610,7 +617,9 @@ def var2d(
     :py:obj:`numpy.ndarray`
         The bin counts.
     :py:obj:`numpy.ndarray`, optional
-        The standard error of each bin count, :math:`\sqrt{\sum_i w_i^2}`.
+        The standard error of each bin count, :math:`\sqrt{\sum_i
+        w_i^2}`. If ``cons_var`` is ``True``, the variances are
+        returned.
 
     Examples
     --------
