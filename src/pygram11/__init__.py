@@ -27,7 +27,8 @@ SOFTWARE.
 """
 
 from .version import version as __version__  # noqa
-from ._hist import (
+
+from ._hist import (  # noqa
     bin_centers,
     bin_edges,
     fix1d,
@@ -36,28 +37,20 @@ from ._hist import (
     var1dmw,
     fix2d,
     var2d,
-    histogram,
-    histogram2d,
 )
-from ._misc import force_omp, disable_omp, omp_get_max_threads
+
+from ._numpy import histogram, histogram2d  # noqa
+
+from ._misc import (  # noqa
+    omp_get_max_threads,
+    force_omp,
+    disable_omp,
+    default_omp,
+    omp_disabled,
+    omp_forced,
+    without_omp,
+    with_omp,
+)
 
 
 version_info = tuple(__version__.split("."))
-
-FIXED_WIDTH_PARALLEL_THRESHOLD_1D: int = 10_000
-"""int: Threshold for running OpenMP acceleration for fixed width histograms in 1D."""
-
-FIXED_WIDTH_MW_PARALLEL_THRESHOLD_1D: int = 10_000
-"""int: Threshold for running OpenMP acceleration for multiweight fixed width histograms."""
-
-FIXED_WIDTH_PARALLEL_THRESHOLD_2D: int = 10_000
-"""int: Threshold for running OpenMP acceleration for fixed with histograms in 2D."""
-
-VARIABLE_WIDTH_PARALLEL_THRESHOLD_1D: int = 5_000
-"""int: Threshold for running OpenMP acceleration for variable width histograms in 1D."""
-
-VARIABLE_WIDTH_MW_PARALLEL_THRESHOLD_1D: int = 5_000
-"""int: Threshold for running OpenMP acceleration for multiweight variable width histograms."""
-
-VARIABLE_WIDTH_PARALLEL_THRESHOLD_2D: int = 5_000
-"""int: Threshold for running OpenMP acceleration for variable width histograms in 2D."""

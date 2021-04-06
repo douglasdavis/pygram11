@@ -32,4 +32,9 @@ and accelerated with OpenMP_.
    req.rst
    quick.rst
    bench.rst
+
+.. toctree::
+   :maxdepth: 2
+   :caption: API Reference
+
    api.rst

@@ -98,7 +98,7 @@ calculating histograms.
    2.33 ms ± 170 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
 
 You can see the type conversion increases this calculation time by
-about 20%. The backend C++ functions prohibit type conversions of the
+about 20%. The back-end C++ functions prohibit type conversions of the
 input data. If an array with an unsupported :py:class:`numpy.dtype` is
 passed to pygram11, a :py:class:`TypeError` will be rasied. Supported
 :py:class:`numpy.dtype`'s for data are:
@@ -118,36 +118,103 @@ and for weights:
 OpenMP Configuration
 --------------------
 
-For small datasets OpenMP acceleration introduced unncessary overhead.
-The C++ backend utilizes OpenMP parallel loops if the data size is
-above a threshold for a respective histogramming situation. By default
-these thresholds are 10,000 for fixed width histograms and 5,000 for
-variable width histograms. The thresholds can be configured with
-dynamic variables in the ``pygram11`` module:
+For small datasets OpenMP acceleration introduces unncessary overhead.
+Or, if you're using the pygram11 API in cluster workflows (like with
+Dask_), you have your threads committed to higher level abstractions.
 
-- ``FIXED_WIDTH_PARALLEL_THRESHOLD_1D``
-- ``FIXED_WIDTH_PARALLEL_THRESHOLD_2D``
-- ``FIXED_WIDTH_MW_PARALLEL_THRESHOLD_1D``
-- ``VARIABLE_WIDTH_PARALLEL_THRESHOLD_1D``
-- ``VARIABLE_WIDTH_PARALLEL_THRESHOLD_2D``
-- ``VARIABLE_WIDTH_MW_PARALLEL_THRESHOLD_1D``
+By default, the C++ back-end utilizes OpenMP parallel loops if the
+data size is above a threshold for a respective histogramming
+situation. These thresholds are 10,000 for fixed width histograms and
+5,000 for variable width histograms. The thresholds can be configured
+in a granular way with the ``pygram11.config`` module.
 
-An example changing the threshold:
+The parameters are:
+
+- ``"thresholds.fixed1d"``
+- ``"thresholds.fixed1dmw"``
+- ``"thresholds.fixed2d"``
+- ``"thresholds.variable1d"``
+- ``"thresholds.variable1dmw"``
+- ``"thresholds.variable2d"``
+
+Low level reading/writing is handled through two functions:
+
+.. autosummary::
+
+   pygram11.config.get
+   pygram11.config.set
+
+If you have specific thresholds in mind,
+:py:func:`pygram11.config.set` is the recommended interface.
+
+The recommended entry points for controlling OpenMP acceleration in an
+on/off switch way are through the provided context managers and
+decorators (if we want to force OpenMP acceleration, we set the
+thresholds to zero; if we want to disable OpenMP acceleration, we set
+the thresholds to `sys.maxsize`).
+
+.. autosummary::
+
+   pygram11.omp_disabled
+   pygram11.omp_forced
+   pygram11.without_omp
+   pygram11.with_omp
+
+The context manager and decorator APIs provide an interface that
+executes *temporary* adjustments to the thresholds that live during
+specific code blocks or for entire function calls. For example, we can
+disable a specific threshold during a :py:func:`pygram11.histogram`
+call with the :py:func:`pygram11.omp_disabled` context manager:
+
+.. code-block:: python
+
+   import pygram11
+   import numpy as np
+
+   rng = np.random.default_rng(123)
+   x = rng.standard_normal(50_000)
+   with omp_disabled(key="thresholds.fixed1d"):
+       result = pygram11.histogram(x, bins=50, range=(-3, 3))
+
+or we can decorate a function to disable OpenMP during its use:
+
+.. code-block:: python
+
+   import pygram11
+   import numpy as np
+
+   @pygram11.without_omp
+   def hist():
+       rng = np.random.default_rng(123)
+       x = rng.standard_normal(50_000)
+       return pygram11.histogram(x, bins=50, range=(-3, 3))
+
+
+If the ``key`` argument is not provided, all thresholds will be
+temporarily modified.
+
+An example of threshold modification via the granular interface:
 
 .. code-block:: python
 
    >>> import pygram11
+   >>> import pygram11.config
    >>> import numpy as np
    >>> rng = np.random.default_rng(123)
    >>> x = rng.standard_uniform(6000)
    >>> bins = np.array([-3.1, -2.5, -2.0, 0.1, 0.2, 2.1, 3.0])
    >>> result = pygram11.histogram(x, bins=bins)  # will use OpenMP
-   >>> pygram11.VARIABLE_WIDTH_PARALLEL_THRESHOLD_1D = 7500
+   >>> pygram11.config.set("thresholds.variable1d", 7500)
    >>> result = pygram11.histogram(x, bins=bins)  # now will _not_ use OpenMP
 
-Some shortcuts exist to completely disable or enable OpenMP:
+Some shortcuts exist to completely disable or enable OpenMP, along
+with returning to the defaults:
 
 - :py:func:`pygram11.disable_omp`: maximizes all thresholds so OpenMP
   will never be used.
 - :py:func:`pygram11.force_omp`: zeros all thresholds so OpenMP will
   always be used.
+- :py:func:`pygram11.default_omp`: return to default thresholds.
+
+
+.. _Dask: https://dask.org

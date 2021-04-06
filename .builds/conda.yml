@@ -18,21 +18,21 @@ tasks:
       source $HOME/miniconda/etc/profile.d/conda.sh
       conda activate py37
       pip install pip -U
-      pip install .
+      pip install .[complete]
       python -m pytest
   - test_python38: |
       cd pygram11
       source $HOME/miniconda/etc/profile.d/conda.sh
       conda activate py38
       pip install pip -U
-      pip install .
+      pip install .[complete]
       python -m pytest
   - test_cf38: |
       cd pygram11
       source $HOME/miniconda/etc/profile.d/conda.sh
       conda activate cf38
       pip install pip -U
-      pip install .
+      pip install .[complete]
       python -m pytest
 triggers:
   - action: email

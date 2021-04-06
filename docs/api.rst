@@ -1,4 +1,4 @@
-API Reference
+Histogramming
 =============
 
 .. toctree::
@@ -12,7 +12,15 @@ API Reference
    api/var2d.rst
    api/histogram.rst
    api/histogram2d.rst
-   api/force_omp.rst
-   api/disable_omp.rst
    api/bin_centers.rst
    api/bin_edges.rst
+
+OpenMP Configuration
+====================
+
+.. toctree::
+   :maxdepth: 1
+
+   api/omp_conv.rst
+   api/omp_cnd.rst
+   api/config.rst

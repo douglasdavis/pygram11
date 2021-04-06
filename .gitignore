@@ -4,6 +4,9 @@
 # setuptools_scm generated
 src/pygram11/version.py
 
+# dask
+dask-worker-space/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

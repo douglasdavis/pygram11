@@ -182,8 +182,17 @@ if not has_openmp():
     )
 
 
+extras_require = {
+    "test": [
+        "pytest",
+    ],
+}
+
+extras_require["complete"] = sorted(set(sum(extras_require.values(), [])))
+
 setup(
     use_scm_version=True,
+    extras_require=extras_require,
     setup_requires=["setuptools_scm"],
     ext_modules=get_extensions(),
     zip_safe=False,
