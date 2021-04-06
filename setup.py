@@ -183,9 +183,6 @@ if not has_openmp():
 
 
 extras_require = {
-    "dask": [
-        "dask[array] >=2021.1.0",
-    ],
     "test": [
         "pytest",
     ],
