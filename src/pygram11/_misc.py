@@ -99,11 +99,11 @@ def without_omp(*args, **kwargs):
     >>> import pygram11.config
     >>> previous = pygram11.config.get("thresholds.variable1d")
     >>> @without_omp(key="thresholds.variable1d")
-    ... def multi_threaded_histogram2():
+    ... def single_threaded_histogram2():
     ...     print(f"in function threshold: {pygram11.config.get('thresholds.variable1d')}")
     ...     data = np.random.standard_normal(size=(1000,))
     ...     return pygram11.histogram(data, bins=[-2, -1, 1.5, 3.2])
-    >>> result = multi_threaded_histogram2()
+    >>> result = single_threaded_histogram2()
     in function threshold: 9223372036854775807
     >>> previous
     5000
