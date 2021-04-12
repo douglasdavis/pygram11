@@ -8,7 +8,7 @@ def test_one():
     variances = np.array([0.25, 0.49, 0.16])
     range = (0, 1)
     bins = 3
-    h1 = pgbh.f1d(counts=counts, bins=bins, range=range, variances=variances)
+    h1 = pgbh.f1d_to_boost(counts=counts, bins=bins, range=range, variances=variances)
     h2 = bh.Histogram(bh.axis.Regular(3, 0, 1), storage=bh.storage.Weight())
     h2.fill([0.2, 0.5, 0.8], weight=[0.5, 0.7, 0.4])
     print(h1)
