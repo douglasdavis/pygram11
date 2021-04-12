@@ -1,4 +1,4 @@
-from typing import Iterable, Tuple, Optional
+from typing import Iterable, Optional, Sequence, Tuple
 
 import numpy as np
 
@@ -31,13 +31,35 @@ def f1d_to_boost(
     range: Tuple[float, float],
     variances: Optional[np.ndarray] = None,
 ) -> bh.Histogram:
-    """Create a fixed width boost-histogram object."""
+    """Create a 1D fixed width boost-histogram object."""
     if variances is None:
         h = bh.Histogram(f_axis(bins, range))
         h[...] = counts
     else:
         h = bh.Histogram(f_axis(bins, range), storage=bh.storage.Weight())
-        hview = h.view()
-        hview.value = counts
-        hview.variance = variances
+        view = h.view()
+        view.value = counts
+        view.variance = variances
+    return h
+
+
+def f2d_to_boost(
+    counts: np.ndarray,
+    bins: Tuple[int, int],
+    range: Sequence[Tuple[float, float]],
+    variances: Optional[np.ndarray] = None,
+) -> bh.Histogram:
+    """Create a 2D fixed width boost-histogram object."""
+    if variances is None:
+        h = bh.Histogram(f_axis(bins[0], range[0]), f_axis(bins[1], range[1]))
+        h[...] = counts
+    else:
+        h = bh.Histogram(
+            f_axis(bins[0], range[0]),
+            f_axis(bins[1], range[1]),
+            storage=bh.storage.Weight(),
+        )
+        view = h.view()
+        view.value = counts
+        view.variance = variances
     return h

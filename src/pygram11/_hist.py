@@ -209,8 +209,9 @@ def fix1d(
             width = (xmax - xmin) / bins
             result = _densify_fixed_counts(result, width)
         if out == "bh":
-            from ._bh import f1d as bh_f1d
-            return bh_f1d(result, bins=bins, range=(xmin, xmax))
+            from ._bh import f1d_to_boost
+
+            return f1d_to_boost(result, bins=bins, range=(xmin, xmax))
         return result, None
 
     if np.shape(x) != np.shape(weights):
@@ -223,8 +224,9 @@ def fix1d(
     counts, variances = result
 
     if out == "bh":
-        from ._bh import f1d as bh_f1d
-        return bh_f1d(counts, bins=bins, range=(xmin, xmax), variances=variances)
+        from ._bh import f1d_to_boost
+
+        return f1d_to_boost(counts, bins=bins, range=(xmin, xmax), variances=variances)
 
     if cons_var:
         return counts, variances
@@ -495,6 +497,7 @@ def fix2d(
     weights: Optional[np.ndarray] = None,
     flow: bool = False,
     cons_var: bool = False,
+    out: Optional[str] = None,
 ) -> Tuple[np.ndarray, Optional[np.ndarray]]:
     r"""Histogram two dimensional data with fixed (uniform) binning.
 
@@ -521,6 +524,9 @@ def fix2d(
     cons_var : bool
         If ``True``, conserve the variance rather than return the
         standard error (square root of the variance).
+    out : str, optional
+        Define alternative output, e.g. "bh" for a boost-histogram
+        Histogram object.
 
     Raises
     ------
@@ -572,11 +578,25 @@ def fix2d(
 
     if weights is None:
         result = _f2d(x, y, int(nx), xmin, xmax, int(ny), ymin, ymax, flow)
+        if out == "bh":
+            from ._bh import f2d_to_boost
+
+            return f2d_to_boost(
+                result, bins=(nx, ny), range=((xmin, xmax), (ymin, ymax))
+            )
         return result, None
 
     counts, variances = _f2dw(
         x, y, weights, int(nx), xmin, xmax, int(ny), ymin, ymax, flow
     )
+
+    if out == "bh":
+        return f2d_to_boost(
+            result,
+            bins=(nx, ny),
+            range=((xmin, xmax), (ymin, ymax)),
+            variances=variances,
+        )
     if cons_var:
         return counts, variances
     return counts, np.sqrt(variances)
