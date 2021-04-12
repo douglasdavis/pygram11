@@ -140,6 +140,7 @@ def fix1d(
     density: bool = False,
     flow: bool = False,
     cons_var: bool = False,
+    out: Optional[str] = None,
 ) -> Tuple[np.ndarray, Union[np.ndarray, None]]:
     r"""Histogram data with fixed (uniform) bin widths.
 
@@ -163,6 +164,9 @@ def fix1d(
     cons_var : bool
         If ``True``, conserve the variance rather than return the
         standard error (square root of the variance).
+    out : str, optional
+        Define alternative output, e.g. "bh" for a boost-histogram
+        Histogram object.
 
     Raises
     ------
@@ -204,6 +208,9 @@ def fix1d(
         if density:
             width = (xmax - xmin) / bins
             result = _densify_fixed_counts(result, width)
+        if out == "bh":
+            from ._bh import f1d as bh_f1d
+            return bh_f1d(result, bins=bins, range=(xmin, xmax))
         return result, None
 
     if np.shape(x) != np.shape(weights):
@@ -214,6 +221,11 @@ def fix1d(
         width = (xmax - xmin) / bins
         result = _densify_fixed_weighted_counts(result, width)
     counts, variances = result
+
+    if out == "bh":
+        from ._bh import f1d as bh_f1d
+        return bh_f1d(counts, bins=bins, range=(xmin, xmax), variances=variances)
+
     if cons_var:
         return counts, variances
     return counts, np.sqrt(variances)
