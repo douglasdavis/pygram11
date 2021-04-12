@@ -190,7 +190,7 @@ or we can decorate a function to disable OpenMP during its use:
        return pygram11.histogram(x, bins=50, range=(-3, 3))
 
 
-If the ``key`` argument is not provided, all thresholds will be
+If the `key` argument is not provided, all thresholds will be
 temporarily modified.
 
 An example of threshold modification via the granular interface:
