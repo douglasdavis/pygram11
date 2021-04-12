@@ -109,7 +109,7 @@ def bin_centers(
     Raises
     ------
     ValueError
-        If ``bins`` is an integer and range is undefined (``None``).
+        If `bins` is an integer and range is undefined (``None``).
 
     Examples
     --------
@@ -151,9 +151,9 @@ def fix1d(
         The number of bins.
     range : (float, float), optional
         The minimum and maximum of the histogram axis. If ``None``,
-        min and max of ``x`` will be used.
+        min and max of `x` will be used.
     weights : numpy.ndarray, optional
-        The weights for each element of ``x``. If weights are absent,
+        The weights for each element of `x`. If weights are absent,
         the second return type will be ``None``.
     density : bool
         Normalize histogram counts as value of PDF such that the
@@ -167,9 +167,9 @@ def fix1d(
     Raises
     ------
     ValueError
-        If ``x`` and ``weights`` have incompatible shapes.
+        If `x` and `weights` have incompatible shapes.
     TypeError
-        If ``x`` or ``weights`` are unsupported types
+        If `x` or `weights` are unsupported types
 
     Returns
     -------
@@ -178,11 +178,11 @@ def fix1d(
     :py:obj:`numpy.ndarray`, optional
         The standard error of each bin count, :math:`\sqrt{\sum_i
         w_i^2}`. The return is ``None`` if weights are not used. If
-        ``cons_var`` is ``True``, the variances are returned.
+        `cons_var` is ``True``, the variances are returned.
 
     Examples
     --------
-    A histogram of ``x`` with 20 bins between 0 and 100:
+    A histogram of `x` with 20 bins between 0 and 100:
 
     >>> rng = np.random.default_rng(123)
     >>> x = rng.uniform(0, 100, size=(100,))
@@ -240,14 +240,14 @@ def fix1dmw(
     x : numpy.ndarray
         Data to histogram.
     weights : numpy.ndarray
-        The weight variations for the elements of ``x``, first
-        dimension is the length of ``x``, second dimension is the
+        The weight variations for the elements of `x`, first
+        dimension is the length of `x`, second dimension is the
         number of weights variations.
     bins : int
         The number of bins.
     range : (float, float), optional
         The minimum and maximum of the histogram axis. If ``None``,
-        min and max of ``x`` will be used.
+        min and max of `x` will be used.
     flow : bool
         Include under/overflow in the first/last bins.
     cons_var : bool
@@ -257,12 +257,12 @@ def fix1dmw(
     Raises
     ------
     ValueError
-        If ``x`` and ``weights`` have incompatible shapes (if
+        If `x` and `weights` have incompatible shapes (if
         ``x.shape[0] != weights.shape[0]``).
     ValueError
-        If ``weights`` is not a two dimensional array.
+        If `weights` is not a two dimensional array.
     TypeError
-        If ``x`` or ``weights`` are unsupported types
+        If `x` or `weights` are unsupported types
 
     Returns
     -------
@@ -270,20 +270,20 @@ def fix1dmw(
         The bin counts.
     :py:obj:`numpy.ndarray`
         The standard error of each bin count, :math:`\sqrt{\sum_i
-        w_i^2}`. If ``cons_var`` is ``True``, the variances are
+        w_i^2}`. If `cons_var` is ``True``, the variances are
         returned.
 
     Examples
     --------
-    Multiple histograms of ``x`` using 20 different weight variations:
+    Multiple histograms of `x` using 20 different weight variations:
 
     >>> rng = np.random.default_rng(123)
     >>> x = rng.standard_normal(10000)
     >>> twenty_weights = np.abs(rng.standard_normal((x.shape[0], 20)))
     >>> h, err = fix1dmw(x, twenty_weights, bins=50, range=(-3, 3))
 
-    ``h`` and ``err`` are now shape ``(50, 20)``. Each column
-    represents the histogram of the data using its respective weight.
+    `h` and `err` are now shape ``(50, 20)``. Each column represents
+    the histogram of the data using its respective weight.
 
     """
     if len(np.shape(weights)) != 2:
@@ -316,7 +316,7 @@ def var1d(
     bins : numpy.ndarray
         Bin edges
     weights : numpy.ndarray, optional
-        The weights for each element of ``x``. If weights are absent,
+        The weights for each element of `x`. If weights are absent,
         the second return type will be ``None``.
     density : bool
         Normalize histogram counts as value of PDF such that the
@@ -332,9 +332,9 @@ def var1d(
     ValueError
         If the array of bin edges is not monotonically increasing.
     ValueError
-        If ``x`` and ``weights`` have incompatible shapes.
+        If `x` and `weights` have incompatible shapes.
     TypeError
-        If ``x`` or ``weights`` are unsupported types
+        If `x` or `weights` are unsupported types
 
     Returns
     -------
@@ -342,7 +342,7 @@ def var1d(
         The bin counts.
     :py:obj:`numpy.ndarray`, optional
         The standard error of each bin count, :math:`\sqrt{\sum_i
-        w_i^2}`. If ``cons_var`` is True, the variances are returned.
+        w_i^2}`. If `cons_var` is True, the variances are returned.
         The return is ``None`` if weights are not used.
 
     Examples
@@ -408,8 +408,8 @@ def var1dmw(
     x : numpy.ndarray
         Data to histogram.
     weights : numpy.ndarray
-        Weight variations for the elements of ``x``, first dimension
-        is the shape of ``x``, second dimension is the number of weights.
+        Weight variations for the elements of `x`, first dimension
+        is the shape of `x`, second dimension is the number of weights.
     bins : numpy.ndarray
         Bin edges.
     flow : bool
@@ -423,11 +423,11 @@ def var1dmw(
     ValueError
         If the array of bin edges is not monotonically increasing.
     ValueError
-        If ``x`` and ``weights`` have incompatible shapes.
+        If `x` and `weights` have incompatible shapes.
     ValueError
-        If ``weights`` is not a two dimensional array.
+        If `weights` is not a two dimensional array.
     TypeError
-        If ``x`` or ``weights`` are unsupported types
+        If `x` or `weights` are unsupported types
 
     Returns
     -------
@@ -435,7 +435,7 @@ def var1dmw(
         The bin counts.
     :py:obj:`numpy.ndarray`
         The standard error of each bin count, :math:`\sqrt{\sum_i
-        w_i^2}`. If ``cons_var`` is ``True``, the variances are
+        w_i^2}`. If `cons_var` is ``True``, the variances are
         returned.
 
     Examples
@@ -486,7 +486,7 @@ def fix2d(
 ) -> Tuple[np.ndarray, Optional[np.ndarray]]:
     r"""Histogram two dimensional data with fixed (uniform) binning.
 
-    The two input arrays (``x`` and ``y``) must be the same length
+    The two input arrays (`x` and `y`) must be the same length
     (shape).
 
     Parameters
@@ -513,11 +513,11 @@ def fix2d(
     Raises
     ------
     ValueError
-        If ``x`` and ``y`` have incompatible shapes.
+        If `x` and `y` have incompatible shapes.
     ValueError
-        If the shape of ``weights`` is incompatible with ``x`` and ``y``
+        If the shape of `weights` is incompatible with `x` and `y`
     TypeError
-        If ``x``, ``y``, or ``weights`` are unsupported types
+        If `x`, `y`, or `weights` are unsupported types
 
     Returns
     -------
@@ -525,13 +525,13 @@ def fix2d(
         The bin counts.
     :py:obj:`numpy.ndarray`, optional
         The standard error of each bin count, :math:`\sqrt{\sum_i
-        w_i^2}`. If ``cons_var`` is ``True``, the variances are
+        w_i^2}`. If `cons_var` is ``True``, the variances are
         returned.
 
     Examples
     --------
-    A histogram of (``x``, ``y``) with 20 bins between 0 and 100 in
-    the ``x`` dimention and 10 bins between 0 and 50 in the ``y``
+    A histogram of (`x`, `y`) with 20 bins between 0 and 100 in
+    the `x` dimention and 10 bins between 0 and 50 in the `y`
     dimension:
 
     >>> rng = np.random.default_rng(123)
@@ -539,7 +539,7 @@ def fix2d(
     >>> y = rng.uniform(0, 50, size=(200,))
     >>> h, __ = fix2d(x, y, bins=(20, 10), range=((0, 100), (0, 50)))
 
-    The same data, now histogrammed weighted (via ``w``):
+    The same data, now histogrammed weighted (via `w`):
 
     >>> w = rng.uniform(0.2, 0.9, size=x.shape)
     >>> h, err = fix2d(x, y, bins=(20, 10), range=((0, 100), (0, 50)), weights=w)
@@ -581,7 +581,7 @@ def var2d(
 ) -> Tuple[np.ndarray, Optional[np.ndarray]]:
     r"""Histogram two dimensional data with variable width binning.
 
-    The two input arrays (``x`` and ``y``) must be the same length
+    The two input arrays (`x` and `y`) must be the same length
     (shape).
 
     Parameters
@@ -591,9 +591,9 @@ def var2d(
     y : numpy.ndarray
         Second entries in data pairs to histogram.
     xbins : numpy.ndarray
-        Bin edges for the ``x`` dimension.
+        Bin edges for the `x` dimension.
     ybins : np.ndarray
-        Bin edges for the ``y`` dimension.
+        Bin edges for the `y` dimension.
     weights : array_like, optional
         The weights for data element. If weights are absent, the
         second return type will be ``None``.
@@ -606,11 +606,11 @@ def var2d(
     Raises
     ------
     ValueError
-        If ``x`` and ``y`` have different shape.
+        If `x` and `y` have different shape.
     ValueError
         If either bin edge definition is not monotonically increasing.
     TypeError
-        If ``x``, ``y``, or ``weights`` are unsupported types
+        If `x`, `y`, or `weights` are unsupported types
 
     Returns
     -------
@@ -618,12 +618,12 @@ def var2d(
         The bin counts.
     :py:obj:`numpy.ndarray`, optional
         The standard error of each bin count, :math:`\sqrt{\sum_i
-        w_i^2}`. If ``cons_var`` is ``True``, the variances are
+        w_i^2}`. If `cons_var` is ``True``, the variances are
         returned.
 
     Examples
     --------
-    A histogram of (``x``, ``y``) where the edges are defined by a
+    A histogram of (`x`, `y`) where the edges are defined by a
     :func:`numpy.logspace` in both dimensions:
 
     >>> x = np.exp(np.random.uniform(0, 1, size=(10000,)))

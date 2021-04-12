@@ -94,7 +94,7 @@ def without_omp(*args, **kwargs):
     ...     data = np.random.standard_normal(size=(1000,))
     ...     return pygram11.histogram(data, bins=10, range=(-5, 5), flow=True)
 
-    Defining a specific ``key``:
+    Defining a specific `key`:
 
     >>> import pygram11.config
     >>> previous = pygram11.config.get("thresholds.variable1d")
@@ -159,7 +159,7 @@ def with_omp(*args, **kwargs):
     ...     data = np.random.standard_normal(size=(1000,))
     ...     return pygram11.histogram(data, bins=10, range=(-5, 5), flow=True)
 
-    Defining a specific ``key``:
+    Defining a specific `key`:
 
     >>> import pygram11.config
     >>> previous = pygram11.config.get("thresholds.variable1d")

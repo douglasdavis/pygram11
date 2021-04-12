@@ -21,13 +21,13 @@ def histogram(
         If int: the number of bins; if array_like: the bin edges.
     range : (float, float), optional
         The minimum and maximum of the histogram axis. If ``None``
-        with integer ``bins``, min and max of ``x`` will be used. If
-        ``bins`` is an array this is expected to be ``None``.
+        with integer `bins`, min and max of `x` will be used. If
+        `bins` is an array this is expected to be ``None``.
     weights : array_like, optional
-        Weight variations for the elements of ``x``. For single weight
-        histograms the shape must be the same shape as ``x``. For
+        Weight variations for the elements of `x`. For single weight
+        histograms the shape must be the same shape as `x`. For
         multiweight histograms the first dimension is the length of
-        ``x``, second dimension is the number of weights variations.
+        `x`, second dimension is the number of weights variations.
     density : bool
         Normalize histogram counts as value of PDF such that the
         integral over the range is unity.
@@ -40,17 +40,16 @@ def histogram(
     Raises
     ------
     ValueError
-        If ``bins`` defines edges while ``range`` is also not
-        ``None``.
+        If `bins` defines edges while `range` is also not ``None``.
     ValueError
         If the array of bin edges is not monotonically increasing.
     ValueError
-        If ``x`` and ``weights`` have incompatible shapes.
+        If `x` and `weights` have incompatible shapes.
     ValueError
-        If multiweight histogramming is detected and ``weights`` is
+        If multiweight histogramming is detected and `weights` is
         not a two dimensional array.
     TypeError
-        If ``x`` or ``weights`` are unsupported types
+        If `x` or `weights` are unsupported types
 
     Returns
     -------
@@ -144,9 +143,9 @@ def histogram2d(x, y, bins=10, range=None, weights=None, flow=False, cons_var=Fa
     Parameters
     ----------
     x: array_like
-        Array representing the ``x`` coordinate of the data to histogram.
+        Array representing the `x` coordinate of the data to histogram.
     y: array_like
-        Array representing the ``y`` coordinate of the data to histogram.
+        Array representing the `y` coordinate of the data to histogram.
     bins: int or array_like or [int, int] or [array, array], optional
         The bin specification:
            * If int, the number of bins for the two dimensions
@@ -174,12 +173,12 @@ def histogram2d(x, y, bins=10, range=None, weights=None, flow=False, cons_var=Fa
     Raises
     ------
     ValueError
-        If ``x`` and ``y`` have different shape or either bin edge definition
+        If `x` and `y` have different shape or either bin edge definition
         is not monotonically increasing.
     ValueError
-        If the shape of ``weights`` is not compatible with ``x`` and ``y``.
+        If the shape of `weights` is not compatible with `x` and `y`.
     TypeError
-        If ``x``, ``y``, or ``weights`` are unsupported types
+        If `x`, `y`, or `weights` are unsupported types
 
     See Also
     --------
