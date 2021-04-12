@@ -232,8 +232,8 @@ def fix1dmw(
     The weights array must have a total number of rows equal to the
     length of the input data. The number of columns in the weights
     array is equal to the number of weight variations. (The weights
-    array must be an M x N matrix where M is the length of x and N is
-    the number of weight variations).
+    array must be an `M x N` matrix where `M` is the length of `x` and
+    `N` is the number of weight variations).
 
     Parameters
     ----------
@@ -400,8 +400,8 @@ def var1dmw(
     The weights array must have a total number of rows equal to the
     length of the input data. The number of columns in the weights
     array is equal to the number of weight variations. (The weights
-    array must be an M x N matrix where M is the length of x and N is
-    the number of weight variations).
+    array must be an `M x N` matrix where `M` is the length of `x` and
+    `N` is the number of weight variations).
 
     Parameters
     ----------
