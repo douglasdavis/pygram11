@@ -104,6 +104,17 @@ absent. A histogram in two dimensions with variable width bins:
 >>> h, err = pygram11.histogram2d(x, y, bins=[xbins, ybins])
 ```
 
+Manually controlling OpenMP acceleration with context managers:
+
+```python
+>>> with pygram11.omp_disabled():
+...     result, _ = pygram11.histogram(x, bins=10, range=(-3, 3))\
+...
+>>> with pygram11.omp_forced(key="thresholds.var1d")
+...     result, _ = pygram11.histogram(x, bins=[-3, -2, 0, 2, 3])
+...
+```
+
 Histogramming multiple weight variations for the same data, then
 putting the result in a DataFrame (the input pandas DataFrame will be
 interpreted as a NumPy array):

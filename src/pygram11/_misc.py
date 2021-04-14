@@ -48,12 +48,12 @@ def omp_get_max_threads() -> int:
 
 def default_omp() -> None:
     """Set OpenMP acceleration thresholds to the default values."""
-    pygram11.config.set("thresholds.fixed1d", 10_000)
-    pygram11.config.set("thresholds.fixed1dmw", 10_000)
-    pygram11.config.set("thresholds.fixed2d", 10_000)
-    pygram11.config.set("thresholds.variable1d", 5_000)
-    pygram11.config.set("thresholds.variable1dmw", 5_000)
-    pygram11.config.set("thresholds.variable2d", 5_000)
+    pygram11.config.set("thresholds.fix1d", 10_000)
+    pygram11.config.set("thresholds.fix1dmw", 10_000)
+    pygram11.config.set("thresholds.fix2d", 10_000)
+    pygram11.config.set("thresholds.var1d", 5_000)
+    pygram11.config.set("thresholds.var1dmw", 5_000)
+    pygram11.config.set("thresholds.var2d", 5_000)
 
 
 def disable_omp() -> None:
@@ -97,17 +97,17 @@ def without_omp(*args, **kwargs):
     Defining a specific `key`:
 
     >>> import pygram11.config
-    >>> previous = pygram11.config.get("thresholds.variable1d")
-    >>> @without_omp(key="thresholds.variable1d")
+    >>> previous = pygram11.config.get("thresholds.var1d")
+    >>> @without_omp(key="thresholds.var1d")
     ... def single_threaded_histogram2():
-    ...     print(f"in function threshold: {pygram11.config.get('thresholds.variable1d')}")
+    ...     print(f"in function threshold: {pygram11.config.get('thresholds.var1d')}")
     ...     data = np.random.standard_normal(size=(1000,))
     ...     return pygram11.histogram(data, bins=[-2, -1, 1.5, 3.2])
     >>> result = single_threaded_histogram2()
     in function threshold: 9223372036854775807
     >>> previous
     5000
-    >>> previous == pygram11.config.get("thresholds.variable1d")
+    >>> previous == pygram11.config.get("thresholds.var1d")
     True
     >>> result[0].shape
     (3,)
@@ -162,17 +162,17 @@ def with_omp(*args, **kwargs):
     Defining a specific `key`:
 
     >>> import pygram11.config
-    >>> previous = pygram11.config.get("thresholds.variable1d")
-    >>> @with_omp(key="thresholds.variable1d")
+    >>> previous = pygram11.config.get("thresholds.var1d")
+    >>> @with_omp(key="thresholds.var1d")
     ... def multi_threaded_histogram2():
-    ...     print(f"in function threshold: {pygram11.config.get('thresholds.variable1d')}")
+    ...     print(f"in function threshold: {pygram11.config.get('thresholds.var1d')}")
     ...     data = np.random.standard_normal(size=(1000,))
     ...     return pygram11.histogram(data, bins=[-2, -1, 1.5, 3.2])
     >>> result = multi_threaded_histogram2()
     in function threshold: 0
     >>> previous
     5000
-    >>> previous == pygram11.config.get("thresholds.variable1d")
+    >>> previous == pygram11.config.get("thresholds.var1d")
     True
     >>> result[0].shape
     (3,)
@@ -213,7 +213,7 @@ def omp_disabled(*, key: Optional[str] = None) -> Iterator[None]:
 
     >>> import pygram11
     >>> import numpy as np
-    >>> with pygram11.omp_disabled(key="thresholds.variable1d"):
+    >>> with pygram11.omp_disabled(key="thresholds.var1d"):
     ...     data = np.random.standard_normal(size=(200,))
     ...     result = pygram11.histogram(data, bins=[-2, -1, 1.5, 3.2])
     >>> result[0].shape
@@ -263,7 +263,7 @@ def omp_forced(*, key: Optional[str] = None) -> Iterator[None]:
 
     >>> import pygram11
     >>> import numpy as np
-    >>> with pygram11.omp_forced(key="thresholds.variable1d"):
+    >>> with pygram11.omp_forced(key="thresholds.var1d"):
     ...     data = np.random.standard_normal(size=(200,))
     ...     result = pygram11.histogram(data, bins=[-2, -1, 1.5, 3.2])
     >>> result[0].shape

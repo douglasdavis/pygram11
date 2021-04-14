@@ -5,12 +5,12 @@ from typing import Dict, Iterator
 
 
 config: Dict[str, int] = {
-    "thresholds.fixed1d": 10_000,
-    "thresholds.fixed1dmw": 10_000,
-    "thresholds.fixed2d": 10_000,
-    "thresholds.variable1d": 5_000,
-    "thresholds.variable1dmw": 5_000,
-    "thresholds.variable2d": 5_000,
+    "thresholds.fix1d": 10_000,
+    "thresholds.fix1dmw": 10_000,
+    "thresholds.fix2d": 10_000,
+    "thresholds.var1d": 5_000,
+    "thresholds.var1dmw": 5_000,
+    "thresholds.var2d": 5_000,
 }
 
 

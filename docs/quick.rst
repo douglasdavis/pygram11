@@ -130,12 +130,12 @@ in a granular way with the ``pygram11.config`` module.
 
 The parameters are:
 
-- ``"thresholds.fixed1d"``
-- ``"thresholds.fixed1dmw"``
-- ``"thresholds.fixed2d"``
-- ``"thresholds.variable1d"``
-- ``"thresholds.variable1dmw"``
-- ``"thresholds.variable2d"``
+- ``"thresholds.fix1d"``
+- ``"thresholds.fix1dmw"``
+- ``"thresholds.fix2d"``
+- ``"thresholds.var1d"``
+- ``"thresholds.var1dmw"``
+- ``"thresholds.var2d"``
 
 Low level reading/writing is handled through two functions:
 
@@ -173,7 +173,7 @@ call with the :py:func:`pygram11.omp_disabled` context manager:
 
    rng = np.random.default_rng(123)
    x = rng.standard_normal(50_000)
-   with omp_disabled(key="thresholds.fixed1d"):
+   with omp_disabled(key="thresholds.fix1d"):
        result = pygram11.histogram(x, bins=50, range=(-3, 3))
 
 or we can decorate a function to disable OpenMP during its use:
@@ -204,7 +204,7 @@ An example of threshold modification via the granular interface:
    >>> x = rng.standard_uniform(6000)
    >>> bins = np.array([-3.1, -2.5, -2.0, 0.1, 0.2, 2.1, 3.0])
    >>> result = pygram11.histogram(x, bins=bins)  # will use OpenMP
-   >>> pygram11.config.set("thresholds.variable1d", 7500)
+   >>> pygram11.config.set("thresholds.var1d", 7500)
    >>> result = pygram11.histogram(x, bins=bins)  # now will _not_ use OpenMP
 
 Some shortcuts exist to completely disable or enable OpenMP, along
