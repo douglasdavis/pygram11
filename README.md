@@ -108,7 +108,7 @@ Manually controlling OpenMP acceleration with context managers:
 
 ```python
 >>> with pygram11.omp_disabled():  # disable all thresholds.
-...     result, _ = pygram11.histogram(x, bins=10, range=(-3, 3))\
+...     result, _ = pygram11.histogram(x, bins=10, range=(-3, 3))
 ...
 >>> with pygram11.omp_forced(key="thresholds.var1d"):  # force a single threshold.
 ...     result, _ = pygram11.histogram(x, bins=[-3, -2, 0, 2, 3])
