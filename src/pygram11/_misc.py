@@ -232,11 +232,11 @@ def omp_disabled(*, key: Optional[str] = None) -> Iterator[None]:
     """
     if key is not None:
         try:
-            previous = pygram11.config.get(key)
+            prev = pygram11.config.get(key)
             pygram11.config.set(key, sys.maxsize)
             yield
         finally:
-            pygram11.config.set(key, previous)
+            pygram11.config.set(key, prev)
 
     else:
         previous = {k: pygram11.config.get(k) for k in pygram11.config.threshold_keys()}
@@ -282,11 +282,11 @@ def omp_forced(*, key: Optional[str] = None) -> Iterator[None]:
     """
     if key is not None:
         try:
-            previous = pygram11.config.get(key)
+            prev = pygram11.config.get(key)
             pygram11.config.set(key, 0)
             yield
         finally:
-            pygram11.config.set(key, previous)
+            pygram11.config.set(key, prev)
     else:
         previous = {k: pygram11.config.get(k) for k in pygram11.config.threshold_keys()}
         try:
