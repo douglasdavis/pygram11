@@ -140,7 +140,6 @@ def fix1d(
     density: bool = False,
     flow: bool = False,
     cons_var: bool = False,
-    bh: Optional[Any] = None,
 ) -> Tuple[np.ndarray, Union[np.ndarray, None]]:
     r"""Histogram data with fixed (uniform) bin widths.
 
@@ -164,9 +163,6 @@ def fix1d(
     cons_var : bool
         If ``True``, conserve the variance rather than return the
         standard error (square root of the variance).
-    bh : boost_histogram.Histogram, optional
-        Pass a boost_histogram.Histogram object to store the resulting
-        counts and variances.
 
     Raises
     ------
@@ -208,10 +204,6 @@ def fix1d(
         if density:
             width = (xmax - xmin) / bins
             result = _densify_fixed_counts(result, width)
-        if bh is not None:
-            from ._bh import store_results_in_bh
-
-            store_results_in_bh(bh, result)
         return result, None
 
     if np.shape(x) != np.shape(weights):
@@ -222,11 +214,6 @@ def fix1d(
         width = (xmax - xmin) / bins
         result = _densify_fixed_weighted_counts(result, width)
     counts, variances = result
-
-    if bh is not None:
-        from ._bh import store_results_in_bh
-
-        store_results_in_bh(bh, counts, variances)
 
     if cons_var:
         return counts, variances
@@ -497,7 +484,6 @@ def fix2d(
     weights: Optional[np.ndarray] = None,
     flow: bool = False,
     cons_var: bool = False,
-    bh: Optional[Any] = None,
 ) -> Tuple[np.ndarray, Optional[np.ndarray]]:
     r"""Histogram two dimensional data with fixed (uniform) binning.
 
@@ -524,9 +510,6 @@ def fix2d(
     cons_var : bool
         If ``True``, conserve the variance rather than return the
         standard error (square root of the variance).
-    bh : boost_histogram.Histogram, optional
-        Pass a boost_histogram.Histogram object to store the resulting
-        counts and variances.
 
     Raises
     ------
@@ -578,20 +561,12 @@ def fix2d(
 
     if weights is None:
         result = _f2d(x, y, int(nx), xmin, xmax, int(ny), ymin, ymax, flow)
-        if bh is not None:
-            from ._bh import store_results_in_bh
-
-            store_results_in_bh(bh, result)
         return result, None
 
     counts, variances = _f2dw(
         x, y, weights, int(nx), xmin, xmax, int(ny), ymin, ymax, flow
     )
 
-    if bh is not None:
-        from ._bh import store_results_in_bh
-
-        store_results_in_bh(bh, counts, variances)
     if cons_var:
         return counts, variances
     return counts, np.sqrt(variances)

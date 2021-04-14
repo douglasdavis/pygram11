@@ -183,9 +183,6 @@ if not has_openmp():
 
 
 extras_require = {
-    "bh": [
-        "boost-histogram",
-    ],
     "test": [
         "pytest",
     ],
