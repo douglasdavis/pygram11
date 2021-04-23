@@ -30,7 +30,7 @@ and accelerated with OpenMP_.
    :caption: Documentation
 
    req.rst
-   quick.rst
+   overview.rst
    bench.rst
 
 .. toctree::
