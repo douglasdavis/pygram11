@@ -2,7 +2,7 @@
 .dir-locals.el
 
 # setuptools_scm generated
-src/pygram11/version.py
+src/pygram11/_version.py
 
 # dask
 dask-worker-space/

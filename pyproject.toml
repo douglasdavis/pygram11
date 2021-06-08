@@ -16,4 +16,4 @@ markers = [
 ]
 
 [tool.setuptools_scm]
-write_to = "src/pygram11/version.py"
+write_to = "src/pygram11/_version.py"
