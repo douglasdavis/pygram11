@@ -54,8 +54,8 @@ You need is a C++14 compiler and OpenMP. If you are using a relatively
 modern GCC release on Linux then you probably don't have to worry
 about the OpenMP dependency. If you are on macOS, you can install
 `libomp` from Homebrew (pygram11 does compile on Apple Silicon devices
-with Python version 3.9 and `libomp` installed from Homebrew). With
-those dependencies met, simply run:
+with Python version `>= 3.9` and `libomp` installed from Homebrew).
+With those dependencies met, simply run:
 
 ```none
 git clone https://github.com/douglasdavis/pygram11.git --recurse-submodules
@@ -69,10 +69,8 @@ Or let pip handle the cloning procedure:
 pip install git+https://github.com/douglasdavis/pygram11.git@main
 ```
 
-Tests are run on Python versions 3.6 through 3.9 (binary wheels are
-provided for those versions); an earlier version of Python 3 might
-work, but this is not guaranteed (and you will have to manually remove
-the `>= 3.6` requirement in the `setup.cfg` file).
+Tests are run on Python versions `>= 3.7` and binary wheels are
+provided for those versions.
 
 ## In Action
 
