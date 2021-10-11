@@ -52,5 +52,4 @@ def set(key: str, value: int) -> None:
 def threshold_keys() -> Iterator[str]:
     """All available keys in the configuration dictionary."""
     global config
-    for k in config.keys():
-        yield k
+    yield from config.keys()
