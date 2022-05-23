@@ -36,7 +36,7 @@ def _densify_fixed_weighted_counts(
     f1 = 1.0 / ((width * integral) ** 2)
     f2 = counts / integral
     res1 = f1 * (variances + (f2 * f2 * variances.sum()))
-    return res0, np.sqrt(res1)
+    return res0, res1
 
 
 def _densify_variable_counts(
