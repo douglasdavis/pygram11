@@ -23,4 +23,4 @@ skip = "pp* cp27* cp35* cp36* *-manylinux_i686"
 manylinux-x86_64-image = "manylinux2010"
 test-command = "pytest pygram11/tests"
 test-skip = "pp*macos* *universal2:arm64"
-test-requires = ["numpy"]
+test-requires = ["pytest", "numpy"]
