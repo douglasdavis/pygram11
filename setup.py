@@ -40,6 +40,7 @@ setup(
     packages=find_packages(where="src"),
     package_dir={"": "src"},
     python_requires=">=3.7",
+    install_requires=["numpy"],
     extras_require=extras_require,
     include_package_data=True,
 )
