@@ -13,14 +13,6 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]
-        arch: [auto]
-
-        include:
-        - os: ubuntu-latest
-          arch: auto
-
-        - os: macos-latest
-          arch: auto
 
     steps:
     - uses: actions/checkout@v3
