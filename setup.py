@@ -24,11 +24,22 @@
 from skbuild import setup  # This line replaces 'from setuptools import setup'
 from setuptools import find_packages
 
+
+extras_require = {
+    "test": [
+        "pytest",
+    ],
+}
+
+extras_require["complete"] = sorted(set(sum(extras_require.values(), [])))
+
+
 setup(
     zip_safe=False,
     cmake_install_dir="src/pygram11",
     packages=find_packages(where="src"),
-    include_package_data=True,
     package_dir={"": "src"},
     python_requires=">=3.7",
+    extras_require=extras_require,
+    include_package_data=True,
 )
