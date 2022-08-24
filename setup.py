@@ -39,7 +39,7 @@ setup(
     cmake_install_dir="src/pygram11",
     packages=find_packages(where="src"),
     package_dir={"": "src"},
-    python_requires=">=3.7",
+    python_requires=">=3.8",
     install_requires=["numpy"],
     extras_require=extras_require,
     include_package_data=True,
