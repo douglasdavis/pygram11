@@ -20,7 +20,7 @@ markers = [
 write_to = "src/pygram11/_version.py"
 
 [tool.cibuildwheel]
-skip = "pp* cp27* cp35* cp36* cp37* *-i686"
+skip = "pp* cp27* cp35* cp36* cp37* *-i686*"
 manylinux-x86_64-image = "manylinux2014"
 
 test-command = "pytest {package}/tests"
