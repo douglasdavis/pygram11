@@ -6,12 +6,14 @@ packages:
 - python-wheel
 - python-pytest
 - python-numpy
+- python-build
 sources:
 - https://github.com/douglasdavis/pygram11.git
 tasks:
 - test: |
     cd pygram11
-    python3 -m pip install .[complete] -vv
+    python3 -m build
+    python3 -m pip install dist/*.whl
     python3 -m pytest
 triggers:
 - action: email
