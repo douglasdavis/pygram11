@@ -7,6 +7,9 @@ src/pygram11/_version.py
 # dask
 dask-worker-space/
 
+# skbuild
+_skbuild
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
