@@ -20,8 +20,9 @@ markers = [
 write_to = "src/pygram11/_version.py"
 
 [tool.cibuildwheel]
-skip = "pp* cp27* cp35* cp36* cp37* *-manylinux_i686 *-musllinux_i686"
-manylinux-x86_64-image = "manylinux2010"
+skip = "pp* cp27* cp35* cp36* cp37* *-i686"
+manylinux-x86_64-image = "manylinux2014"
+
 test-command = "pytest {package}/tests"
 test-skip = "pp*macos* *universal2:arm64"
 test-requires = ["pytest", "numpy"]
