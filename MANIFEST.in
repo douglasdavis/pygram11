@@ -3,6 +3,11 @@ include tests/*.py
 include tests/data/*.npz
 include LICENSE
 
+include extern/pybind11/CMakeLists.txt
+include extern/pybind11/tools/pybind11Common.cmake
+include extern/pybind11/tools/pybind11Tools.cmake
+include extern/pybind11/tools/FindPythonLibsNew.cmake
+
 graft extern/pybind11/include
 graft extern/mp11/include
 
