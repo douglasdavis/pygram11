@@ -9,7 +9,7 @@ jobs:
   test_pygram11:
     strategy:
       matrix:
-        platform: [ubuntu-latest, macos-latest]
+        platform: [ubuntu-latest, macos-latest, windows-latest]
         python-version: ["3.8", "3.9", "3.10", "3.11-dev"]
     runs-on: ${{matrix.platform}}
     steps:
@@ -21,15 +21,20 @@ jobs:
       with:
         python-version: ${{matrix.python-version}}
     - name: install libomp on macOS
-      if: startsWith(matrix.platform, 'macOS')
+      shell: bash
       run: |
-        brew install libomp
+        if [ "$RUNNER_OS" == "macOS" ]; then
+            brew install libomp
+        fi
     - name: install
+      shell: bash
       run: |
+        python -m pip install pip wheel -U
         python -m pip install build
+        python -m pip install pytest
         python -m build
-        pip install dist/*.whl pytest
-        pip list
+        python -m pip install dist/*.whl
+        python -m pip list
     - name: test
       run: |
         python -m pytest --ignore=extern
