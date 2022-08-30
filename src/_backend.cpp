@@ -26,10 +26,8 @@
 /// Boost
 #include <boost/mp11.hpp>
 
-#ifndef _WIN32
 /// OpenMP
 #include <omp.h>
-#endif
 
 /// STL
 #include <algorithm>
@@ -242,8 +240,6 @@ inline void s_loop_incf(const py::array_t<Tx>& x, const py::array_t<Tw>& w,
   }
 }
 
-
-#ifndef _WIN32
 /// fix, parallel loop, include flow, no weights
 template <typename Tx, typename Ta, typename Tc>
 inline void p_loop_incf(const Tx* x, py::ssize_t nx, faxis_t<Ta> ax, Tc* values) {
@@ -419,7 +415,6 @@ inline void p_loop_incf(const py::array_t<Tx>& x, const py::array_t<Tw>& w,
     }
   }
 }
-#endif
 
 /// fix, serial loop, exclude flow, no weights
 template <typename Tx, typename Ta, typename Tc>
@@ -530,7 +525,6 @@ inline void s_loop_excf(const py::array_t<Tx>& x, const py::array_t<Tw>& w,
   }
 }
 
-#ifndef _WIN32
 /// fix, parallel loop, exclude flow, no weights
 template <typename Tx, typename Ta, typename Tc>
 inline void p_loop_excf(const Tx* x, py::ssize_t nx, faxis_t<Ta> ax, Tc* values) {
@@ -712,7 +706,6 @@ inline void p_loop_excf(const py::array_t<Tx>& x, const py::array_t<Tw>& w,
     }
   }
 }
-#endif
 
 }  // namespace one
 
@@ -756,7 +749,6 @@ inline void s_loop_incf(const Tx* x, const Ty* y, const Tw* w, py::ssize_t nx,
   }
 }
 
-#ifndef _WIN32
 /// fix, parallel loop, include flow, no weights
 template <typename Tx, typename Ty, typename Ta>
 inline void p_loop_incf(const Tx* x, const Ty* y, py::ssize_t nx, faxis_t<Ta> axx,
@@ -815,7 +807,6 @@ inline void p_loop_incf(const Tx* x, const Ty* y, const Tw* w, py::ssize_t nx,
     }
   }
 }
-#endif
 
 /// var, serial loop, include flow, without weights
 template <typename Tx, typename Ty>
@@ -861,7 +852,6 @@ void s_loop_incf(const Tx* x, const Ty* y, const Tw* w, py::ssize_t nx,
   }
 }
 
-#ifndef _WIN32
 /// var, parallel loop, include flow, without weights
 template <typename Tx, typename Ty>
 void p_loop_incf(const Tx* x, const Ty* y, py::ssize_t nx,
@@ -925,7 +915,6 @@ void p_loop_incf(const Tx* x, const Ty* y, const Tw* w, py::ssize_t nx,
     }
   }
 }
-#endif
 
 /// fix, serial loop, exclude flow, no weights
 template <typename Tx, typename Ty, typename Ta>
@@ -968,7 +957,6 @@ inline void s_loop_excf(const Tx* x, const Ty* y, const Tw* w, py::ssize_t nx,
   }
 }
 
-#ifndef _WIN32
 /// fix, parallel loop, exclude flow, no weights
 template <typename Tx, typename Ty, typename Ta>
 inline void p_loop_excf(const Tx* x, const Ty* y, py::ssize_t nx, faxis_t<Ta> axx,
@@ -1031,7 +1019,6 @@ inline void p_loop_excf(const Tx* x, const Ty* y, const Tw* w, py::ssize_t nx,
     }
   }
 }
-#endif
 
 /// var, serial loop, exclude flow, without weights
 template <typename Tx, typename Ty>
@@ -1077,7 +1064,6 @@ void s_loop_excf(const Tx* x, const Ty* y, const Tw* w, py::ssize_t nx,
   }
 }
 
-#ifndef _WIN32
 /// var, parallel loop, exclude flow, without weights
 template <typename Tx, typename Ty>
 void p_loop_excf(const Tx* x, const Ty* y, py::ssize_t nx,
@@ -1143,8 +1129,6 @@ void p_loop_excf(const Tx* x, const Ty* y, const Tw* w, py::ssize_t nx,
     }
   }
 }
-#endif
-
 
 }  // namespace two
 
@@ -1156,9 +1140,7 @@ py::array_t<py::ssize_t> f1d(py::array_t<Tx, py::array::c_style> x, py::ssize_t 
   auto values = pg11::zeros<py::ssize_t>(nbins);
   pg11::faxis_t<double> ax{nbins, xmin, xmax};
   auto nx = x.shape(0);
-#ifndef _WIN32
   if (nx < pg11::config_threshold("thresholds.fix1d")) {  // serial
-#endif
     if (flow) {
       pg11::one::s_loop_incf(x.data(), nx, ax, values.mutable_data());
     }
@@ -1166,7 +1148,6 @@ py::array_t<py::ssize_t> f1d(py::array_t<Tx, py::array::c_style> x, py::ssize_t 
       pg11::one::s_loop_excf(x.data(), nx, ax, values.mutable_data());
     }
   }
-#ifndef _WIN32
   else {  // parallel
     if (flow) {
       pg11::one::p_loop_incf(x.data(), nx, ax, values.mutable_data());
@@ -1175,7 +1156,6 @@ py::array_t<py::ssize_t> f1d(py::array_t<Tx, py::array::c_style> x, py::ssize_t 
       pg11::one::p_loop_excf(x.data(), nx, ax, values.mutable_data());
     }
   }
-#endif
   return values;
 }
 
@@ -1186,9 +1166,7 @@ py::tuple f1dw(py::array_t<Tx, py::array::c_style> x, py::array_t<Tw, py::array:
   auto variances = pg11::zeros<Tw>(nbins);
   auto nx = x.shape(0);
   pg11::faxis_t<double> ax{nbins, xmin, xmax};
-#ifndef _WIN32
   if (nx < pg11::config_threshold("thresholds.fix1d")) {  // serial
-#endif
     if (flow) {
       pg11::one::s_loop_incf(x.data(), w.data(), nx, ax, values.mutable_data(),
                              variances.mutable_data());
@@ -1197,7 +1175,6 @@ py::tuple f1dw(py::array_t<Tx, py::array::c_style> x, py::array_t<Tw, py::array:
       pg11::one::s_loop_excf(x.data(), w.data(), nx, ax, values.mutable_data(),
                              variances.mutable_data());
     }
-#ifndef _WIN32
   }
   else {  // parallel
     if (flow) {
@@ -1209,7 +1186,6 @@ py::tuple f1dw(py::array_t<Tx, py::array::c_style> x, py::array_t<Tw, py::array:
                              variances.mutable_data());
     }
   }
-#endif
   return py::make_tuple(values, variances);
 }
 
@@ -1219,16 +1195,13 @@ py::tuple f1dmw(py::array_t<Tx> x, py::array_t<Tw> w, py::ssize_t nbins, double 
   auto values = pg11::zeros<Tw>(nbins, w.shape(1));
   auto variances = pg11::zeros<Tw>(nbins, w.shape(1));
   pg11::faxis_t<double> ax{nbins, xmin, xmax};
-#ifndef _WIN32
   if (x.shape(0) < pg11::config_threshold("thresholds.fix1dmw")) {  // serial
-#endif
     if (flow) {
       pg11::one::s_loop_incf(x, w, ax, values, variances);
     }
     else {
       pg11::one::s_loop_excf(x, w, ax, values, variances);
     }
-#ifndef _WIN32
   }
   else {  // parallel
     if (flow)
@@ -1236,7 +1209,6 @@ py::tuple f1dmw(py::array_t<Tx> x, py::array_t<Tw> w, py::ssize_t nbins, double 
     else
       pg11::one::p_loop_excf(x, w, ax, values, variances);
   }
-#endif
   return py::make_tuple(values, variances);
 }
 
@@ -1247,16 +1219,13 @@ py::array_t<py::ssize_t> v1d(py::array_t<Tx, py::array::c_style> x,
   std::vector<double> edges_v(edges.data(), edges.data() + nedges);
   auto values = pg11::zeros<py::ssize_t>(nedges - 1);
   auto nx = x.shape(0);
-#ifndef _WIN32
   if (nx < pg11::config_threshold("thresholds.var1d")) {  // serial
-#endif
     if (flow) {
       pg11::one::s_loop_incf(x.data(), nx, edges_v, values.mutable_data());
     }
     else {
       pg11::one::s_loop_excf(x.data(), nx, edges_v, values.mutable_data());
     }
-#ifndef _WIN32
   }
   else {  // parallel
     if (flow) {
@@ -1266,7 +1235,6 @@ py::array_t<py::ssize_t> v1d(py::array_t<Tx, py::array::c_style> x,
       pg11::one::p_loop_excf(x.data(), nx, edges_v, values.mutable_data());
     }
   }
-#endif
   return values;
 }
 
@@ -1279,9 +1247,7 @@ py::tuple v1dw(py::array_t<Tx, py::array::c_style> x, py::array_t<Tw, py::array:
   auto values = pg11::zeros<Tw>(nbins);
   auto variances = pg11::zeros<Tw>(nbins);
   auto nx = x.shape(0);
-#ifndef _WIN32
   if (nx < pg11::config_threshold("thresholds.var1d")) {  // serial
-#endif
     if (flow) {
       pg11::one::s_loop_incf(x.data(), w.data(), nx, edges_v, values.mutable_data(),
                              variances.mutable_data());
@@ -1291,7 +1257,6 @@ py::tuple v1dw(py::array_t<Tx, py::array::c_style> x, py::array_t<Tw, py::array:
                              variances.mutable_data());
     }
   }
-#ifndef _WIN32
   else {  // parallel
     if (flow) {
       pg11::one::p_loop_incf(x.data(), w.data(), nx, edges_v, values.mutable_data(),
@@ -1302,7 +1267,6 @@ py::tuple v1dw(py::array_t<Tx, py::array::c_style> x, py::array_t<Tw, py::array:
                              variances.mutable_data());
     }
   }
-#endif
   return py::make_tuple(values, variances);
 }
 
@@ -1314,16 +1278,13 @@ py::tuple v1dmw(py::array_t<Tx> x, py::array_t<Tw> w, py::array_t<double> edges,
   std::vector<double> edges_v(edges.data(), edges.data() + nedges);
   auto values = pg11::zeros<Tw>(nbins, w.shape(1));
   auto variances = pg11::zeros<Tw>(nbins, w.shape(1));
-#ifndef _WIN32
   if (x.shape(0) < pg11::config_threshold("thresholds.var1dmw")) {  // serial
-#endif
     if (flow) {
       pg11::one::s_loop_incf(x, w, edges_v, values, variances);
     }
     else {
       pg11::one::s_loop_excf(x, w, edges_v, values, variances);
     }
-#ifndef _WIN32
   }
   else {  // parallel
     if (flow)
@@ -1331,7 +1292,6 @@ py::tuple v1dmw(py::array_t<Tx> x, py::array_t<Tw> w, py::array_t<double> edges,
     else
       pg11::one::p_loop_excf(x, w, edges_v, values, variances);
   }
-#endif
   return py::make_tuple(values, variances);
 }
 
@@ -1342,16 +1302,13 @@ py::array_t<py::ssize_t> f2d(py::array_t<Tx> x, py::array_t<Ty> y, py::ssize_t n
   auto values = pg11::zeros<py::ssize_t>(nbinsx, nbinsy);
   pg11::faxis_t<double> axx{nbinsx, xmin, xmax};
   pg11::faxis_t<double> axy{nbinsy, ymin, ymax};
-#ifndef _WIN32
   if (x.shape(0) < pg11::config_threshold("thresholds.fix2d")) {  // serial
-#endif
     if (flow) {
       pg11::two::s_loop_incf(x.data(), y.data(), x.shape(0), axx, axy, values);
     }
     else {
       pg11::two::s_loop_excf(x.data(), y.data(), x.shape(0), axx, axy, values);
     }
-#ifndef _WIN32
   }
   else {
     if (flow) {
@@ -1361,7 +1318,6 @@ py::array_t<py::ssize_t> f2d(py::array_t<Tx> x, py::array_t<Ty> y, py::ssize_t n
       pg11::two::p_loop_excf(x.data(), y.data(), x.shape(0), axx, axy, values);
     }
   }
-#endif
   return values;
 }
 
@@ -1373,9 +1329,7 @@ py::tuple f2dw(py::array_t<Tx> x, py::array_t<Ty> y, py::array_t<Tw> w, py::ssiz
   auto variances = pg11::zeros<Tw>(nbinsx, nbinsy);
   pg11::faxis_t<double> axx{nbinsx, xmin, xmax};
   pg11::faxis_t<double> axy{nbinsy, ymin, ymax};
-#ifndef _WIN32
   if (x.shape(0) < pg11::config_threshold("thresholds.fix2d")) {  // serial
-#endif
     if (flow) {
       pg11::two::s_loop_incf(x.data(), y.data(), w.data(), x.shape(0), axx, axy, values,
                              variances);
@@ -1384,17 +1338,17 @@ py::tuple f2dw(py::array_t<Tx> x, py::array_t<Ty> y, py::array_t<Tw> w, py::ssiz
       pg11::two::s_loop_excf(x.data(), y.data(), w.data(), x.shape(0), axx, axy, values,
                              variances);
     }
-#ifndef _WIN32
   }
   else {
-    if (flow)
+    if (flow) {
       pg11::two::p_loop_incf(x.data(), y.data(), w.data(), x.shape(0), axx, axy, values,
                              variances);
-    else
+    }
+    else {
       pg11::two::p_loop_excf(x.data(), y.data(), w.data(), x.shape(0), axx, axy, values,
                              variances);
+    }
   }
-#endif
   return py::make_tuple(values, variances);
 }
 
@@ -1409,16 +1363,13 @@ py::array_t<py::ssize_t> v2d(py::array_t<Tx> x, py::array_t<Ty> y,
   auto values = pg11::zeros<py::ssize_t>(nbinsx, nbinsy);
   std::vector<double> edgesx_v(xbins.data(), xbins.data() + nedgesx);
   std::vector<double> edgesy_v(ybins.data(), ybins.data() + nedgesy);
-#ifndef _WIN32
   if (x.shape(0) < pg11::config_threshold("thresholds.var2d")) {
-#endif
     if (flow) {
       pg11::two::s_loop_incf(x.data(), y.data(), x.shape(0), edgesx_v, edgesy_v, values);
     }
     else {
       pg11::two::s_loop_excf(x.data(), y.data(), x.shape(0), edgesx_v, edgesy_v, values);
     }
-#ifndef _WIN32
   }
   else {
     if (flow) {
@@ -1428,7 +1379,6 @@ py::array_t<py::ssize_t> v2d(py::array_t<Tx> x, py::array_t<Ty> y,
       pg11::two::p_loop_excf(x.data(), y.data(), x.shape(0), edgesx_v, edgesy_v, values);
     }
   }
-#endif
   return values;
 }
 
@@ -1443,9 +1393,7 @@ py::tuple v2dw(py::array_t<Tx> x, py::array_t<Ty> y, py::array_t<Tw> w,
   auto variances = pg11::zeros<Tw>(nbinsx, nbinsy);
   std::vector<double> edgesx_v(xbins.data(), xbins.data() + nedgesx);
   std::vector<double> edgesy_v(ybins.data(), ybins.data() + nedgesy);
-#ifndef _WIN32
   if (x.shape(0) < pg11::config_threshold("thresholds.var2d")) {
-#endif
     if (flow) {
       pg11::two::s_loop_incf(x.data(), y.data(), w.data(), x.shape(0), edgesx_v, edgesy_v,
                              values, variances);
@@ -1454,7 +1402,6 @@ py::tuple v2dw(py::array_t<Tx> x, py::array_t<Ty> y, py::array_t<Tw> w,
       pg11::two::s_loop_excf(x.data(), y.data(), w.data(), x.shape(0), edgesx_v, edgesy_v,
                              values, variances);
     }
-#ifndef _WIN32
   }
   else {
     if (flow) {
@@ -1466,7 +1413,6 @@ py::tuple v2dw(py::array_t<Tx> x, py::array_t<Ty> y, py::array_t<Tw> w,
                              values, variances);
     }
   }
-#endif
   return py::make_tuple(values, variances);
 }
 
