@@ -32,7 +32,7 @@ jobs:
         python -m pip install dist/*.whl pytest
         python -m pip list
     - name: install windows
-      if: startWith(matrix.platform, 'windows')
+      if: startsWith(matrix.platform, 'windows')
       run: |
         python -m pip install build
         python -m build
