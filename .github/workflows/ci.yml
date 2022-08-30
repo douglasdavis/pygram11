@@ -24,11 +24,19 @@ jobs:
       if: startsWith(matrix.platform, 'macOS')
       run: |
         brew install libomp
-    - name: install
+    - name: install unix
+      if: startsWith(matrix.platform, 'macOS') || startsWith(matrix.platform, 'ubuntu')
       run: |
         python -m pip install build
         python -m build
         python -m pip install dist/*.whl pytest
+        python -m pip list
+    - name: install windows
+      if: startWith(matrix.platform, 'windows')
+      run: |
+        python -m pip install build
+        python -m build
+        python -m pip install dist\*.whl pytest
         python -m pip list
     - name: test
       run: |
