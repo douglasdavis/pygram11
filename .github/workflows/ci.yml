@@ -29,7 +29,7 @@ jobs:
     - name: install
       shell: bash
       run: |
-        python -m pip install pip -U
+        python -m pip install pip wheel -U
         python -m pip install build
         python -m pip install pytest
         python -m build
