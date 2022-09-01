@@ -4,7 +4,7 @@ Installation
 Requirements
 ------------
 
-The only requirement to use pygram11 is NumPy_.  If you install
+The only requirement to use pygram11 is NumPy_. If you install
 binaries from conda-forge or PyPI, NumPy will be installed as a
 required dependency.
 
@@ -38,15 +38,6 @@ Installations from conda-forge provide a build that used OpenMP.
 .. code-block:: none
 
    $ conda install pygram11 -c conda-forge
-
-.. note::
-
-   On macOS the OpenMP libraries from LLVM (``libomp``) and Intel
-   (``libiomp``) can clash if your ``conda`` environment includes the
-   Intel Math Kernel Library (MKL) package distributed by
-   Anaconda. You may need to install the ``nomkl`` package to prevent
-   the clash (Intel MKL accelerates many linear algebra operations,
-   but does not impact pygram11):
 
 Source
 ^^^^^^

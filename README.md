@@ -21,8 +21,8 @@ there).
 
 ### From PyPI
 
-Binary wheels are provided for Linux and macOS. They can be installed
-from [PyPI](https://pypi.org/project/pygram11/) via pip:
+Binary wheels are provided for Linux, macOS, and Windows. They can be
+installed from [PyPI](https://pypi.org/project/pygram11/) via pip:
 
 ```
 pip install pygram11
@@ -35,17 +35,6 @@ conda-forge](https://anaconda.org/conda-forge/pygram11).
 
 ```none
 conda install pygram11 -c conda-forge
-```
-
-Please note that on macOS the OpenMP libraries from LLVM (`libomp`)
-and Intel (`libiomp`) may clash if your `conda` environment includes
-the Intel Math Kernel Library (MKL) package distributed by
-Anaconda. You may need to install the `nomkl` package to prevent the
-clash (Intel MKL accelerates many linear algebra operations, but does
-not impact pygram11):
-
-```none
-conda install nomkl ## sometimes necessary fix (macOS only)
 ```
 
 ### From Source
