@@ -58,7 +58,7 @@ Or let pip handle the cloning procedure:
 pip install git+https://github.com/douglasdavis/pygram11.git@main
 ```
 
-Tests are run on Python versions `>= 3.7` and binary wheels are
+Tests are run on Python versions `>= 3.8` and binary wheels are
 provided for those versions.
 
 ## In Action
