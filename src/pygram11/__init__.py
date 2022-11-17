@@ -26,7 +26,7 @@ SOFTWARE.
 
 """
 
-from ._version import version as __version__  # noqa
+__version__ = "0.999"
 
 from ._hist import (  # noqa
     bin_centers,

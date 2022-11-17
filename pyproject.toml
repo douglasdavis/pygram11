@@ -1,12 +1,29 @@
+# [build-system]
+# requires = [
+#   "setuptools>=45",
+#   "setuptools_scm[toml]>=4.2.0",
+#   "scikit-build",
+#   "cmake",
+#   "ninja; platform_system!='Windows'"
+# ]
+# build-backend = "setuptools.build_meta"
+
 [build-system]
-requires = [
-  "setuptools>=45",
-  "setuptools_scm[toml]>=4.2.0",
-  "scikit-build",
-  "cmake",
-  "ninja; platform_system!='Windows'"
+requires = ["scikit-build-core"]
+build-backend = "scikit_build_core.build"
+
+[project]
+name = "pygram11"
+version = "0.999"
+readme = "README.md"
+description = "Fast histogramming in Python built on pybind11 and OpenMP."
+authors = [
+    { name = "Doug Davis", email = "ddavis@ddavis.io" },
 ]
-build-backend = "setuptools.build_meta"
+maintainers = [
+    { name = "Doug Davis", email = "ddavis@ddavis.io" },
+]
+requires-python = ">=3.8"
 
 [tool.pytest.ini_options]
 norecursedirs = ["extern"]
@@ -15,9 +32,6 @@ markers = [
     "OD: One dimensional histograms",
     "TD: Two dimensional histograms",
 ]
-
-[tool.setuptools_scm]
-write_to = "src/pygram11/_version.py"
 
 [tool.cibuildwheel]
 skip = "pp* cp27* cp35* cp36* cp37* *-manylinux_i686 *-musllinux_i686"
