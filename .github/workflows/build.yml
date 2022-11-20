@@ -22,7 +22,7 @@ jobs:
     - name: Install OpenMP on macOS
       if: startsWith(matrix.os, 'macOS')
       run: |
-        brew install libomp
+        brew reinstall libomp
 
     - name: Build wheels
       uses: pypa/cibuildwheel@v2.9.0
