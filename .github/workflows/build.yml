@@ -6,9 +6,6 @@ on:
     types:
     - published
 
-env:
-  ON_GH_ACTIONS: "1"
-
 jobs:
   build_wheels:
     name: Wheels on ${{ matrix.os }}
@@ -22,10 +19,11 @@ jobs:
       with:
         submodules: true
 
-    - name: Install OpenMP on macOS
-      if: startsWith(matrix.os, 'macOS')
+    - name: install libomp on macOS
+      shell: bash
+      if: runner.os == 'macOS'
       run: |
-        brew reinstall libomp
+        HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1 brew reinstall --build-from-source --formula ./.github/workflows/libomp.rb
 
     - name: Build wheels
       uses: pypa/cibuildwheel@v2.9.0
