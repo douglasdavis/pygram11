@@ -28,7 +28,7 @@ jobs:
       shell: bash
       if: runner.os == 'macOS'
       run: |
-        brew reinstall --build-from-source --formula ./.github/workflows/libomp.rb
+        HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1 brew reinstall --build-from-source --formula ./.github/workflows/libomp.rb
     - name: install
       shell: bash
       run: |
