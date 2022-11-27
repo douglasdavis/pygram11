@@ -21,11 +21,11 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: ${{matrix.python-version}}
-    - name: install libomp on macOS
-      shell: bash
-      if: runner.os == 'macOS'
-      run: |
-        HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1 brew reinstall --build-from-source --formula ./.github/workflows/libomp.rb
+    # - name: install libomp on macOS
+    #   shell: bash
+    #   if: runner.os == 'macOS'
+    #   run: |
+    #     HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1 brew reinstall --build-from-source --formula ./.github/workflows/libomp.rb
     - name: install
       shell: bash
       run: |
