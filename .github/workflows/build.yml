@@ -19,11 +19,11 @@ jobs:
       with:
         submodules: true
 
-    - name: install libomp on macOS
-      shell: bash
-      if: runner.os == 'macOS'
-      run: |
-        HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1 brew reinstall --build-from-source --formula ./.github/workflows/libomp.rb
+    # - name: install libomp on macOS
+    #   shell: bash
+    #   if: runner.os == 'macOS'
+    #   run: |
+    #     HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1 brew reinstall --build-from-source --formula ./.github/workflows/libomp.rb
 
     - name: Build wheels
       uses: pypa/cibuildwheel@v2.9.0
