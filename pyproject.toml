@@ -36,8 +36,10 @@ classifiers = [
     "Operating System :: MacOS",
     "Operating System :: POSIX",
     "Operating System :: POSIX :: Linux",
+    "Operating System :: Microsoft :: Windows",
     "License :: OSI Approved :: MIT License",
     "Intended Audience :: Science/Research",
+    "Development Status :: 6 - Mature",
 ]
 
 [tool.pytest.ini_options]
