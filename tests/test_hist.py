@@ -42,7 +42,6 @@ class TestFix1D:
     @pytest.mark.parametrize("flow", [True, False])
     @pytest.mark.parametrize("func", [pg.histogram, pg.fix1d])
     @pytest.mark.parametrize("cons_var", [True, False])
-    @pytest.mark.OD
     def test_no_weight_and_single_weight(
         self, xtype, wtype, density, flow, func, cons_var
     ):
@@ -89,7 +88,6 @@ class TestFix1D:
     @pytest.mark.parametrize("wtype", [np.float32, np.float64])
     @pytest.mark.parametrize("flow", [True, False])
     @pytest.mark.parametrize("func", [pg.histogram, pg.fix1dmw])
-    @pytest.mark.OD
     def test_multiple_weights(self, xtype, wtype, flow, func):
         x, w = self.make_data_mw(xtype, wtype)
         n, xmin, xmax = 50, -10.1, 10.1
@@ -114,7 +112,6 @@ class TestFix1D:
                     res1[-1] += np.sum(w[:, i][x >= xmax])
                 npt.assert_allclose(res0a[:, i], res1, atol=0.01, rtol=1.0e-3)
 
-    @pytest.mark.OD
     @pg.without_omp
     def test_cons_var_nomp(self):
         x = RNG.standard_normal(size=(500,))
@@ -124,7 +121,6 @@ class TestFix1D:
         npt.assert_allclose(res1, res2)
         npt.assert_allclose(var1, res1 * 0.5)
 
-    @pytest.mark.OD
     @pg.with_omp
     def test_cons_var_womp(self):
         x = RNG.standard_normal(size=(500,))
@@ -164,7 +160,6 @@ class TestVar1D:
     @pytest.mark.parametrize("density", [True, False])
     @pytest.mark.parametrize("flow", [True, False])
     @pytest.mark.parametrize("func", [pg.histogram, pg.var1d])
-    @pytest.mark.OD
     def test_no_weight_and_single_weight(self, xtype, wtype, bins, density, flow, func):
         if density and flow:
             assert True
@@ -192,7 +187,6 @@ class TestVar1D:
     @pytest.mark.parametrize("bins", [E1, E2])
     @pytest.mark.parametrize("flow", [True, False])
     @pytest.mark.parametrize("func", [pg.var1dmw, pg.histogram])
-    @pytest.mark.OD
     def test_multiple_weights(self, xtype, wtype, bins, flow, func):
         x, w = self.make_data_mw(xtype, wtype)
         xmin, xmax = bins[0], bins[-1]
@@ -221,7 +215,6 @@ class TestFix2D:
     @pytest.mark.parametrize("wtype", [None, np.float64, np.float32])
     @pytest.mark.parametrize("flow", [False])
     @pytest.mark.parametrize("func", [pg.histogram2d, pg.fix2d])
-    @pytest.mark.TD
     def test_no_weight_and_single_weight(self, xtype, ytype, wtype, flow, func):
         x, y, w = self.make_data(xtype, ytype, wtype)
         nbx, xmin, xmax = 25, -10.1, 10.1
@@ -276,7 +269,6 @@ class TestVar2D:
     @pytest.mark.parametrize("ybins", [E1, E2])
     @pytest.mark.parametrize("flow", [False])
     @pytest.mark.parametrize("func", [pg.var2d, pg.histogram2d])
-    @pytest.mark.TD
     def test_no_weight_and_single_weight(
         self, xtype, ytype, wtype, xbins, ybins, flow, func
     ):
@@ -306,7 +298,6 @@ class TestExceptions:
     W2 = np.abs(RNG.standard_normal(size=(50, 3)))
 
     @pytest.mark.parametrize("xtype", BAD_TYPES)
-    @pytest.mark.misci
     def test_f1d(self, xtype):
         x = self.X.astype(xtype)
         w1 = self.W1
@@ -328,7 +319,6 @@ class TestExceptions:
             pg.fix1dmw(x, weights=w2)
 
     @pytest.mark.parametrize("xtype", BAD_TYPES)
-    @pytest.mark.misci
     def test_v1d(self, xtype):
         x = self.X.astype(xtype)
         # bad range
@@ -337,7 +327,6 @@ class TestExceptions:
 
 
 class TestConvenience:
-    @pytest.mark.misci
     def test_bin_centers(self):
         edges = [1, 2, 3, 4, 5, 6]
         c = pg.bin_centers(edges)
@@ -350,7 +339,6 @@ class TestConvenience:
         c2 = np.array([2.0, 3.5, 6.0, 8.5, 9.1])
         npt.assert_allclose(c, c2)
 
-    @pytest.mark.misci
     def test_bin_edges(self):
         edges = pg.bin_edges(8, (-4, 4))
         e2 = np.array([-4.0, -3.0, -2.0, -1.0, 0.0, 1.0, 2.0, 3.0, 4.0])

@@ -26,7 +26,7 @@ SOFTWARE.
 
 """
 
-__version__ = "0.999"
+__version__ = "0.13.2"
 
 from ._hist import (  # noqa
     bin_centers,

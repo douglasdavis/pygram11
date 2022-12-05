@@ -14,7 +14,7 @@ build-backend = "scikit_build_core.build"
 
 [project]
 name = "pygram11"
-version = "0.999"
+version = "0.13.2"
 readme = "README.md"
 description = "Fast histogramming in Python built on pybind11 and OpenMP."
 authors = [
@@ -28,10 +28,13 @@ dependencies = ["numpy"]
 
 [tool.pytest.ini_options]
 norecursedirs = ["extern"]
-markers = [
-    "misci: Miscellaneous",
-    "OD: One dimensional histograms",
-    "TD: Two dimensional histograms",
+testpaths = ["tests"]
+addopts = [
+    "-v",
+    "-ra",
+    "--showlocals",
+    "--strict-markers",
+    "--strict-config",
 ]
 
 [tool.cibuildwheel]
