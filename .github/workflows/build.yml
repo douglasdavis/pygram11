@@ -44,7 +44,7 @@ jobs:
       with:
         submodules: true
 
-    - uses: actions/setup-python@v2
+    - uses: actions/setup-python@v4
       name: Install Python
 
     - name: Build sdist
@@ -52,6 +52,6 @@ jobs:
         python -m pip install build
         python -m build -s
 
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v3
       with:
         path: dist/*.tar.gz
