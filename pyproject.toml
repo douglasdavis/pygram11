@@ -4,7 +4,7 @@ build-backend = "scikit_build_core.build"
 
 [project]
 name = "pygram11"
-version = "0.14.0.dev1"
+version = "0.13.3"
 readme = "README.md"
 description = "Fast histogramming in Python built on pybind11 and OpenMP."
 authors = [
