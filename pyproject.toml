@@ -1,20 +1,10 @@
-# [build-system]
-# requires = [
-#   "setuptools>=45",
-#   "setuptools_scm[toml]>=4.2.0",
-#   "scikit-build",
-#   "cmake",
-#   "ninja; platform_system!='Windows'"
-# ]
-# build-backend = "setuptools.build_meta"
-
 [build-system]
 requires = ["scikit-build-core"]
 build-backend = "scikit_build_core.build"
 
 [project]
 name = "pygram11"
-version = "0.13.2"
+version = "0.14.0.dev1"
 readme = "README.md"
 description = "Fast histogramming in Python built on pybind11 and OpenMP."
 authors = [
@@ -23,14 +13,10 @@ authors = [
 maintainers = [
     { name = "Doug Davis", email = "ddavis@ddavis.io" },
 ]
-requires-python = ">=3.8"
+requires-python = ">=3.10"
 dependencies = ["numpy"]
 classifiers = [
-    "Programming Language :: Python :: 3 :: Only",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3",
     "Programming Language :: C++",
     "Operating System :: Unix",
     "Operating System :: MacOS",
@@ -54,9 +40,17 @@ addopts = [
 ]
 
 [tool.cibuildwheel]
-skip = "pp* cp27* cp35* cp36* cp37* *-manylinux_i686 *-musllinux_i686"
+skip = "pp* cp37* cp38* cp39* *-manylinux_i686 *-musllinux_i686"
 manylinux-x86_64-image = "manylinux2014"
 
 test-command = "pytest {package}/tests"
 test-skip = "pp*macos* *universal2:arm64"
 test-requires = ["pytest", "numpy"]
+
+[tool.ruff]
+line-length = 92
+
+[dependency-groups]
+dev = [
+    "pytest>=8.4.1",
+]

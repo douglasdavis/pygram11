@@ -42,17 +42,13 @@ class TestFix1D:
     @pytest.mark.parametrize("flow", [True, False])
     @pytest.mark.parametrize("func", [pg.histogram, pg.fix1d])
     @pytest.mark.parametrize("cons_var", [True, False])
-    def test_no_weight_and_single_weight(
-        self, xtype, wtype, density, flow, func, cons_var
-    ):
+    def test_no_weight_and_single_weight(self, xtype, wtype, density, flow, func, cons_var):
         if density and flow:
             assert True
             return
         x, w = self.make_data(xtype, wtype)
         n, xmin, xmax = 50, -10.1, 10.1
-        res1, edge = np.histogram(
-            x, weights=w, bins=n, range=(xmin, xmax), density=density
-        )
+        res1, edge = np.histogram(x, weights=w, bins=n, range=(xmin, xmax), density=density)
         if flow:
             if w is None:
                 res1[0] += np.sum(x < xmin)
@@ -94,9 +90,7 @@ class TestFix1D:
         with pg.omp_disabled():
             res0a, err0a = func(x, weights=w, bins=n, range=(xmin, xmax), flow=flow)
             for i in range(res0a.shape[1]):
-                res1, edge = np.histogram(
-                    x, weights=w[:, i], bins=n, range=(xmin, xmax)
-                )
+                res1, edge = np.histogram(x, weights=w[:, i], bins=n, range=(xmin, xmax))
                 if flow:
                     res1[0] += np.sum(w[:, i][x < xmin])
                     res1[-1] += np.sum(w[:, i][x >= xmax])
@@ -104,9 +98,7 @@ class TestFix1D:
         with pg.omp_forced():
             res0a, err0a = func(x, weights=w, bins=n, range=(xmin, xmax), flow=flow)
             for i in range(res0a.shape[1]):
-                res1, edge = np.histogram(
-                    x, weights=w[:, i], bins=n, range=(xmin, xmax)
-                )
+                res1, edge = np.histogram(x, weights=w[:, i], bins=n, range=(xmin, xmax))
                 if flow:
                     res1[0] += np.sum(w[:, i][x < xmin])
                     res1[-1] += np.sum(w[:, i][x >= xmax])
@@ -134,12 +126,8 @@ class TestFix1D:
 class TestVar1D:
     XD = RNG.normal(scale=0.8, size=2000)
     WD = RNG.uniform(0.8, 1.2, XD.shape[0])
-    E1 = np.array(
-        [-3.1, -2.2, -2.1, -1.975, -1.1, -0.9, -0.5, 0.05, 0.1, 1.5, 2.9, 3.1]
-    )
-    E2 = np.array(
-        [-3.1, -2.1, -1.9, -1.451, -1.1, -0.5, -0.1, 0.09, 0.4, 2.2, 2.8, 3.1]
-    )
+    E1 = np.array([-3.1, -2.2, -2.1, -1.975, -1.1, -0.9, -0.5, 0.05, 0.1, 1.5, 2.9, 3.1])
+    E2 = np.array([-3.1, -2.1, -1.9, -1.451, -1.1, -0.5, -0.1, 0.09, 0.4, 2.2, 2.8, 3.1])
 
     def make_data(self, xtype, wtype):
         x = (self.XD * RNG.uniform(0.9, 1.1, self.XD.shape[0])).astype(xtype)
@@ -249,12 +237,8 @@ class TestVar2D:
     XD = RNG.normal(scale=0.9, size=2000)
     YD = RNG.normal(scale=0.9, size=2000)
     WD = RNG.uniform(0.8, 1.2, XD.shape[0])
-    E1 = np.array(
-        [-3.1, -2.2, -2.1, -1.975, -1.1, -0.9, -0.5, 0.05, 0.1, 1.5, 2.9, 3.1]
-    )
-    E2 = np.array(
-        [-3.1, -2.1, -1.9, -1.451, -1.1, -0.5, -0.1, 0.09, 0.4, 2.2, 2.8, 3.1]
-    )
+    E1 = np.array([-3.1, -2.2, -2.1, -1.975, -1.1, -0.9, -0.5, 0.05, 0.1, 1.5, 2.9, 3.1])
+    E2 = np.array([-3.1, -2.1, -1.9, -1.451, -1.1, -0.5, -0.1, 0.09, 0.4, 2.2, 2.8, 3.1])
 
     def make_data(self, xtype, ytype, wtype):
         x = (self.XD * RNG.uniform(0.9, 1.1, self.XD.shape[0])).astype(xtype)

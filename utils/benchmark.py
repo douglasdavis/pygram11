@@ -6,7 +6,6 @@ mpl.use("Agg")
 import json
 import sys
 from timeit import timeit, repeat
-import pygram11 as pg
 import numpy as np
 
 SETUP_F_1D = """
@@ -96,11 +95,7 @@ expos2d = [2, 3, 4, 5, 6, 7, 8]
 def time_stats(stmt=None, setup=None):
     time_single = timeit(stmt=stmt, setup=setup, number=1)
     number = max(3, int(1.0 / time_single))
-    print(
-        " -> estimated time to complete test: {0:.1f}s".format(
-            time_single * 10 * number
-        )
-    )
+    print(" -> estimated time to complete test: {0:.1f}s".format(time_single * 10 * number))
     times = repeat(stmt=stmt, setup=setup, repeat=10, number=number)
     return np.min(times) / number, np.mean(times) / number, np.median(times) / number
 
@@ -111,7 +106,7 @@ def run_4(expos, stmt_pg, stmt_np, stmt_bh, stmt_fh, setup, outname):
     fh_means = []
     bh_means = []
     for exponent in expos:
-        size = int(10 ** exponent)
+        size = int(10**exponent)
         print(f"Running 10^{exponent}")
         pg_min, pg_mean, pg_median = time_stats(stmt=stmt_pg, setup=setup.format(size=size))
         np_min, np_mean, np_median = time_stats(stmt=stmt_np, setup=setup.format(size=size))
@@ -140,7 +135,7 @@ def run_3(expos, stmt_pg, stmt_np, stmt_bh, setup, outname):
     np_means = []
     bh_means = []
     for exponent in expos:
-        size = int(10 ** exponent)
+        size = int(10**exponent)
         print(f"Running 10^{exponent}")
         pg_min, pg_mean, pg_median = time_stats(stmt=stmt_pg, setup=setup.format(size=size))
         np_min, np_mean, np_median = time_stats(stmt=stmt_np, setup=setup.format(size=size))
