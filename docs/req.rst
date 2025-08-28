@@ -12,13 +12,11 @@ Extras for Source Builds
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
 When building from source, all you need is a C++ compiler with C++14
-support. The ``setup.py`` script will test to see if OpenMP is
-available. If it's not, then the installation will abort. Most Linux
-distributions with modern GCC versions should provide OpenMP
-automatically (search the web to see how to install OpenMP from your
-distribution's package manager). On macOS you'll want to install
-``libomp`` from Homebrew to use OpenMP with the Clang compiler shipped
-by Apple.
+support. Most Linux distributions with modern GCC versions should
+provide OpenMP automatically (search the web to see how to install
+OpenMP from your distribution's package manager). On macOS you'll want
+to install ``libomp`` from Homebrew to use OpenMP with the Clang
+compiler shipped by Apple.
 
 Install Options
 ---------------

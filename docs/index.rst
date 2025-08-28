@@ -15,9 +15,6 @@ and accelerated with OpenMP_.
 .. image:: https://img.shields.io/pypi/v/pygram11.svg?colorB=486b87&style=flat
    :target: https://pypi.org/project/pygram11/
    :alt: PyPI
-.. image:: https://img.shields.io/pypi/pyversions/pygram11
-   :target: https://pypi.org/project/pygram11
-   :alt: PyPI - Python Version
 .. image:: https://img.shields.io/github/stars/douglasdavis/pygram11?style=social
    :target: https://github.com/douglasdavis/pygram11
    :alt: GitHub stars

@@ -4,7 +4,6 @@
 [![Actions Status](https://github.com/douglasdavis/pygram11/workflows/Tests/badge.svg)](https://github.com/douglasdavis/pygram11/actions)
 [![PyPI version](https://img.shields.io/pypi/v/pygram11.svg?colorB=486b87&style=flat)](https://pypi.org/project/pygram11/)
 [![Conda Forge](https://img.shields.io/conda/vn/conda-forge/pygram11.svg?colorB=486b87&style=flat)](https://anaconda.org/conda-forge/pygram11)
-[![Python Version](https://img.shields.io/pypi/pyversions/pygram11)](https://pypi.org/project/pygram11/)
 
 Simple and fast histogramming in Python accelerated with
 [OpenMP](https://www.openmp.org/) with help from
@@ -42,9 +41,7 @@ conda install pygram11 -c conda-forge
 You need is a C++14 compiler and OpenMP. If you are using a relatively
 modern GCC release on Linux then you probably don't have to worry
 about the OpenMP dependency. If you are on macOS, you can install
-`libomp` from Homebrew (pygram11 does compile on Apple Silicon devices
-with Python version `>= 3.9` and `libomp` installed from Homebrew).
-With those dependencies met, simply run:
+`libomp` from Homebrew.
 
 ```none
 git clone https://github.com/douglasdavis/pygram11.git --recurse-submodules
@@ -58,7 +55,7 @@ Or let pip handle the cloning procedure:
 pip install git+https://github.com/douglasdavis/pygram11.git@main
 ```
 
-Tests are run on Python versions `>= 3.8` and binary wheels are
+Tests are run on Python versions `>= 3.11` and binary wheels are
 provided for those versions.
 
 ## In Action

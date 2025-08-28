@@ -16,7 +16,6 @@ maintainers = [
 requires-python = ">=3.11"
 dependencies = ["numpy"]
 classifiers = [
-    "Programming Language :: Python :: 3",
     "Programming Language :: C++",
     "Operating System :: Unix",
     "Operating System :: MacOS",
