@@ -12,12 +12,16 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-2019]
+        os: [ubuntu-latest, macos-latest, windows-2022]
 
     steps:
     - uses: actions/checkout@v3
       with:
         submodules: true
+
+    - name: Install OpenMP (macOS)
+      if: runner.os == 'macOS'
+      run: brew install libomp
 
     - name: Build wheels
       uses: pypa/cibuildwheel@v3.1.4
