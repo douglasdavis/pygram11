@@ -1,6 +1,5 @@
 """pygram11 configuration."""
 
-
 from typing import Dict, Iterator
 
 

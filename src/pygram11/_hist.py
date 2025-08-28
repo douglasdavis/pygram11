@@ -1,5 +1,5 @@
 # stdlib
-from typing import Any, Sequence, Tuple, Optional, Union
+from typing import Sequence, Tuple, Optional, Union
 
 # third party
 import numpy as np
@@ -563,9 +563,7 @@ def fix2d(
         result = _f2d(x, y, int(nx), xmin, xmax, int(ny), ymin, ymax, flow)
         return result, None
 
-    counts, variances = _f2dw(
-        x, y, weights, int(nx), xmin, xmax, int(ny), ymin, ymax, flow
-    )
+    counts, variances = _f2dw(x, y, weights, int(nx), xmin, xmax, int(ny), ymin, ymax, flow)
 
     if cons_var:
         return counts, variances
