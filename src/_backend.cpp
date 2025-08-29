@@ -21,6 +21,7 @@
 // SOFTWARE.
 
 /// pybind11
+#include <pybind11/gil_simple.h>
 #include <pybind11/numpy.h>
 
 /// Boost
@@ -100,7 +101,7 @@ inline py::ssize_t calc_bin(Tx x, Tn nbins, Ta xmin, Ta xmax, Ta norm) {
   return static_cast<py::ssize_t>((x - xmin) * norm);
 }
 
-/// Calculate the bin index for a fixed with histogram assuming x in the range.
+/// Calculate the bin index assuming x in the range.
 template <typename Tx, typename Ta>
 inline py::ssize_t calc_bin(Tx x, Ta xmin, Ta norm) {
   return static_cast<py::ssize_t>((x - xmin) * norm);
@@ -133,17 +134,6 @@ inline py::ssize_t calc_bin(Tx x, const std::vector<Te>& edges) {
 
 /// One dimensional histograms
 namespace one {
-
-/// fix, serial loop, include flow, no weights
-template <typename Tx, typename Ta, typename Tc>
-inline void s_loop_incf(const Tx* x, py::ssize_t nx, faxis_t<Ta> ax, Tc* values) {
-  auto norm = anorm(ax);
-  py::ssize_t bin;
-  for (py::ssize_t i = 0; i < nx; ++i) {
-    bin = pg11::calc_bin(x[i], ax.nbins, ax.amin, ax.amax, norm);
-    values[bin]++;
-  }
-}
 
 /// fix, serial loop, include flow, with weights
 template <typename Tx, typename Tw, typename Ta, typename Tc>
@@ -236,26 +226,6 @@ inline void s_loop_incf(const py::array_t<Tx>& x, const py::array_t<Tw>& w,
       w_ij = w_px(i, j);
       values_px(bin, j) += w_ij;
       variances_px(bin, j) += w_ij * w_ij;
-    }
-  }
-}
-
-/// fix, parallel loop, include flow, no weights
-template <typename Tx, typename Ta, typename Tc>
-inline void p_loop_incf(const Tx* x, py::ssize_t nx, faxis_t<Ta> ax, Tc* values) {
-  auto norm = anorm(ax);
-#pragma omp parallel
-  {
-    std::vector<Tc> values_ot(ax.nbins, 0);
-    py::ssize_t bin;
-#pragma omp for nowait
-    for (py::ssize_t i = 0; i < nx; ++i) {
-      bin = pg11::calc_bin(x[i], ax.nbins, ax.amin, ax.amax, norm);
-      values_ot[bin]++;
-    }
-#pragma omp critical
-    for (py::ssize_t i = 0; i < ax.nbins; ++i) {
-      values[i] += values_ot[i];
     }
   }
 }
@@ -416,18 +386,6 @@ inline void p_loop_incf(const py::array_t<Tx>& x, const py::array_t<Tw>& w,
   }
 }
 
-/// fix, serial loop, exclude flow, no weights
-template <typename Tx, typename Ta, typename Tc>
-inline void s_loop_excf(const Tx* x, py::ssize_t nx, faxis_t<Ta> ax, Tc* values) {
-  py::ssize_t bin;
-  auto norm = anorm(ax);
-  for (py::ssize_t i = 0; i < nx; ++i) {
-    if (x[i] < ax.amin || x[i] >= ax.amax) continue;
-    bin = pg11::calc_bin(x[i], ax.amin, norm);
-    values[bin]++;
-  }
-}
-
 /// fix, serial loop, exclude flow, with weights
 template <typename Tx, typename Tw, typename Ta, typename Tc>
 inline void s_loop_excf(const Tx* x, const Tw* w, py::ssize_t nx, faxis_t<Ta> ax,
@@ -521,27 +479,6 @@ inline void s_loop_excf(const py::array_t<Tx>& x, const py::array_t<Tw>& w,
       w_ij = w_px(i, j);
       values_px(bin, j) += w_ij;
       variances_px(bin, j) += w_ij * w_ij;
-    }
-  }
-}
-
-/// fix, parallel loop, exclude flow, no weights
-template <typename Tx, typename Ta, typename Tc>
-inline void p_loop_excf(const Tx* x, py::ssize_t nx, faxis_t<Ta> ax, Tc* values) {
-  auto norm = anorm(ax);
-#pragma omp parallel
-  {
-    std::vector<Tc> values_ot(ax.nbins, 0);
-    py::ssize_t bin;
-#pragma omp for nowait
-    for (py::ssize_t i = 0; i < nx; ++i) {
-      if (x[i] < ax.amin || x[i] >= ax.amax) continue;
-      bin = pg11::calc_bin(x[i], ax.amin, norm);
-      values_ot[bin]++;
-    }
-#pragma omp critical
-    for (py::ssize_t i = 0; i < ax.nbins; ++i) {
-      values[i] += values_ot[i];
     }
   }
 }
@@ -1134,26 +1071,52 @@ void p_loop_excf(const Tx* x, const Ty* y, const Tw* w, py::ssize_t nx,
 
 }  // namespace pg11
 
-template <typename Tx>
-py::array_t<py::ssize_t> f1d(py::array_t<Tx, py::array::c_style> x, py::ssize_t nbins,
-                             double xmin, double xmax, bool flow) {
+template <bool flow, typename T>
+py::array_t<py::ssize_t> f1d(py::array_t<T, py::array::c_style> x, py::ssize_t nbins,
+                             double xmin, double xmax) {
+  auto threshold = pg11::config_threshold("thresholds.fix1d");
   auto values = pg11::zeros<py::ssize_t>(nbins);
   pg11::faxis_t<double> ax{nbins, xmin, xmax};
   auto nx = x.shape(0);
-  if (nx < pg11::config_threshold("thresholds.fix1d")) {  // serial
-    if (flow) {
-      pg11::one::s_loop_incf(x.data(), nx, ax, values.mutable_data());
-    }
-    else {
-      pg11::one::s_loop_excf(x.data(), nx, ax, values.mutable_data());
+  auto xp = x.data();
+  auto vp = values.mutable_data();
+  auto norm = pg11::anorm(ax);
+  {
+    py::gil_scoped_release release;
+#pragma omp parallel for reduction(+ : vp[ : nbins]) if (nx > threshold)
+    for (py::ssize_t i = 0; i < nx; ++i) {
+      if constexpr (!flow) {
+        if (xp[i] < xmin || xp[i] >= xmax) continue;
+      }
+      auto bin_index = pg11::calc_bin(xp[i], ax.nbins, ax.amin, ax.amax, norm);
+      vp[bin_index]++;
     }
   }
-  else {  // parallel
-    if (flow) {
-      pg11::one::p_loop_incf(x.data(), nx, ax, values.mutable_data());
-    }
-    else {
-      pg11::one::p_loop_excf(x.data(), nx, ax, values.mutable_data());
+  return values;
+}
+
+template <bool flow, typename Tx, typename Te>
+py::array_t<py::ssize_t> v1d_(py::array_t<Tx, py::array::c_style> x,
+                              py::array_t<Tx, py::array::c_style> edges) {
+  auto threshold = pg11::config_threshold("thresholds.var1d");
+  auto nedges = edges.shape(0);
+  auto nbins = nedges - 1;
+  std::vector<Te> edges_v(edges.data(), edges.data() + nedges);
+  auto nx = x.shape(0);
+  auto xp = x.data();
+  auto xmin = edges_v.front();
+  auto xmax = edges_v.back();
+  auto values = pg11::zeros<py::ssize_t>(nbins);
+  auto vp = values.mutable_data();
+  {
+    py::gil_scoped_release release;
+#pragma omp parallel for reduction(+ : vp[ : nbins]) if (nx > threshold)
+    for (py::ssize_t i = 0; i < nx; ++i) {
+      if constexpr (!flow) {
+        if (xp[i] < xmin || xp[i] >= xmax) continue;
+      }
+      auto bin_index = pg11::calc_bin(xp[i], nbins, xmin, xmax, edges_v);
+      vp[bin_index]++;
     }
   }
   return values;
@@ -1429,59 +1392,38 @@ using pg_type_pairs_and_weight = mp_product<type_list, pg_types, pg_types, pg_we
 
 using namespace pybind11::literals;
 
-// clang-format off
 template <typename Tx>
 void inject1d(py::module_& m, const Tx&) {
-  m.def("_f1d", &f1d<Tx>,
-        "x"_a.noconvert(),
-        "nbins"_a, "xmin"_a, "xmax"_a, "flow"_a);
-  m.def("_v1d", &v1d<Tx>,
-        "x"_a.noconvert(),
-        "bins"_a, "flow"_a);
+  m.def("_f1d_f", &f1d<true, Tx>, "x"_a.noconvert(), "n"_a, "xmin"_a, "xmax"_a);
+  m.def("_f1d_nf", &f1d<false, Tx>, "x"_a.noconvert(), "n"_a, "xmin"_a, "xmax"_a);
+  m.def("_v1d_f", &v1d_<true, Tx, double>, "x"_a.noconvert(), "b"_a);
+  m.def("_v1d_nf", &v1d_<false, Tx, double>, "x"_a.noconvert(), "b"_a);
 }
 
 template <typename Tx, typename Tw>
 void inject_1dw(py::module_& m, const type_list<Tx, Tw>&) {
-  m.def("_f1dw", &f1dw<Tx, Tw>,
-        "x"_a.noconvert(), "weights"_a.noconvert(),
-        "nbins"_a, "xmin"_a, "xmax"_a, "flow"_a);
-  m.def("_f1dmw", &f1dmw<Tx, Tw>,
-        "x"_a.noconvert(), "weights"_a.noconvert(),
-        "nbins"_a, "xmin"_a, "xmax"_a, "flow"_a);
-  m.def("_v1dw", &v1dw<Tx, Tw>,
-        "x"_a.noconvert(), "weights"_a.noconvert(),
-        "bins"_a, "flow"_a);
-  m.def("_v1dmw", &v1dmw<Tx, Tw>,
-        "x"_a.noconvert(), "weights"_a.noconvert(),
-        "bins"_a, "flow"_a);
+  m.def("_f1dw", &f1dw<Tx, Tw>, "x"_a.noconvert(), "w"_a.noconvert(), "nb"_a, "xmin"_a,
+        "xmax"_a, "f"_a);
+  m.def("_f1dmw", &f1dmw<Tx, Tw>, "x"_a.noconvert(), "w"_a.noconvert(), "nb"_a, "xmin"_a,
+        "xmax"_a, "f"_a);
+  m.def("_v1dw", &v1dw<Tx, Tw>, "x"_a.noconvert(), "w"_a.noconvert(), "b"_a, "f"_a);
+  m.def("_v1dmw", &v1dmw<Tx, Tw>, "x"_a.noconvert(), "w"_a.noconvert(), "b"_a, "f"_a);
 }
 
 template <typename Tx, typename Ty>
 void inject_2d(py::module_& m, const type_list<Tx, Ty>&) {
-  m.def("_f2d", &f2d<Tx, Ty>,
-        "x"_a.noconvert(), "y"_a.noconvert(),
-        "nbinsx"_a, "xmin"_a, "xmax"_a,
-        "nbinsy"_a, "ymin"_a, "ymax"_a,
-        "flow"_a);
-  m.def("_v2d", &v2d<Tx, Ty>,
-        "x"_a.noconvert(), "y"_a.noconvert(),
-        "binsx"_a, "binsy"_a,
-        "flow"_a);
+  m.def("_f2d", &f2d<Tx, Ty>, "x"_a.noconvert(), "y"_a.noconvert(), "nx"_a, "xmin"_a,
+        "xmax"_a, "ny"_a, "ymin"_a, "ymax"_a, "f"_a);
+  m.def("_v2d", &v2d<Tx, Ty>, "x"_a.noconvert(), "y"_a.noconvert(), "bx"_a, "by"_a, "f"_a);
 }
 
 template <typename Tx, typename Ty, typename Tw>
 void inject_2dw(py::module_& m, const type_list<Tx, Ty, Tw>&) {
-  m.def("_f2dw", &f2dw<Tx, Ty, Tw>,
-        "x"_a.noconvert(), "y"_a.noconvert(), "weights"_a.noconvert(),
-        "nbinsx"_a, "xmin"_a, "xmax"_a,
-        "nbinsy"_a, "ymin"_a, "ymax"_a,
-        "flow"_a);
-  m.def("_v2dw", &v2dw<Tx, Ty, Tw>,
-        "x"_a.noconvert(), "y"_a.noconvert(), "w"_a.noconvert(),
-        "binsx"_a, "binsy"_a,
-        "flow"_a);
+  m.def("_f2dw", &f2dw<Tx, Ty, Tw>, "x"_a.noconvert(), "y"_a.noconvert(), "w"_a.noconvert(),
+        "nx"_a, "xmin"_a, "xmax"_a, "ny"_a, "ymin"_a, "ymax"_a, "f"_a);
+  m.def("_v2dw", &v2dw<Tx, Ty, Tw>, "x"_a.noconvert(), "y"_a.noconvert(), "w"_a.noconvert(),
+        "bx"_a, "by"_a, "f"_a);
 }
-// clang-format on
 
 PYBIND11_MODULE(_backend, m) {
   m.doc() = "pygram11 C++ backend.";
