@@ -21,10 +21,10 @@ there).
 ### From PyPI
 
 Binary wheels are provided for Linux, macOS, and Windows. They can be
-installed from [PyPI](https://pypi.org/project/pygram11/) via pip:
+installed from [PyPI](https://pypi.org/project/pygram11/):
 
 ```
-pip install pygram11
+pip install pygram11  # or uv pip install
 ```
 
 ### From conda-forge
@@ -38,7 +38,7 @@ conda install pygram11 -c conda-forge
 
 ### From Source
 
-You need is a C++14 compiler and OpenMP. If you are using a relatively
+You need a C++17 compiler and OpenMP. If you are using a relatively
 modern GCC release on Linux then you probably don't have to worry
 about the OpenMP dependency. If you are on macOS, you can install
 `libomp` from Homebrew.

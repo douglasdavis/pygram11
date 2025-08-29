@@ -9,7 +9,10 @@ find_package(
   COMPONENTS Interpreter Development.Module
   REQUIRED)
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 find_package(OpenMP)
+
 if (NOT OpenMP_FOUND)
   # Try again with extra path info; required for libomp 15+ from Homebrew
   execute_process(COMMAND brew --prefix libomp
@@ -27,7 +30,7 @@ endif ()
 
 add_subdirectory(extern/pybind11)
 pybind11_add_module(_backend MODULE src/_backend.cpp)
-set_target_properties(_backend PROPERTIES CXX_STANDARD 14)
+set_target_properties(_backend PROPERTIES CXX_STANDARD 17)
 target_include_directories(_backend PRIVATE extern/mp11/include)
 target_link_libraries(_backend PUBLIC OpenMP::OpenMP_CXX)
 

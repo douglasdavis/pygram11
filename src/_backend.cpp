@@ -21,6 +21,7 @@
 // SOFTWARE.
 
 /// pybind11
+#include <pybind11/gil_simple.h>
 #include <pybind11/numpy.h>
 
 /// Boost
@@ -68,23 +69,6 @@ inline py::array_t<T> zeros(std::size_t n, std::size_t m) {
   return arr;
 }
 
-template <typename T, typename = enable_if_arithmetic_t<T>>
-inline void arr_sqrt(T* arr, std::size_t n) {
-  for (std::size_t i = 0; i < n; ++i) {
-    arr[i] = std::sqrt(arr[i]);
-  }
-}
-
-template <typename T, typename = enable_if_arithmetic_t<T>>
-inline void arr_sqrt(py::array_t<T>& arr) {
-  auto a = arr.template mutable_unchecked<2>();
-  for (py::ssize_t i = 0; i < arr.shape(0); ++i) {
-    for (py::ssize_t j = 0; j < arr.shape(1); ++j) {
-      a(i, j) = std::sqrt(a(i, j));
-    }
-  }
-}
-
 inline py::ssize_t config_threshold(const char* k) {
   return py::module_::import("pygram11.config")
       .attr("config")
@@ -100,7 +84,7 @@ inline py::ssize_t calc_bin(Tx x, Tn nbins, Ta xmin, Ta xmax, Ta norm) {
   return static_cast<py::ssize_t>((x - xmin) * norm);
 }
 
-/// Calculate the bin index for a fixed with histogram assuming x in the range.
+/// Calculate the bin index assuming x in the range.
 template <typename Tx, typename Ta>
 inline py::ssize_t calc_bin(Tx x, Ta xmin, Ta norm) {
   return static_cast<py::ssize_t>((x - xmin) * norm);
@@ -131,1033 +115,58 @@ inline py::ssize_t calc_bin(Tx x, const std::vector<Te>& edges) {
   return s - 1;
 }
 
-/// One dimensional histograms
-namespace one {
-
-/// fix, serial loop, include flow, no weights
-template <typename Tx, typename Ta, typename Tc>
-inline void s_loop_incf(const Tx* x, py::ssize_t nx, faxis_t<Ta> ax, Tc* values) {
-  auto norm = anorm(ax);
-  py::ssize_t bin;
-  for (py::ssize_t i = 0; i < nx; ++i) {
-    bin = pg11::calc_bin(x[i], ax.nbins, ax.amin, ax.amax, norm);
-    values[bin]++;
-  }
-}
-
-/// fix, serial loop, include flow, with weights
-template <typename Tx, typename Tw, typename Ta, typename Tc>
-inline void s_loop_incf(const Tx* x, const Tw* w, py::ssize_t nx, faxis_t<Ta> ax,
-                        Tc* values, Tw* variances) {
-  auto norm = anorm(ax);
-  py::ssize_t bin;
-  Tw weight;
-  for (py::ssize_t i = 0; i < nx; ++i) {
-    bin = pg11::calc_bin(x[i], ax.nbins, ax.amin, ax.amax, norm);
-    weight = w[i];
-    values[bin] += weight;
-    variances[bin] += weight * weight;
-  }
-}
-
-/// fix, serial loop, include flow, with multiweights
-template <typename Tx, typename Tw, typename Ta>
-inline void s_loop_incf(const py::array_t<Tx>& x, const py::array_t<Tw>& w, faxis_t<Ta> ax,
-                        py::array_t<Tw>& values, py::array_t<Tw>& variances) {
-  auto values_px = values.template mutable_unchecked<2>();
-  auto variances_px = variances.template mutable_unchecked<2>();
-  auto w_px = w.template unchecked<2>();
-  auto x_px = x.data();
-  auto norm = anorm(ax);
-  Tw w_ij;
-  py::ssize_t bin;
-  py::ssize_t nx = x.shape(0);
-  py::ssize_t nw = w.shape(1);
-  for (py::ssize_t i = 0; i < nx; ++i) {
-    bin = pg11::calc_bin(x_px[i], ax.nbins, ax.amin, ax.amax, norm);
-    for (py::ssize_t j = 0; j < nw; ++j) {
-      w_ij = w_px(i, j);
-      values_px(bin, j) += w_ij;
-      variances_px(bin, j) += w_ij * w_ij;
-    }
-  }
-}
-
-/// var, serial loop, include flow, no weights
-template <typename Tx, typename Te, typename Tc>
-inline void s_loop_incf(const Tx* x, py::ssize_t nx, const std::vector<Te>& edges,
-                        Tc* values) {
-  py::ssize_t bin;
-  auto nbins = edges.size() - 1;
-  Te xmin = edges.front();
-  Te xmax = edges.back();
-  for (py::ssize_t i = 0; i < nx; ++i) {
-    bin = pg11::calc_bin(x[i], nbins, xmin, xmax, edges);
-    values[bin]++;
-  }
-}
-
-/// var, serial loop, include flow, with weights
-template <typename Tx, typename Tw, typename Te, typename Tc>
-inline void s_loop_incf(const Tx* x, const Tw* w, py::ssize_t nx,
-                        const std::vector<Te>& edges, Tc* values, Tw* variances) {
-  py::ssize_t bin;
-  Tw weight;
-  auto nbins = edges.size() - 1;
-  auto xmin = edges.front();
-  auto xmax = edges.back();
-  for (py::ssize_t i = 0; i < nx; ++i) {
-    bin = pg11::calc_bin(x[i], nbins, xmin, xmax, edges);
-    weight = w[i];
-    values[bin] += weight;
-    variances[bin] += weight * weight;
-  }
-}
-
-/// var, serial loop, include flow, with multiweights
-template <typename Tx, typename Tw, typename Te>
-inline void s_loop_incf(const py::array_t<Tx>& x, const py::array_t<Tw>& w,
-                        const std::vector<Te>& edges, py::array_t<Tw>& values,
-                        py::array_t<Tw>& variances) {
-  auto values_px = values.template mutable_unchecked<2>();
-  auto variances_px = variances.template mutable_unchecked<2>();
-  auto w_px = w.template unchecked<2>();
-  auto x_px = x.data();
-  auto nbins = edges.size() - 1;
-  auto xmin = edges.front();
-  auto xmax = edges.back();
-  Tw w_ij;
-  py::ssize_t bin;
-  py::ssize_t nx = x.shape(0);
-  py::ssize_t nw = w.shape(1);
-  for (py::ssize_t i = 0; i < nx; ++i) {
-    bin = pg11::calc_bin(x_px[i], nbins, xmin, xmax, edges);
-    for (py::ssize_t j = 0; j < nw; ++j) {
-      w_ij = w_px(i, j);
-      values_px(bin, j) += w_ij;
-      variances_px(bin, j) += w_ij * w_ij;
-    }
-  }
-}
-
-/// fix, parallel loop, include flow, no weights
-template <typename Tx, typename Ta, typename Tc>
-inline void p_loop_incf(const Tx* x, py::ssize_t nx, faxis_t<Ta> ax, Tc* values) {
-  auto norm = anorm(ax);
-#pragma omp parallel
-  {
-    std::vector<Tc> values_ot(ax.nbins, 0);
-    py::ssize_t bin;
-#pragma omp for nowait
-    for (py::ssize_t i = 0; i < nx; ++i) {
-      bin = pg11::calc_bin(x[i], ax.nbins, ax.amin, ax.amax, norm);
-      values_ot[bin]++;
-    }
-#pragma omp critical
-    for (py::ssize_t i = 0; i < ax.nbins; ++i) {
-      values[i] += values_ot[i];
-    }
-  }
-}
-
-/// fix, parallel loop, include flow, with weights
-template <typename Tx, typename Tw, typename Ta, typename Tc>
-inline void p_loop_incf(const Tx* x, const Tw* w, py::ssize_t nx, faxis_t<Ta> ax,
-                        Tc* values, Tw* variances) {
-  auto norm = anorm(ax);
-#pragma omp parallel
-  {
-    std::vector<Tc> values_ot(ax.nbins, 0);
-    std::vector<Tw> variances_ot(ax.nbins, 0.0);
-    py::ssize_t bin;
-    Tw weight;
-#pragma omp for nowait
-    for (py::ssize_t i = 0; i < nx; ++i) {
-      bin = pg11::calc_bin(x[i], ax.nbins, ax.amin, ax.amax, norm);
-      weight = w[i];
-      values_ot[bin] += weight;
-      variances_ot[bin] += weight * weight;
-    }
-#pragma omp critical
-    for (py::ssize_t i = 0; i < ax.nbins; ++i) {
-      values[i] += values_ot[i];
-      variances[i] += variances_ot[i];
-    }
-  }
-}
-
-/// fix, parallel loop, include flow, with multiweights
-template <typename Tx, typename Tw, typename Ta>
-inline void p_loop_incf(const py::array_t<Tx>& x, const py::array_t<Tw>& w, faxis_t<Ta> ax,
-                        py::array_t<Tw>& values, py::array_t<Tw>& variances) {
-  auto values_px = values.template mutable_unchecked<2>();
-  auto variances_px = variances.template mutable_unchecked<2>();
-  auto w_px = w.template unchecked<2>();
-  auto x_px = x.data();
-  auto norm = anorm(ax);
-  py::ssize_t nx = x.shape(0);
-  py::ssize_t nw = w.shape(1);
-#pragma omp parallel
-  {
-    std::vector<std::vector<Tw>> values_ot;
-    std::vector<std::vector<Tw>> variances_ot;
-    for (py::ssize_t i = 0; i < nw; ++i) {
-      values_ot.emplace_back(ax.nbins, 0);
-      variances_ot.emplace_back(ax.nbins, 0);
-    }
-#pragma omp for nowait
-    for (py::ssize_t i = 0; i < nx; ++i) {
-      auto bin = pg11::calc_bin(x_px[i], ax.nbins, ax.amin, ax.amax, norm);
-      for (py::ssize_t j = 0; j < nw; ++j) {
-        auto w_ij = w_px(i, j);
-        values_ot[j][bin] += w_ij;
-        variances_ot[j][bin] += w_ij * w_ij;
-      }
-    }
-#pragma omp critical
-    for (py::ssize_t i = 0; i < ax.nbins; ++i) {
-      for (py::ssize_t j = 0; j < nw; ++j) {
-        values_px(i, j) += values_ot[j][i];
-        variances_px(i, j) += variances_ot[j][i];
-      }
-    }
-  }
-}
-
-/// var, parallel loop, include flow, no weights
-template <typename Tx, typename Te, typename Tc>
-inline void p_loop_incf(const Tx* x, py::ssize_t nx, const std::vector<Te>& edges,
-                        Tc* values) {
-  py::ssize_t nbins = edges.size() - 1;
-  auto xmin = edges.front();
-  auto xmax = edges.back();
-#pragma omp parallel
-  {
-    std::vector<Tc> values_ot(nbins, 0);
-    py::ssize_t bin;
-#pragma omp for nowait
-    for (py::ssize_t i = 0; i < nx; ++i) {
-      bin = pg11::calc_bin(x[i], nbins, xmin, xmax, edges);
-      values_ot[bin]++;
-    }
-#pragma omp critical
-    for (py::ssize_t i = 0; i < nbins; ++i) {
-      values[i] += values_ot[i];
-    }
-  }
-}
-
-/// var, parallel loop, include flow,  with weights
-template <typename Tx, typename Tw, typename Te, typename Tc>
-inline void p_loop_incf(const Tx* x, const Tw* w, py::ssize_t nx,
-                        const std::vector<Te>& edges, Tc* values, Tw* variances) {
-  py::ssize_t nbins = edges.size() - 1;
-  auto xmin = edges.front();
-  auto xmax = edges.back();
-#pragma omp parallel
-  {
-    std::vector<Tc> values_ot(nbins, 0);
-    std::vector<Tw> variances_ot(nbins, 0.0);
-    py::ssize_t bin;
-    Tw weight;
-#pragma omp for nowait
-    for (py::ssize_t i = 0; i < nx; ++i) {
-      bin = pg11::calc_bin(x[i], nbins, xmin, xmax, edges);
-      weight = w[i];
-      values_ot[bin] += weight;
-      variances_ot[bin] += weight * weight;
-    }
-#pragma omp critical
-    for (py::ssize_t i = 0; i < nbins; ++i) {
-      values[i] += values_ot[i];
-      variances[i] += variances_ot[i];
-    }
-  }
-}
-
-/// var, parallel loop, include flow, with multiweights
-template <typename Tx, typename Tw, typename Te>
-inline void p_loop_incf(const py::array_t<Tx>& x, const py::array_t<Tw>& w,
-                        const std::vector<Te>& edges, py::array_t<Tw>& values,
-                        py::array_t<Tw>& variances) {
-  auto values_px = values.template mutable_unchecked<2>();
-  auto variances_px = variances.template mutable_unchecked<2>();
-  auto w_px = w.template unchecked<2>();
-  auto x_px = x.data();
-  auto nx = x.shape(0);
-  auto nw = w.shape(1);
-  auto nbins = edges.size() - 1;
-  auto xmin = edges.front();
-  auto xmax = edges.back();
-#pragma omp parallel
-  {
-    std::vector<std::vector<Tw>> values_ot;
-    std::vector<std::vector<Tw>> variances_ot;
-    for (int i = 0; i < nw; ++i) {
-      values_ot.emplace_back(nbins, 0);
-      variances_ot.emplace_back(nbins, 0);
-    }
-#pragma omp for nowait
-    for (py::ssize_t i = 0; i < nx; ++i) {
-      auto bin = pg11::calc_bin(x_px[i], nbins, xmin, xmax, edges);
-      for (py::ssize_t j = 0; j < nw; ++j) {
-        auto w_ij = w_px(i, j);
-        values_ot[j][bin] += w_ij;
-        variances_ot[j][bin] += w_ij * w_ij;
-      }
-    }
-#pragma omp critical
-    for (std::size_t i = 0; i < nbins; ++i) {
-      for (py::ssize_t j = 0; j < nw; ++j) {
-        values_px(i, j) += values_ot[j][i];
-        variances_px(i, j) += variances_ot[j][i];
-      }
-    }
-  }
-}
-
-/// fix, serial loop, exclude flow, no weights
-template <typename Tx, typename Ta, typename Tc>
-inline void s_loop_excf(const Tx* x, py::ssize_t nx, faxis_t<Ta> ax, Tc* values) {
-  py::ssize_t bin;
-  auto norm = anorm(ax);
-  for (py::ssize_t i = 0; i < nx; ++i) {
-    if (x[i] < ax.amin || x[i] >= ax.amax) continue;
-    bin = pg11::calc_bin(x[i], ax.amin, norm);
-    values[bin]++;
-  }
-}
-
-/// fix, serial loop, exclude flow, with weights
-template <typename Tx, typename Tw, typename Ta, typename Tc>
-inline void s_loop_excf(const Tx* x, const Tw* w, py::ssize_t nx, faxis_t<Ta> ax,
-                        Tc* values, Tw* variances) {
-  py::ssize_t bin;
-  Tw weight;
-  auto norm = anorm(ax);
-  for (py::ssize_t i = 0; i < nx; ++i) {
-    if (x[i] < ax.amin || x[i] >= ax.amax) continue;
-    bin = pg11::calc_bin(x[i], ax.amin, norm);
-    weight = w[i];
-    values[bin] += weight;
-    variances[bin] += weight * weight;
-  }
-}
-
-/// fix, serial loop, exclude flow, with multiweights
-template <typename Tx, typename Tw, typename Ta>
-inline void s_loop_excf(const py::array_t<Tx>& x, const py::array_t<Tw>& w, faxis_t<Ta> ax,
-                        py::array_t<Tw>& values, py::array_t<Tw>& variances) {
-  auto values_px = values.template mutable_unchecked<2>();
-  auto variances_px = variances.template mutable_unchecked<2>();
-  auto w_px = w.template unchecked<2>();
-  auto x_px = x.data();
-  auto norm = anorm(ax);
-  Tw w_ij;
-  py::ssize_t bin;
-  py::ssize_t nx = x.shape(0);
-  py::ssize_t nw = w.shape(1);
-  for (py::ssize_t i = 0; i < nx; ++i) {
-    if (x_px[i] < ax.amin || x_px[i] >= ax.amax) continue;
-    bin = pg11::calc_bin(x_px[i], ax.amin, norm);
-    for (py::ssize_t j = 0; j < nw; ++j) {
-      w_ij = w_px(i, j);
-      values_px(bin, j) += w_ij;
-      variances_px(bin, j) += w_ij * w_ij;
-    }
-  }
-}
-
-/// var, serial loop, exclude flow, no weights
-template <typename Tx, typename Te, typename Tc>
-inline void s_loop_excf(const Tx* x, py::ssize_t nx, const std::vector<Te>& edges,
-                        Tc* values) {
-  py::ssize_t bin;
-  auto xmin = edges.front();
-  auto xmax = edges.back();
-  for (py::ssize_t i = 0; i < nx; ++i) {
-    if (x[i] < xmin || x[i] >= xmax) continue;
-    bin = pg11::calc_bin(x[i], edges);
-    values[bin]++;
-  }
-}
-
-/// var, serial loop, exclude flow, with weights
-template <typename Tx, typename Tw, typename Te, typename Tc>
-inline void s_loop_excf(const Tx* x, const Tw* w, py::ssize_t nx,
-                        const std::vector<Te>& edges, Tc* values, Tw* variances) {
-  py::ssize_t bin;
-  Tw weight;
-  auto xmin = edges.front();
-  auto xmax = edges.back();
-  for (py::ssize_t i = 0; i < nx; ++i) {
-    if (x[i] < xmin || x[i] >= xmax) continue;
-    bin = pg11::calc_bin(x[i], edges);
-    weight = w[i];
-    values[bin] += weight;
-    variances[bin] += weight * weight;
-  }
-}
-
-/// var, serial loop, exclude flow, with multiweights
-template <typename Tx, typename Tw, typename Te>
-inline void s_loop_excf(const py::array_t<Tx>& x, const py::array_t<Tw>& w,
-                        const std::vector<Te>& edges, py::array_t<Tw>& values,
-                        py::array_t<Tw>& variances) {
-  auto values_px = values.template mutable_unchecked<2>();
-  auto variances_px = variances.template mutable_unchecked<2>();
-  auto w_px = w.template unchecked<2>();
-  auto x_px = x.data();
-  auto xmin = edges.front();
-  auto xmax = edges.back();
-  Tw w_ij;
-  py::ssize_t bin;
-  py::ssize_t nx = x.shape(0);
-  py::ssize_t nw = w.shape(1);
-  for (py::ssize_t i = 0; i < nx; ++i) {
-    if (x_px[i] < xmin || x_px[i] >= xmax) continue;
-    bin = pg11::calc_bin(x_px[i], edges);
-    for (py::ssize_t j = 0; j < nw; ++j) {
-      w_ij = w_px(i, j);
-      values_px(bin, j) += w_ij;
-      variances_px(bin, j) += w_ij * w_ij;
-    }
-  }
-}
-
-/// fix, parallel loop, exclude flow, no weights
-template <typename Tx, typename Ta, typename Tc>
-inline void p_loop_excf(const Tx* x, py::ssize_t nx, faxis_t<Ta> ax, Tc* values) {
-  auto norm = anorm(ax);
-#pragma omp parallel
-  {
-    std::vector<Tc> values_ot(ax.nbins, 0);
-    py::ssize_t bin;
-#pragma omp for nowait
-    for (py::ssize_t i = 0; i < nx; ++i) {
-      if (x[i] < ax.amin || x[i] >= ax.amax) continue;
-      bin = pg11::calc_bin(x[i], ax.amin, norm);
-      values_ot[bin]++;
-    }
-#pragma omp critical
-    for (py::ssize_t i = 0; i < ax.nbins; ++i) {
-      values[i] += values_ot[i];
-    }
-  }
-}
-
-/// fix, parallel loop, exclude flow, with weights
-template <typename Tx, typename Tw, typename Ta, typename Tc>
-inline void p_loop_excf(const Tx* x, const Tw* w, py::ssize_t nx, faxis_t<Ta> ax,
-                        Tc* values, Tw* variances) {
-  auto norm = anorm(ax);
-#pragma omp parallel
-  {
-    std::vector<Tc> values_ot(ax.nbins, 0);
-    std::vector<Tw> variances_ot(ax.nbins, 0.0);
-    py::ssize_t bin;
-    Tw weight;
-#pragma omp for nowait
-    for (py::ssize_t i = 0; i < nx; ++i) {
-      if (x[i] < ax.amin || x[i] >= ax.amax) continue;
-      bin = pg11::calc_bin(x[i], ax.amin, norm);
-      weight = w[i];
-      values_ot[bin] += weight;
-      variances_ot[bin] += weight * weight;
-    }
-#pragma omp critical
-    for (py::ssize_t i = 0; i < ax.nbins; ++i) {
-      values[i] += values_ot[i];
-      variances[i] += variances_ot[i];
-    }
-  }
-}
-
-/// fix, parallel loop, exclude flow, with multiweights
-template <typename Tx, typename Tw, typename Ta>
-inline void p_loop_excf(const py::array_t<Tx>& x, const py::array_t<Tw>& w, faxis_t<Ta> ax,
-                        py::array_t<Tw>& values, py::array_t<Tw>& variances) {
-  auto values_px = values.template mutable_unchecked<2>();
-  auto variances_px = variances.template mutable_unchecked<2>();
-  auto w_px = w.template unchecked<2>();
-  auto x_px = x.data();
-  auto norm = anorm(ax);
-  py::ssize_t nx = x.shape(0);
-  py::ssize_t nw = w.shape(1);
-#pragma omp parallel
-  {
-    std::vector<std::vector<Tw>> values_ot;
-    std::vector<std::vector<Tw>> variances_ot;
-    for (py::ssize_t i = 0; i < nw; ++i) {
-      values_ot.emplace_back(ax.nbins, 0);
-      variances_ot.emplace_back(ax.nbins, 0);
-    }
-#pragma omp for nowait
-    for (py::ssize_t i = 0; i < nx; ++i) {
-      if (x_px[i] < ax.amin || x_px[i] >= ax.amax) continue;
-      auto bin = pg11::calc_bin(x_px[i], ax.amin, norm);
-      for (py::ssize_t j = 0; j < nw; ++j) {
-        auto w_ij = w_px(i, j);
-        values_ot[j][bin] += w_ij;
-        variances_ot[j][bin] += w_ij * w_ij;
-      }
-    }
-#pragma omp critical
-    for (py::ssize_t i = 0; i < ax.nbins; ++i) {
-      for (py::ssize_t j = 0; j < nw; ++j) {
-        values_px(i, j) += values_ot[j][i];
-        variances_px(i, j) += variances_ot[j][i];
-      }
-    }
-  }
-}
-
-/// var, parallel loop, exclude flow, no weights
-template <typename Tx, typename Te, typename Tc>
-inline void p_loop_excf(const Tx* x, py::ssize_t nx, const std::vector<Te>& edges,
-                        Tc* values) {
-  py::ssize_t nbins = edges.size() - 1;
-  auto xmin = edges.front();
-  auto xmax = edges.back();
-#pragma omp parallel
-  {
-    std::vector<Tc> values_ot(nbins, 0);
-    py::ssize_t bin;
-#pragma omp for nowait
-    for (py::ssize_t i = 0; i < nx; ++i) {
-      if (x[i] < xmin || x[i] >= xmax) continue;
-      bin = pg11::calc_bin(x[i], edges);
-      values_ot[bin]++;
-    }
-#pragma omp critical
-    for (py::ssize_t i = 0; i < nbins; ++i) {
-      values[i] += values_ot[i];
-    }
-  }
-}
-
-/// var, parallel loop, exclude flow, with weights
-template <typename Tx, typename Tw, typename Te, typename Tc>
-inline void p_loop_excf(const Tx* x, const Tw* w, py::ssize_t nx,
-                        const std::vector<Te>& edges, Tc* values, Tw* variances) {
-  py::ssize_t nbins = edges.size() - 1;
-  auto xmin = edges.front();
-  auto xmax = edges.back();
-#pragma omp parallel
-  {
-    std::vector<Tc> values_ot(nbins, 0);
-    std::vector<Tw> variances_ot(nbins, 0.0);
-    py::ssize_t bin;
-    Tw weight;
-#pragma omp for nowait
-    for (py::ssize_t i = 0; i < nx; ++i) {
-      if (x[i] < xmin || x[i] >= xmax) continue;
-      bin = pg11::calc_bin(x[i], edges);
-      weight = w[i];
-      values_ot[bin] += weight;
-      variances_ot[bin] += weight * weight;
-    }
-#pragma omp critical
-    for (py::ssize_t i = 0; i < nbins; ++i) {
-      values[i] += values_ot[i];
-      variances[i] += variances_ot[i];
-    }
-  }
-}
-
-/// var, parallel loop, exclude flow, with multiweights
-template <typename Tx, typename Tw, typename Te>
-inline void p_loop_excf(const py::array_t<Tx>& x, const py::array_t<Tw>& w,
-                        const std::vector<Te>& edges, py::array_t<Tw>& values,
-                        py::array_t<Tw>& variances) {
-  auto values_px = values.template mutable_unchecked<2>();
-  auto variances_px = variances.template mutable_unchecked<2>();
-  auto w_px = w.template unchecked<2>();
-  auto x_px = x.data();
-  auto nx = x.shape(0);
-  auto nw = w.shape(1);
-  auto nbins = edges.size() - 1;
-  auto xmin = edges.front();
-  auto xmax = edges.back();
-#pragma omp parallel
-  {
-    std::vector<std::vector<Tw>> values_ot;
-    std::vector<std::vector<Tw>> variances_ot;
-    for (int i = 0; i < nw; ++i) {
-      values_ot.emplace_back(nbins, 0);
-      variances_ot.emplace_back(nbins, 0);
-    }
-#pragma omp for nowait
-    for (py::ssize_t i = 0; i < nx; ++i) {
-      if (x_px[i] < xmin || x_px[i] >= xmax) continue;
-      auto bin = pg11::calc_bin(x_px[i], edges);
-      for (py::ssize_t j = 0; j < nw; ++j) {
-        auto w_ij = w_px(i, j);
-        values_ot[j][bin] += w_ij;
-        variances_ot[j][bin] += w_ij * w_ij;
-      }
-    }
-#pragma omp critical
-    for (std::size_t i = 0; i < nbins; ++i) {
-      for (py::ssize_t j = 0; j < nw; ++j) {
-        values_px(i, j) += values_ot[j][i];
-        variances_px(i, j) += variances_ot[j][i];
-      }
-    }
-  }
-}
-
-}  // namespace one
-
-/// Two dimensional histograms
-namespace two {
-
-/// fix, serial loop, include flow, no weights
-template <typename Tx, typename Ty, typename Ta>
-inline void s_loop_incf(const Tx* x, const Ty* y, py::ssize_t nx, faxis_t<Ta> axx,
-                        faxis_t<Ta> axy, py::array_t<py::ssize_t>& values) {
-  auto normx = anorm(axx);
-  auto normy = anorm(axy);
-  auto nby = axy.nbins;
-  auto values_px = values.mutable_data();
-  py::ssize_t bx, by, bin;
-  for (py::ssize_t i = 0; i < nx; ++i) {
-    bx = pg11::calc_bin(x[i], axx.nbins, axx.amin, axx.amax, normx);
-    by = pg11::calc_bin(y[i], axy.nbins, axy.amin, axy.amax, normy);
-    bin = by + nby * bx;
-    values_px[bin]++;
-  }
-}
-
-/// fix, serial loop, include flow, with weights
-template <typename Tx, typename Ty, typename Tw, typename Ta>
-inline void s_loop_incf(const Tx* x, const Ty* y, const Tw* w, py::ssize_t nx,
-                        faxis_t<Ta> axx, faxis_t<Ta> axy, py::array_t<Tw>& values,
-                        py::array_t<Tw>& variances) {
-  auto normx = anorm(axx);
-  auto normy = anorm(axy);
-  auto nby = axy.nbins;
-  auto values_px = values.mutable_data();
-  auto variances_px = variances.mutable_data();
-  py::ssize_t bx, by, bin;
-  for (py::ssize_t i = 0; i < nx; ++i) {
-    bx = pg11::calc_bin(x[i], axx.nbins, axx.amin, axx.amax, normx);
-    by = pg11::calc_bin(y[i], axy.nbins, axy.amin, axy.amax, normy);
-    bin = by + nby * bx;
-    values_px[bin] += w[i];
-    variances_px[bin] += w[i] * w[i];
-  }
-}
-
-/// fix, parallel loop, include flow, no weights
-template <typename Tx, typename Ty, typename Ta>
-inline void p_loop_incf(const Tx* x, const Ty* y, py::ssize_t nx, faxis_t<Ta> axx,
-                        faxis_t<Ta> axy, py::array_t<py::ssize_t>& values) {
-  auto normx = anorm(axx);
-  auto normy = anorm(axy);
-  auto nbx = axx.nbins;
-  auto nby = axy.nbins;
-  auto values_px = values.mutable_data();
-#pragma omp parallel
-  {
-    std::vector<py::ssize_t> values_ot(nbx * nby, 0);
-    py::ssize_t bx, by, bin;
-#pragma omp for nowait
-    for (py::ssize_t i = 0; i < nx; ++i) {
-      bx = pg11::calc_bin(x[i], axx.nbins, axx.amin, axx.amax, normx);
-      by = pg11::calc_bin(y[i], axy.nbins, axy.amin, axy.amax, normy);
-      bin = by + nby * bx;
-      values_ot[bin]++;
-    }
-#pragma omp critical
-    for (py::ssize_t i = 0; i < (nbx * nby); ++i) {
-      values_px[i] += values_ot[i];
-    }
-  }
-}
-
-/// fix, parallel loop, include flow, with weights
-template <typename Tx, typename Ty, typename Tw, typename Ta>
-inline void p_loop_incf(const Tx* x, const Ty* y, const Tw* w, py::ssize_t nx,
-                        faxis_t<Ta> axx, faxis_t<Ta> axy, py::array_t<Tw>& values,
-                        py::array_t<Tw>& variances) {
-  auto normx = anorm(axx);
-  auto normy = anorm(axy);
-  auto nbx = axx.nbins;
-  auto nby = axy.nbins;
-  auto values_px = values.mutable_data();
-  auto variances_px = variances.mutable_data();
-#pragma omp parallel
-  {
-    std::vector<Tw> values_ot(nbx * nby, 0);
-    std::vector<Tw> variances_ot(nbx * nby, 0);
-    py::ssize_t bx, by, bin;
-#pragma omp for nowait
-    for (py::ssize_t i = 0; i < nx; ++i) {
-      bx = pg11::calc_bin(x[i], axx.nbins, axx.amin, axx.amax, normx);
-      by = pg11::calc_bin(y[i], axy.nbins, axy.amin, axy.amax, normy);
-      bin = by + nby * bx;
-      values_ot[bin] += w[i];
-      variances_ot[bin] += w[i] * w[i];
-    }
-#pragma omp critical
-    for (py::ssize_t i = 0; i < (nbx * nby); ++i) {
-      values_px[i] += values_ot[i];
-      variances_px[i] += variances_ot[i];
-    }
-  }
-}
-
-/// var, serial loop, include flow, without weights
-template <typename Tx, typename Ty>
-void s_loop_incf(const Tx* x, const Ty* y, py::ssize_t nx,
-                 const std::vector<double>& edgesx, const std::vector<double>& edgesy,
-                 py::array_t<py::ssize_t>& values) {
-  auto xmin = edgesx.front();
-  auto xmax = edgesx.back();
-  auto ymin = edgesy.front();
-  auto ymax = edgesy.back();
-  auto nbx = edgesx.size() - 1;
-  auto nby = edgesy.size() - 1;
-  auto values_px = values.mutable_data();
-  py::ssize_t bx, by, bin;
-  for (py::ssize_t i = 0; i < nx; ++i) {
-    bx = pg11::calc_bin(x[i], nbx, xmin, xmax, edgesx);
-    by = pg11::calc_bin(y[i], nby, ymin, ymax, edgesy);
-    bin = by + nby * bx;
-    values_px[bin]++;
-  }
-}
-
-/// var, serial loop, include flow, with weights
-template <typename Tx, typename Ty, typename Tw>
-void s_loop_incf(const Tx* x, const Ty* y, const Tw* w, py::ssize_t nx,
-                 const std::vector<double>& edgesx, const std::vector<double>& edgesy,
-                 py::array_t<Tw>& values, py::array_t<Tw>& variances) {
-  auto xmin = edgesx.front();
-  auto xmax = edgesx.back();
-  auto ymin = edgesy.front();
-  auto ymax = edgesy.back();
-  auto nbx = edgesx.size() - 1;
-  auto nby = edgesy.size() - 1;
-  auto values_px = values.mutable_data();
-  auto variances_px = variances.mutable_data();
-  py::ssize_t bx, by, bin;
-  for (py::ssize_t i = 0; i < nx; ++i) {
-    bx = pg11::calc_bin(x[i], nbx, xmin, xmax, edgesx);
-    by = pg11::calc_bin(y[i], nby, ymin, ymax, edgesy);
-    bin = by + nby * bx;
-    values_px[bin] += w[i];
-    variances_px[bin] += w[i] * w[i];
-  }
-}
-
-/// var, parallel loop, include flow, without weights
-template <typename Tx, typename Ty>
-void p_loop_incf(const Tx* x, const Ty* y, py::ssize_t nx,
-                 const std::vector<double>& edgesx, const std::vector<double>& edgesy,
-                 py::array_t<py::ssize_t>& values) {
-  auto xmin = edgesx.front();
-  auto xmax = edgesx.back();
-  auto ymin = edgesy.front();
-  auto ymax = edgesy.back();
-  auto nbx = edgesx.size() - 1;
-  auto nby = edgesy.size() - 1;
-  auto values_px = values.mutable_data();
-#pragma omp parallel
-  {
-    std::vector<py::ssize_t> values_ot(nbx * nby, 0);
-    py::ssize_t bx, by, bin;
-#pragma omp for nowait
-    for (py::ssize_t i = 0; i < nx; ++i) {
-      bx = pg11::calc_bin(x[i], nbx, xmin, xmax, edgesx);
-      by = pg11::calc_bin(y[i], nby, ymin, ymax, edgesy);
-      bin = by + nby * bx;
-      values_ot[bin]++;
-    }
-#pragma omp critical
-    for (std::size_t i = 0; i < (nbx * nby); ++i) {
-      values_px[i] += values_ot[i];
-    }
-  }
-}
-
-/// var, parallel loop, include flow, with weights
-template <typename Tx, typename Ty, typename Tw>
-void p_loop_incf(const Tx* x, const Ty* y, const Tw* w, py::ssize_t nx,
-                 const std::vector<double>& edgesx, const std::vector<double>& edgesy,
-                 py::array_t<Tw>& values, py::array_t<Tw>& variances) {
-  auto xmin = edgesx.front();
-  auto xmax = edgesx.back();
-  auto ymin = edgesy.front();
-  auto ymax = edgesy.back();
-  auto nbx = edgesx.size() - 1;
-  auto nby = edgesy.size() - 1;
-  auto values_px = values.mutable_data();
-  auto variances_px = variances.mutable_data();
-#pragma omp parallel
-  {
-    std::vector<Tw> values_ot(nbx * nby, 0);
-    std::vector<Tw> variances_ot(nbx * nby, 0);
-    py::ssize_t bx, by, bin;
-#pragma omp for nowait
-    for (py::ssize_t i = 0; i < nx; ++i) {
-      bx = pg11::calc_bin(x[i], nbx, xmin, xmax, edgesx);
-      by = pg11::calc_bin(y[i], nby, ymin, ymax, edgesy);
-      bin = by + nby * bx;
-      values_ot[bin] += w[i];
-      variances_ot[bin] += w[i] * w[i];
-    }
-#pragma omp critical
-    for (std::size_t i = 0; i < (nbx * nby); ++i) {
-      values_px[i] += values_ot[i];
-      variances_px[i] += variances_ot[i];
-    }
-  }
-}
-
-/// fix, serial loop, exclude flow, no weights
-template <typename Tx, typename Ty, typename Ta>
-inline void s_loop_excf(const Tx* x, const Ty* y, py::ssize_t nx, faxis_t<Ta> axx,
-                        faxis_t<Ta> axy, py::array_t<py::ssize_t>& values) {
-  auto normx = anorm(axx);
-  auto normy = anorm(axy);
-  auto nby = axy.nbins;
-  auto values_px = values.mutable_data();
-  py::ssize_t bin, by, bx;
-  for (py::ssize_t i = 0; i < nx; ++i) {
-    if (x[i] < axx.amin || x[i] >= axx.amax || y[i] < axy.amin || y[i] >= axy.amax)
-      continue;
-    by = pg11::calc_bin(y[i], axy.amin, normy);
-    bx = pg11::calc_bin(x[i], axx.amin, normx);
-    bin = by + nby * bx;
-    values_px[bin]++;
-  }
-}
-
-/// fix, serial loop, exclude flow, with weights
-template <typename Tx, typename Ty, typename Tw, typename Ta>
-inline void s_loop_excf(const Tx* x, const Ty* y, const Tw* w, py::ssize_t nx,
-                        faxis_t<Ta> axx, faxis_t<Ta> axy, py::array_t<Tw>& values,
-                        py::array_t<Tw>& variances) {
-  auto normx = anorm(axx);
-  auto normy = anorm(axy);
-  auto nby = axy.nbins;
-  auto values_px = values.mutable_data();
-  auto variances_px = variances.mutable_data();
-  py::ssize_t bin, by, bx;
-  for (py::ssize_t i = 0; i < nx; ++i) {
-    if (x[i] < axx.amin || x[i] >= axx.amax || y[i] < axy.amin || y[i] >= axy.amax)
-      continue;
-    by = pg11::calc_bin(y[i], axy.amin, normy);
-    bx = pg11::calc_bin(x[i], axx.amin, normx);
-    bin = by + nby * bx;
-    values_px[bin] += w[i];
-    variances_px[bin] += w[i] * w[i];
-  }
-}
-
-/// fix, parallel loop, exclude flow, no weights
-template <typename Tx, typename Ty, typename Ta>
-inline void p_loop_excf(const Tx* x, const Ty* y, py::ssize_t nx, faxis_t<Ta> axx,
-                        faxis_t<Ta> axy, py::array_t<py::ssize_t>& values) {
-  auto normx = anorm(axx);
-  auto normy = anorm(axy);
-  auto nbx = axx.nbins;
-  auto nby = axy.nbins;
-  auto values_px = values.mutable_data();
-#pragma omp parallel
-  {
-    std::vector<py::ssize_t> values_ot(nbx * nby, 0);
-    py::ssize_t bin, by, bx;
-#pragma omp for nowait
-    for (py::ssize_t i = 0; i < nx; ++i) {
-      if (x[i] < axx.amin || x[i] >= axx.amax || y[i] < axy.amin || y[i] >= axy.amax)
-        continue;
-      by = pg11::calc_bin(y[i], axy.amin, normy);
-      bx = pg11::calc_bin(x[i], axx.amin, normx);
-      bin = by + nby * bx;
-      values_ot[bin]++;
-    }
-#pragma omp critical
-    for (py::ssize_t i = 0; i < (nbx * nby); ++i) {
-      values_px[i] += values_ot[i];
-    }
-  }
-}
-
-/// fix, parallel loop, exclude flow, with weights
-template <typename Tx, typename Ty, typename Tw, typename Ta>
-inline void p_loop_excf(const Tx* x, const Ty* y, const Tw* w, py::ssize_t nx,
-                        faxis_t<Ta> axx, faxis_t<Ta> axy, py::array_t<Tw>& values,
-                        py::array_t<Tw>& variances) {
-  auto normx = anorm(axx);
-  auto normy = anorm(axy);
-  auto nbx = axx.nbins;
-  auto nby = axy.nbins;
-  auto values_px = values.mutable_data();
-  auto variances_px = variances.mutable_data();
-#pragma omp parallel
-  {
-    std::vector<Tw> values_ot(nbx * nby, 0);
-    std::vector<Tw> variances_ot(nbx * nby, 0);
-    py::ssize_t bin, by, bx;
-#pragma omp for nowait
-    for (py::ssize_t i = 0; i < nx; ++i) {
-      if (x[i] < axx.amin || x[i] >= axx.amax || y[i] < axy.amin || y[i] >= axy.amax)
-        continue;
-      by = pg11::calc_bin(y[i], axy.amin, normy);
-      bx = pg11::calc_bin(x[i], axx.amin, normx);
-      bin = by + nby * bx;
-      values_ot[bin] += w[i];
-      variances_ot[bin] += w[i] * w[i];
-    }
-#pragma omp critical
-    for (py::ssize_t i = 0; i < (nbx * nby); ++i) {
-      values_px[i] += values_ot[i];
-      variances_px[i] += variances_ot[i];
-    }
-  }
-}
-
-/// var, serial loop, exclude flow, without weights
-template <typename Tx, typename Ty>
-void s_loop_excf(const Tx* x, const Ty* y, py::ssize_t nx,
-                 const std::vector<double>& edgesx, const std::vector<double>& edgesy,
-                 py::array_t<py::ssize_t>& values) {
-  auto xmin = edgesx.front();
-  auto xmax = edgesx.back();
-  auto ymin = edgesy.front();
-  auto ymax = edgesy.back();
-  auto nby = edgesy.size() - 1;
-  auto values_px = values.mutable_data();
-  py::ssize_t bx, by, bin;
-  for (py::ssize_t i = 0; i < nx; ++i) {
-    if (x[i] < xmin || x[i] >= xmax || y[i] < ymin || y[i] >= ymax) continue;
-    bx = pg11::calc_bin(x[i], edgesx);
-    by = pg11::calc_bin(y[i], edgesy);
-    bin = by + nby * bx;
-    values_px[bin]++;
-  }
-}
-
-/// var, serial loop, exclude flow, with weights
-template <typename Tx, typename Ty, typename Tw>
-void s_loop_excf(const Tx* x, const Ty* y, const Tw* w, py::ssize_t nx,
-                 const std::vector<double>& edgesx, const std::vector<double>& edgesy,
-                 py::array_t<Tw>& values, py::array_t<Tw>& variances) {
-  auto xmin = edgesx.front();
-  auto xmax = edgesx.back();
-  auto ymin = edgesy.front();
-  auto ymax = edgesy.back();
-  auto nby = edgesy.size() - 1;
-  auto values_px = values.mutable_data();
-  auto variances_px = variances.mutable_data();
-  py::ssize_t bx, by, bin;
-  for (py::ssize_t i = 0; i < nx; ++i) {
-    if (x[i] < xmin || x[i] >= xmax || y[i] < ymin || y[i] >= ymax) continue;
-    bx = pg11::calc_bin(x[i], edgesx);
-    by = pg11::calc_bin(y[i], edgesy);
-    bin = by + nby * bx;
-    values_px[bin] += w[i];
-    variances_px[bin] += w[i] * w[i];
-  }
-}
-
-/// var, parallel loop, exclude flow, without weights
-template <typename Tx, typename Ty>
-void p_loop_excf(const Tx* x, const Ty* y, py::ssize_t nx,
-                 const std::vector<double>& edgesx, const std::vector<double>& edgesy,
-                 py::array_t<py::ssize_t>& values) {
-  auto xmin = edgesx.front();
-  auto xmax = edgesx.back();
-  auto ymin = edgesy.front();
-  auto ymax = edgesy.back();
-  auto nbx = edgesx.size() - 1;
-  auto nby = edgesy.size() - 1;
-  auto values_px = values.mutable_data();
-#pragma omp parallel
-  {
-    std::vector<py::ssize_t> values_ot(nbx * nby, 0);
-    py::ssize_t bx, by, bin;
-#pragma omp for nowait
-    for (py::ssize_t i = 0; i < nx; ++i) {
-      if (x[i] < xmin || x[i] >= xmax || y[i] < ymin || y[i] >= ymax) continue;
-      bx = pg11::calc_bin(x[i], edgesx);
-      by = pg11::calc_bin(y[i], edgesy);
-      bin = by + nby * bx;
-      values_ot[bin]++;
-    }
-#pragma omp critical
-    for (std::size_t i = 0; i < (nbx * nby); ++i) {
-      values_px[i] += values_ot[i];
-    }
-  }
-}
-
-/// var, parallel loop, exclude flow, with weights
-template <typename Tx, typename Ty, typename Tw>
-void p_loop_excf(const Tx* x, const Ty* y, const Tw* w, py::ssize_t nx,
-                 const std::vector<double>& edgesx, const std::vector<double>& edgesy,
-                 py::array_t<Tw>& values, py::array_t<Tw>& variances) {
-  auto xmin = edgesx.front();
-  auto xmax = edgesx.back();
-  auto ymin = edgesy.front();
-  auto ymax = edgesy.back();
-  auto nbx = edgesx.size() - 1;
-  auto nby = edgesy.size() - 1;
-  auto values_px = values.mutable_data();
-  auto variances_px = variances.mutable_data();
-#pragma omp parallel
-  {
-    std::vector<Tw> values_ot(nbx * nby, 0);
-    std::vector<Tw> variances_ot(nbx * nby, 0);
-    py::ssize_t bx, by, bin;
-#pragma omp for nowait
-    for (py::ssize_t i = 0; i < nx; ++i) {
-      if (x[i] < xmin || x[i] >= xmax || y[i] < ymin || y[i] >= ymax) continue;
-      bx = pg11::calc_bin(x[i], edgesx);
-      by = pg11::calc_bin(y[i], edgesy);
-      bin = by + nby * bx;
-      values_ot[bin] += w[i];
-      variances_ot[bin] += w[i] * w[i];
-    }
-#pragma omp critical
-    for (std::size_t i = 0; i < (nbx * nby); ++i) {
-      values_px[i] += values_ot[i];
-      variances_px[i] += variances_ot[i];
-    }
-  }
-}
-
-}  // namespace two
-
 }  // namespace pg11
 
-template <typename Tx>
-py::array_t<py::ssize_t> f1d(py::array_t<Tx, py::array::c_style> x, py::ssize_t nbins,
-                             double xmin, double xmax, bool flow) {
+template <bool flow, typename T>
+py::array_t<py::ssize_t> f1d(py::array_t<T, py::array::c_style> x, py::ssize_t nbins,
+                             double xmin, double xmax) {
+  auto threshold = pg11::config_threshold("thresholds.fix1d");
   auto values = pg11::zeros<py::ssize_t>(nbins);
   pg11::faxis_t<double> ax{nbins, xmin, xmax};
   auto nx = x.shape(0);
-  auto threshold = pg11::config_threshold("thresholds.fix1d");
+  auto xp = x.data();
+  auto vp = values.mutable_data();
+  auto norm = pg11::anorm(ax);
   {
     py::gil_scoped_release release;
-    if (nx < threshold) {  // serial
-      if (flow) {
-        pg11::one::s_loop_incf(x.data(), nx, ax, values.mutable_data());
+#ifndef _MSC_VER
+#pragma omp parallel for reduction(+ : vp[ : nbins]) if (nx > threshold)
+#endif
+    for (py::ssize_t i = 0; i < nx; ++i) {
+      if constexpr (!flow) {
+        if (xp[i] < xmin || xp[i] >= xmax) continue;
       }
-      else {
-        pg11::one::s_loop_excf(x.data(), nx, ax, values.mutable_data());
-      }
+      auto bin_index = pg11::calc_bin(xp[i], ax.nbins, ax.amin, ax.amax, norm);
+      vp[bin_index]++;
     }
-    else {  // parallel
-      if (flow) {
-        pg11::one::p_loop_incf(x.data(), nx, ax, values.mutable_data());
+  }
+  return values;
+}
+
+template <bool flow, typename Tx, typename Te>
+py::array_t<py::ssize_t> v1d(py::array_t<Tx, py::array::c_style> x,
+                             py::array_t<Tx, py::array::c_style> edges) {
+  auto threshold = pg11::config_threshold("thresholds.var1d");
+  auto nedges = edges.shape(0);
+  auto nbins = nedges - 1;
+  std::vector<Te> edges_v(edges.data(), edges.data() + nedges);
+  auto nx = x.shape(0);
+  auto xp = x.data();
+  auto xmin = edges_v.front();
+  auto xmax = edges_v.back();
+  auto values = pg11::zeros<py::ssize_t>(nbins);
+  auto vp = values.mutable_data();
+  {
+    py::gil_scoped_release release;
+#ifndef _MSC_VER
+#pragma omp parallel for reduction(+ : vp[ : nbins]) if (nx > threshold)
+#endif
+    for (py::ssize_t i = 0; i < nx; ++i) {
+      if constexpr (!flow) {
+        if (xp[i] < xmin || xp[i] >= xmax) continue;
       }
-      else {
-        pg11::one::p_loop_excf(x.data(), nx, ax, values.mutable_data());
-      }
+      auto bin_index = pg11::calc_bin(xp[i], nbins, xmin, xmax, edges_v);
+      vp[bin_index]++;
     }
   }
   return values;
@@ -1171,27 +180,24 @@ py::tuple f1dw(py::array_t<Tx, py::array::c_style> x, py::array_t<Tw, py::array:
   auto nx = x.shape(0);
   pg11::faxis_t<double> ax{nbins, xmin, xmax};
   auto threshold = pg11::config_threshold("thresholds.fix1d");
+  auto xp = x.data();
+  auto wp = w.data();
+  auto vp = values.mutable_data();
+  auto varp = variances.mutable_data();
+  auto norm = pg11::anorm(ax);
   {
     py::gil_scoped_release release;
-    if (nx < threshold) {  // serial
-      if (flow) {
-        pg11::one::s_loop_incf(x.data(), w.data(), nx, ax, values.mutable_data(),
-                               variances.mutable_data());
+#ifndef _MSC_VER
+#pragma omp parallel for reduction(+ : vp[ : nbins]) \
+    reduction(+ : varp[ : nbins]) if (nx > threshold)
+#endif
+    for (py::ssize_t i = 0; i < nx; ++i) {
+      if (!flow) {
+        if (xp[i] < xmin || xp[i] >= xmax) continue;
       }
-      else {
-        pg11::one::s_loop_excf(x.data(), w.data(), nx, ax, values.mutable_data(),
-                               variances.mutable_data());
-      }
-    }
-    else {  // parallel
-      if (flow) {
-        pg11::one::p_loop_incf(x.data(), w.data(), nx, ax, values.mutable_data(),
-                               variances.mutable_data());
-      }
-      else {
-        pg11::one::p_loop_excf(x.data(), w.data(), nx, ax, values.mutable_data(),
-                               variances.mutable_data());
-      }
+      auto bin_index = pg11::calc_bin(xp[i], ax.nbins, ax.amin, ax.amax, norm);
+      vp[bin_index] += wp[i];
+      varp[bin_index] += wp[i] * wp[i];
     }
   }
   return py::make_tuple(values, variances);
@@ -1204,54 +210,64 @@ py::tuple f1dmw(py::array_t<Tx> x, py::array_t<Tw> w, py::ssize_t nbins, double 
   auto variances = pg11::zeros<Tw>(nbins, w.shape(1));
   pg11::faxis_t<double> ax{nbins, xmin, xmax};
   auto threshold = pg11::config_threshold("thresholds.fix1dmw");
+  auto nx = x.shape(0);
+  auto values_px = values.template mutable_unchecked<2>();
+  auto variances_px = variances.template mutable_unchecked<2>();
+  auto w_px = w.template unchecked<2>();
+  auto x_px = x.data();
+  auto norm = pg11::anorm(ax);
+  py::ssize_t nw = w.shape(1);
   {
     py::gil_scoped_release release;
-    if (x.shape(0) < threshold) {  // serial
-      if (flow) {
-        pg11::one::s_loop_incf(x, w, ax, values, variances);
-      }
-      else {
-        pg11::one::s_loop_excf(x, w, ax, values, variances);
+    if (nx < threshold) {
+      // serial
+      Tw w_ij;
+      py::ssize_t bin;
+      for (py::ssize_t i = 0; i < nx; ++i) {
+        if (!flow) {
+          if (x_px[i] < ax.amin || x_px[i] >= ax.amax) continue;
+        }
+        bin = flow ? pg11::calc_bin(x_px[i], ax.nbins, ax.amin, ax.amax, norm)
+                   : pg11::calc_bin(x_px[i], ax.amin, norm);
+        for (py::ssize_t j = 0; j < nw; ++j) {
+          w_ij = w_px(i, j);
+          values_px(bin, j) += w_ij;
+          variances_px(bin, j) += w_ij * w_ij;
+        }
       }
     }
-    else {  // parallel
-      if (flow)
-        pg11::one::p_loop_incf(x, w, ax, values, variances);
-      else
-        pg11::one::p_loop_excf(x, w, ax, values, variances);
+    else {
+// parallel
+#pragma omp parallel
+      {
+        std::vector<std::vector<Tw>> values_ot;
+        std::vector<std::vector<Tw>> variances_ot;
+        for (py::ssize_t i = 0; i < nw; ++i) {
+          values_ot.emplace_back(ax.nbins, 0);
+          variances_ot.emplace_back(ax.nbins, 0);
+        }
+#pragma omp for nowait
+        for (py::ssize_t i = 0; i < nx; ++i) {
+          auto bin = flow ? pg11::calc_bin(x_px[i], ax.nbins, ax.amin, ax.amax, norm)
+                          : pg11::calc_bin(x_px[i], ax.amin, norm);
+          if (!flow && (x_px[i] < ax.amin || x_px[i] >= ax.amax)) continue;
+          for (py::ssize_t j = 0; j < nw; ++j) {
+            auto w_ij = w_px(i, j);
+            values_ot[j][bin] += w_ij;
+            variances_ot[j][bin] += w_ij * w_ij;
+          }
+        }
+#pragma omp critical
+        for (py::ssize_t i = 0; i < ax.nbins; ++i) {
+          for (py::ssize_t j = 0; j < nw; ++j) {
+            values_px(i, j) += values_ot[j][i];
+            variances_px(i, j) += variances_ot[j][i];
+          }
+        }
+      }
     }
   }
   return py::make_tuple(values, variances);
-}
-
-template <typename Tx>
-py::array_t<py::ssize_t> v1d(py::array_t<Tx, py::array::c_style> x,
-                             py::array_t<double> edges, bool flow) {
-  py::ssize_t nedges = edges.shape(0);
-  std::vector<double> edges_v(edges.data(), edges.data() + nedges);
-  auto values = pg11::zeros<py::ssize_t>(nedges - 1);
-  auto nx = x.shape(0);
-  auto threshold = pg11::config_threshold("thresholds.var1d");
-  {
-    py::gil_scoped_release release;
-    if (nx < threshold) {  // serial
-      if (flow) {
-        pg11::one::s_loop_incf(x.data(), nx, edges_v, values.mutable_data());
-      }
-      else {
-        pg11::one::s_loop_excf(x.data(), nx, edges_v, values.mutable_data());
-      }
-    }
-    else {  // parallel
-      if (flow) {
-        pg11::one::p_loop_incf(x.data(), nx, edges_v, values.mutable_data());
-      }
-      else {
-        pg11::one::p_loop_excf(x.data(), nx, edges_v, values.mutable_data());
-      }
-    }
-  }
-  return values;
 }
 
 template <typename Tx, typename Tw>
@@ -1264,27 +280,25 @@ py::tuple v1dw(py::array_t<Tx, py::array::c_style> x, py::array_t<Tw, py::array:
   auto variances = pg11::zeros<Tw>(nbins);
   auto nx = x.shape(0);
   auto threshold = pg11::config_threshold("thresholds.var1d");
+  auto xp = x.data();
+  auto wp = w.data();
+  auto vp = values.mutable_data();
+  auto varp = variances.mutable_data();
+  auto xmin = edges_v.front();
+  auto xmax = edges_v.back();
   {
     py::gil_scoped_release release;
-    if (nx < threshold) {  // serial
-      if (flow) {
-        pg11::one::s_loop_incf(x.data(), w.data(), nx, edges_v, values.mutable_data(),
-                               variances.mutable_data());
+#ifndef _MSC_VER
+#pragma omp parallel for reduction(+ : vp[ : nbins]) \
+    reduction(+ : varp[ : nbins]) if (nx > threshold)
+#endif
+    for (py::ssize_t i = 0; i < nx; ++i) {
+      if (!flow) {
+        if (xp[i] < xmin || xp[i] >= xmax) continue;
       }
-      else {
-        pg11::one::s_loop_excf(x.data(), w.data(), nx, edges_v, values.mutable_data(),
-                               variances.mutable_data());
-      }
-    }
-    else {  // parallel
-      if (flow) {
-        pg11::one::p_loop_incf(x.data(), w.data(), nx, edges_v, values.mutable_data(),
-                               variances.mutable_data());
-      }
-      else {
-        pg11::one::p_loop_excf(x.data(), w.data(), nx, edges_v, values.mutable_data(),
-                               variances.mutable_data());
-      }
+      auto bin_index = pg11::calc_bin(xp[i], nbins, xmin, xmax, edges_v);
+      vp[bin_index] += wp[i];
+      varp[bin_index] += wp[i] * wp[i];
     }
   }
   return py::make_tuple(values, variances);
@@ -1299,21 +313,60 @@ py::tuple v1dmw(py::array_t<Tx> x, py::array_t<Tw> w, py::array_t<double> edges,
   auto values = pg11::zeros<Tw>(nbins, w.shape(1));
   auto variances = pg11::zeros<Tw>(nbins, w.shape(1));
   auto threshold = pg11::config_threshold("thresholds.var1dmw");
+  auto nx = x.shape(0);
+  auto values_px = values.template mutable_unchecked<2>();
+  auto variances_px = variances.template mutable_unchecked<2>();
+  auto w_px = w.template unchecked<2>();
+  auto x_px = x.data();
+  auto xmin = edges_v.front();
+  auto xmax = edges_v.back();
+  py::ssize_t nw = w.shape(1);
   {
     py::gil_scoped_release release;
-    if (x.shape(0) < threshold) {  // serial
-      if (flow) {
-        pg11::one::s_loop_incf(x, w, edges_v, values, variances);
-      }
-      else {
-        pg11::one::s_loop_excf(x, w, edges_v, values, variances);
+    if (nx < threshold) {  // serial
+      Tw w_ij;
+      py::ssize_t bin;
+      for (py::ssize_t i = 0; i < nx; ++i) {
+        if (!flow) {
+          if (x_px[i] < xmin || x_px[i] >= xmax) continue;
+        }
+        bin = flow ? pg11::calc_bin(x_px[i], nbins, xmin, xmax, edges_v)
+                   : pg11::calc_bin(x_px[i], edges_v);
+        for (py::ssize_t j = 0; j < nw; ++j) {
+          w_ij = w_px(i, j);
+          values_px(bin, j) += w_ij;
+          variances_px(bin, j) += w_ij * w_ij;
+        }
       }
     }
     else {  // parallel
-      if (flow)
-        pg11::one::p_loop_incf(x, w, edges_v, values, variances);
-      else
-        pg11::one::p_loop_excf(x, w, edges_v, values, variances);
+#pragma omp parallel
+      {
+        std::vector<std::vector<Tw>> values_ot;
+        std::vector<std::vector<Tw>> variances_ot;
+        for (py::ssize_t i = 0; i < nw; ++i) {
+          values_ot.emplace_back(nbins, 0);
+          variances_ot.emplace_back(nbins, 0);
+        }
+#pragma omp for nowait
+        for (py::ssize_t i = 0; i < nx; ++i) {
+          auto bin = flow ? pg11::calc_bin(x_px[i], nbins, xmin, xmax, edges_v)
+                          : pg11::calc_bin(x_px[i], edges_v);
+          if (!flow && (x_px[i] < xmin || x_px[i] >= xmax)) continue;
+          for (py::ssize_t j = 0; j < nw; ++j) {
+            auto w_ij = w_px(i, j);
+            values_ot[j][bin] += w_ij;
+            variances_ot[j][bin] += w_ij * w_ij;
+          }
+        }
+#pragma omp critical
+        for (py::ssize_t i = 0; i < nbins; ++i) {
+          for (py::ssize_t j = 0; j < nw; ++j) {
+            values_px(i, j) += values_ot[j][i];
+            variances_px(i, j) += variances_ot[j][i];
+          }
+        }
+      }
     }
   }
   return py::make_tuple(values, variances);
@@ -1327,23 +380,28 @@ py::array_t<py::ssize_t> f2d(py::array_t<Tx> x, py::array_t<Ty> y, py::ssize_t n
   pg11::faxis_t<double> axx{nbinsx, xmin, xmax};
   pg11::faxis_t<double> axy{nbinsy, ymin, ymax};
   auto threshold = pg11::config_threshold("thresholds.fix2d");
+  auto nx = x.shape(0);
+  auto xp = x.data();
+  auto yp = y.data();
+  auto vp = values.mutable_data();
+  auto normx = pg11::anorm(axx);
+  auto normy = pg11::anorm(axy);
+  auto nby = axy.nbins;
+  auto total_bins = nbinsx * nbinsy;
   {
     py::gil_scoped_release release;
-    if (x.shape(0) < threshold) {  // serial
-      if (flow) {
-        pg11::two::s_loop_incf(x.data(), y.data(), x.shape(0), axx, axy, values);
+#ifndef _MSC_VER
+#pragma omp parallel for reduction(+ : vp[ : total_bins]) if (nx > threshold)
+#endif
+    for (py::ssize_t i = 0; i < nx; ++i) {
+      if (!flow) {
+        if (xp[i] < axx.amin || xp[i] >= axx.amax || yp[i] < axy.amin || yp[i] >= axy.amax)
+          continue;
       }
-      else {
-        pg11::two::s_loop_excf(x.data(), y.data(), x.shape(0), axx, axy, values);
-      }
-    }
-    else {
-      if (flow) {
-        pg11::two::p_loop_incf(x.data(), y.data(), x.shape(0), axx, axy, values);
-      }
-      else {
-        pg11::two::p_loop_excf(x.data(), y.data(), x.shape(0), axx, axy, values);
-      }
+      auto by = pg11::calc_bin(yp[i], axy.nbins, axy.amin, axy.amax, normy);
+      auto bx = pg11::calc_bin(xp[i], axx.nbins, axx.amin, axx.amax, normx);
+      auto bin = by + nby * bx;
+      vp[bin]++;
     }
   }
   return values;
@@ -1358,27 +416,33 @@ py::tuple f2dw(py::array_t<Tx> x, py::array_t<Ty> y, py::array_t<Tw> w, py::ssiz
   pg11::faxis_t<double> axx{nbinsx, xmin, xmax};
   pg11::faxis_t<double> axy{nbinsy, ymin, ymax};
   auto threshold = pg11::config_threshold("thresholds.fix2d");
+  auto nx = x.shape(0);
+  auto xp = x.data();
+  auto yp = y.data();
+  auto wp = w.data();
+  auto vp = values.mutable_data();
+  auto varp = variances.mutable_data();
+  auto normx = pg11::anorm(axx);
+  auto normy = pg11::anorm(axy);
+  auto nbx = axx.nbins;
+  auto nby = axy.nbins;
+  auto total_bins = nbx * nby;
   {
     py::gil_scoped_release release;
-    if (x.shape(0) < threshold) {  // serial
-      if (flow) {
-        pg11::two::s_loop_incf(x.data(), y.data(), w.data(), x.shape(0), axx, axy, values,
-                               variances);
+#ifndef _MSC_VER
+#pragma omp parallel for reduction(+ : vp[ : total_bins]) \
+    reduction(+ : varp[ : total_bins]) if (nx > threshold)
+#endif
+    for (py::ssize_t i = 0; i < nx; ++i) {
+      if (!flow) {
+        if (xp[i] < axx.amin || xp[i] >= axx.amax || yp[i] < axy.amin || yp[i] >= axy.amax)
+          continue;
       }
-      else {
-        pg11::two::s_loop_excf(x.data(), y.data(), w.data(), x.shape(0), axx, axy, values,
-                               variances);
-      }
-    }
-    else {
-      if (flow) {
-        pg11::two::p_loop_incf(x.data(), y.data(), w.data(), x.shape(0), axx, axy, values,
-                               variances);
-      }
-      else {
-        pg11::two::p_loop_excf(x.data(), y.data(), w.data(), x.shape(0), axx, axy, values,
-                               variances);
-      }
+      auto by = pg11::calc_bin(yp[i], axy.nbins, axy.amin, axy.amax, normy);
+      auto bx = pg11::calc_bin(xp[i], axx.nbins, axx.amin, axx.amax, normx);
+      auto bin = by + nby * bx;
+      vp[bin] += wp[i];
+      varp[bin] += wp[i] * wp[i];
     }
   }
   return py::make_tuple(values, variances);
@@ -1396,23 +460,29 @@ py::array_t<py::ssize_t> v2d(py::array_t<Tx> x, py::array_t<Ty> y,
   std::vector<double> edgesx_v(xbins.data(), xbins.data() + nedgesx);
   std::vector<double> edgesy_v(ybins.data(), ybins.data() + nedgesy);
   auto threshold = pg11::config_threshold("thresholds.var2d");
+  auto nx = x.shape(0);
+  auto xp = x.data();
+  auto yp = y.data();
+  auto vp = values.mutable_data();
+  auto xmin = edgesx_v.front();
+  auto xmax = edgesx_v.back();
+  auto ymin = edgesy_v.front();
+  auto ymax = edgesy_v.back();
+  auto nby = nbinsy;
+  auto total_bins = nbinsx * nbinsy;
   {
     py::gil_scoped_release release;
-    if (x.shape(0) < threshold) {
-      if (flow) {
-        pg11::two::s_loop_incf(x.data(), y.data(), x.shape(0), edgesx_v, edgesy_v, values);
+#ifndef _MSC_VER
+#pragma omp parallel for reduction(+ : vp[ : total_bins]) if (nx > threshold)
+#endif
+    for (py::ssize_t i = 0; i < nx; ++i) {
+      if (!flow) {
+        if (xp[i] < xmin || xp[i] >= xmax || yp[i] < ymin || yp[i] >= ymax) continue;
       }
-      else {
-        pg11::two::s_loop_excf(x.data(), y.data(), x.shape(0), edgesx_v, edgesy_v, values);
-      }
-    }
-    else {
-      if (flow) {
-        pg11::two::p_loop_incf(x.data(), y.data(), x.shape(0), edgesx_v, edgesy_v, values);
-      }
-      else {
-        pg11::two::p_loop_excf(x.data(), y.data(), x.shape(0), edgesx_v, edgesy_v, values);
-      }
+      auto bx = pg11::calc_bin(xp[i], nbinsx, xmin, xmax, edgesx_v);
+      auto by = pg11::calc_bin(yp[i], nbinsy, ymin, ymax, edgesy_v);
+      auto bin = by + nby * bx;
+      vp[bin]++;
     }
   }
   return values;
@@ -1430,27 +500,33 @@ py::tuple v2dw(py::array_t<Tx> x, py::array_t<Ty> y, py::array_t<Tw> w,
   std::vector<double> edgesx_v(xbins.data(), xbins.data() + nedgesx);
   std::vector<double> edgesy_v(ybins.data(), ybins.data() + nedgesy);
   auto threshold = pg11::config_threshold("thresholds.var2d");
+  auto nx = x.shape(0);
+  auto xp = x.data();
+  auto yp = y.data();
+  auto wp = w.data();
+  auto vp = values.mutable_data();
+  auto varp = variances.mutable_data();
+  auto xmin = edgesx_v.front();
+  auto xmax = edgesx_v.back();
+  auto ymin = edgesy_v.front();
+  auto ymax = edgesy_v.back();
+  auto nby = nbinsy;
+  auto total_bins = nbinsx * nbinsy;
   {
     py::gil_scoped_release release;
-    if (x.shape(0) < threshold) {
-      if (flow) {
-        pg11::two::s_loop_incf(x.data(), y.data(), w.data(), x.shape(0), edgesx_v, edgesy_v,
-                               values, variances);
+#ifndef _MSC_VER
+#pragma omp parallel for reduction(+ : vp[ : total_bins]) \
+    reduction(+ : varp[ : total_bins]) if (nx > threshold)
+#endif
+    for (py::ssize_t i = 0; i < nx; ++i) {
+      if (!flow) {
+        if (xp[i] < xmin || xp[i] >= xmax || yp[i] < ymin || yp[i] >= ymax) continue;
       }
-      else {
-        pg11::two::s_loop_excf(x.data(), y.data(), w.data(), x.shape(0), edgesx_v, edgesy_v,
-                               values, variances);
-      }
-    }
-    else {
-      if (flow) {
-        pg11::two::p_loop_incf(x.data(), y.data(), w.data(), x.shape(0), edgesx_v, edgesy_v,
-                               values, variances);
-      }
-      else {
-        pg11::two::p_loop_excf(x.data(), y.data(), w.data(), x.shape(0), edgesx_v, edgesy_v,
-                               values, variances);
-      }
+      auto bx = pg11::calc_bin(xp[i], nbinsx, xmin, xmax, edgesx_v);
+      auto by = pg11::calc_bin(yp[i], nbinsy, ymin, ymax, edgesy_v);
+      auto bin = by + nby * bx;
+      vp[bin] += wp[i];
+      varp[bin] += wp[i] * wp[i];
     }
   }
   return py::make_tuple(values, variances);
@@ -1469,59 +545,38 @@ using pg_type_pairs_and_weight = mp_product<type_list, pg_types, pg_types, pg_we
 
 using namespace pybind11::literals;
 
-// clang-format off
 template <typename Tx>
 void inject1d(py::module_& m, const Tx&) {
-  m.def("_f1d", &f1d<Tx>,
-        "x"_a.noconvert(),
-        "nbins"_a, "xmin"_a, "xmax"_a, "flow"_a);
-  m.def("_v1d", &v1d<Tx>,
-        "x"_a.noconvert(),
-        "bins"_a, "flow"_a);
+  m.def("_f1d_f", &f1d<true, Tx>, "x"_a.noconvert(), "n"_a, "xmin"_a, "xmax"_a);
+  m.def("_f1d_nf", &f1d<false, Tx>, "x"_a.noconvert(), "n"_a, "xmin"_a, "xmax"_a);
+  m.def("_v1d_f", &v1d<true, Tx, double>, "x"_a.noconvert(), "b"_a);
+  m.def("_v1d_nf", &v1d<false, Tx, double>, "x"_a.noconvert(), "b"_a);
 }
 
 template <typename Tx, typename Tw>
 void inject_1dw(py::module_& m, const type_list<Tx, Tw>&) {
-  m.def("_f1dw", &f1dw<Tx, Tw>,
-        "x"_a.noconvert(), "weights"_a.noconvert(),
-        "nbins"_a, "xmin"_a, "xmax"_a, "flow"_a);
-  m.def("_f1dmw", &f1dmw<Tx, Tw>,
-        "x"_a.noconvert(), "weights"_a.noconvert(),
-        "nbins"_a, "xmin"_a, "xmax"_a, "flow"_a);
-  m.def("_v1dw", &v1dw<Tx, Tw>,
-        "x"_a.noconvert(), "weights"_a.noconvert(),
-        "bins"_a, "flow"_a);
-  m.def("_v1dmw", &v1dmw<Tx, Tw>,
-        "x"_a.noconvert(), "weights"_a.noconvert(),
-        "bins"_a, "flow"_a);
+  m.def("_f1dw", &f1dw<Tx, Tw>, "x"_a.noconvert(), "w"_a.noconvert(), "nb"_a, "xmin"_a,
+        "xmax"_a, "f"_a);
+  m.def("_f1dmw", &f1dmw<Tx, Tw>, "x"_a.noconvert(), "w"_a.noconvert(), "nb"_a, "xmin"_a,
+        "xmax"_a, "f"_a);
+  m.def("_v1dw", &v1dw<Tx, Tw>, "x"_a.noconvert(), "w"_a.noconvert(), "b"_a, "f"_a);
+  m.def("_v1dmw", &v1dmw<Tx, Tw>, "x"_a.noconvert(), "w"_a.noconvert(), "b"_a, "f"_a);
 }
 
 template <typename Tx, typename Ty>
 void inject_2d(py::module_& m, const type_list<Tx, Ty>&) {
-  m.def("_f2d", &f2d<Tx, Ty>,
-        "x"_a.noconvert(), "y"_a.noconvert(),
-        "nbinsx"_a, "xmin"_a, "xmax"_a,
-        "nbinsy"_a, "ymin"_a, "ymax"_a,
-        "flow"_a);
-  m.def("_v2d", &v2d<Tx, Ty>,
-        "x"_a.noconvert(), "y"_a.noconvert(),
-        "binsx"_a, "binsy"_a,
-        "flow"_a);
+  m.def("_f2d", &f2d<Tx, Ty>, "x"_a.noconvert(), "y"_a.noconvert(), "nx"_a, "xmin"_a,
+        "xmax"_a, "ny"_a, "ymin"_a, "ymax"_a, "f"_a);
+  m.def("_v2d", &v2d<Tx, Ty>, "x"_a.noconvert(), "y"_a.noconvert(), "bx"_a, "by"_a, "f"_a);
 }
 
 template <typename Tx, typename Ty, typename Tw>
 void inject_2dw(py::module_& m, const type_list<Tx, Ty, Tw>&) {
-  m.def("_f2dw", &f2dw<Tx, Ty, Tw>,
-        "x"_a.noconvert(), "y"_a.noconvert(), "weights"_a.noconvert(),
-        "nbinsx"_a, "xmin"_a, "xmax"_a,
-        "nbinsy"_a, "ymin"_a, "ymax"_a,
-        "flow"_a);
-  m.def("_v2dw", &v2dw<Tx, Ty, Tw>,
-        "x"_a.noconvert(), "y"_a.noconvert(), "w"_a.noconvert(),
-        "binsx"_a, "binsy"_a,
-        "flow"_a);
+  m.def("_f2dw", &f2dw<Tx, Ty, Tw>, "x"_a.noconvert(), "y"_a.noconvert(), "w"_a.noconvert(),
+        "nx"_a, "xmin"_a, "xmax"_a, "ny"_a, "ymin"_a, "ymax"_a, "f"_a);
+  m.def("_v2dw", &v2dw<Tx, Ty, Tw>, "x"_a.noconvert(), "y"_a.noconvert(), "w"_a.noconvert(),
+        "bx"_a, "by"_a, "f"_a);
 }
-// clang-format on
 
 PYBIND11_MODULE(_backend, m) {
   m.doc() = "pygram11 C++ backend.";

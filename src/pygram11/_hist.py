@@ -1,23 +1,26 @@
 # stdlib
-from typing import Sequence, Tuple, Optional, Union
+from typing import Optional, Sequence, Tuple, Union
 
 # third party
 import numpy as np
 
 # pygram11
 from pygram11._backend import (
-    _f1d,
-    _v1d,
-    _f1dw,
-    _v1dw,
+    _f1d_f,
+    _f1d_nf,
     _f1dmw,
-    _v1dmw,
+    _f1dw,
     _f2d,
     _f2dw,
+    _v1d_f,
+    _v1d_nf,
+    _v1dmw,
+    _v1dw,
     _v2d,
     _v2dw,
 )
-from ._helpers import limits_1d, limits_2d, likely_uniform_bins
+
+from ._helpers import likely_uniform_bins, limits_1d, limits_2d
 
 
 def _densify_fixed_counts(counts: np.ndarray, width: float) -> np.ndarray:
@@ -200,7 +203,10 @@ def fix1d(
     xmin, xmax = limits_1d(x, range)
 
     if weights is None:
-        result = _f1d(x, bins, xmin, xmax, flow)
+        if flow:
+            result = _f1d_f(x, bins, xmin, xmax)
+        else:
+            result = _f1d_nf(x, bins, xmin, xmax)
         if density:
             width = (xmax - xmin) / bins
             result = _densify_fixed_counts(result, width)
@@ -372,7 +378,10 @@ def var1d(
 
     bins = np.array(bins, dtype=np.float64, copy=False)
     if weights is None:
-        result = _v1d(x, bins, flow)
+        if flow:
+            result = _v1d_f(x, bins)
+        else:
+            result = _v1d_nf(x, bins)
         if density:
             result = _densify_variable_counts(result, bins)
         return result, None
