@@ -12,7 +12,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-13, macos-14, windows-latest, ubuntu-24.04-arm]
+        os: [ubuntu-latest, macos-14, windows-latest, ubuntu-24.04-arm]
 
     steps:
     - uses: actions/checkout@v5
@@ -22,10 +22,6 @@ jobs:
     - name: Install OpenMP (macOS)
       if: runner.os == 'macOS'
       run: brew install libomp
-
-    - name: Set MACOSX_DEPLOYMENT_TARGET for macOS 13
-      if: matrix.os == 'macos-13'
-      run: echo "MACOSX_DEPLOYMENT_TARGET=13.0" >> $GITHUB_ENV
 
     - name: Set MACOSX_DEPLOYMENT_TARGET for macOS 14
       if: matrix.os == 'macos-14'
