@@ -2,7 +2,7 @@
 
 MIT License
 
-Copyright (c) 2021 Douglas Davis
+Copyright (c) 2025 Douglas Davis
 
 Permission is hereby granted, free of charge, to any person
 obtaining a copy of this software and associated documentation files
@@ -26,7 +26,7 @@ SOFTWARE.
 
 """
 
-__version__ = "0.13.3"
+__version__ = "0.14.0"
 
 from ._hist import (  # noqa
     bin_centers,
